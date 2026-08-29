@@ -1,0 +1,5 @@
+DROP TABLE IF EXISTS bank_cards;
+
+DROP TABLE IF EXISTS history;
+
+DROP TABLE IF EXISTS users;

@@ -1,0 +1,24 @@
+name: go-keeper
+
+services:
+  postgres:
+    container_name: go-keeper
+    image: postgres:latest
+    restart: always
+    ports:
+      - 5432:5432
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: db
+    volumes:
+      - data:/var/lib/postgresql
+
+  adminer:
+    image: adminer
+    restart: always
+    ports:
+      - 5050:8080
+
+volumes:
+  data: {}
