@@ -1,7 +1,7 @@
 CREATE TABLE
   IF NOT EXISTS users (
     id SERIAL PRIMARY KEY,
-    login VARCHAR(255) UNIQUE NOT NULL,
+    email VARCHAR(255) UNIQUE NOT NULL,
     password VARCHAR(255) NOT NULL,
     created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
   );
@@ -21,6 +21,7 @@ CREATE TABLE
     user_id BIGINT NOT NULL,
     card_number VARCHAR(19) NOT NULL,
     expiry_date DATE NOT NULL,
+    active BOOLEAN,
     created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (user_id) REFERENCES users (id)
   );

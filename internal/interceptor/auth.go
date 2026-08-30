@@ -4,7 +4,6 @@ import (
 	"context"
 
 	mytoken "github.com/Albert-Ti/go-keeper/internal/token"
-	"github.com/Albert-Ti/go-keeper/internal/utils"
 	"github.com/golang-jwt/jwt/v5"
 
 	"google.golang.org/grpc"
@@ -47,16 +46,6 @@ func AuthGuard(secretKey string) grpc.UnaryServerInterceptor {
 			}
 		}
 
-		if tokenStr == "" {
-			authorizedUserID = utils.GenerateUUID()
-
-			newToken, err := mytoken.CreateToken(authorizedUserID, secretKey)
-			if err != nil {
-				return nil, status.Error(codes.Internal, "failed to create token")
-			}
-
-			_ = grpc.SetHeader(ctx, metadata.Pairs("authorization", newToken))
-		}
 		ctx = context.WithValue(ctx, UserIDKey, authorizedUserID)
 		return handler(ctx, req)
 	}

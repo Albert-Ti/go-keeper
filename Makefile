@@ -1,10 +1,6 @@
 DB_URL = postgres://postgres:postgres@localhost:5432/db?sslmode=disable
 RUN_PATH = cmd/server/main.go
 MIGRATIONS_PATH = ./migrations
-PPROF_FILE_PATH = profiles/base.pprof
-BUILD_DATE = $(shell date +'%Y-%m-%d_%H:%M:%S')
-BUILD_COMMIT = $(shell git rev-parse --short HEAD)
-AUDIT_FILE = audit.json
 
 .PHONY: run ping test migrate-up migrate-down migrate-create
 
@@ -17,9 +13,7 @@ endif
 # ---------------------- RUN
 # Запуск сервера с настройками по умолчанию (in-memory хранилище)
 run:
-	go run $(RUN_PATH)
-
-
+	go run $(RACE_FLAG) $(RUN_PATH) -d="$(DB_URL)"
 
 # ---------------------- MIGRATIONS
 # Создание новой миграции: make migrate-create name=my_migration
@@ -74,3 +68,13 @@ docker-exec:
 # Удалить том с данными Postgres
 docker-volume-rm:
 	docker volume rm shorten_url_data || true 
+
+
+# ---------------------- PROTOBUF
+protoc:
+	protoc \
+  --go_out=. --go_opt=paths=source_relative \
+  --go-grpc_out=. --go-grpc_opt=paths=source_relative \
+  --go_opt=default_api_level=API_OPAQUE \
+	-I . \
+  pkg/proto/base.proto
