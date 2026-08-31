@@ -58,6 +58,9 @@ func Build() (*Options, error) {
 
 	opts := NewOptions()
 
+	opts.RunAddr = pickString(explicit["a"], "SERVER_ADDRESS", raw.RunAddr)
+	opts.DBConnStr = pickString(explicit["d"], "DB_CONN_STRING", raw.DBConnStr)
+
 	return opts, nil
 }
 
@@ -72,3 +75,14 @@ func WithJWTSecret(v string) func(*Options) { return func(o *Options) { o.JWTSec
 
 // WithMode задаёт режим работы приложения (например, "dev" или "debug").
 func WithMode(v string) func(*Options) { return func(o *Options) { o.Mode = v } }
+
+func pickString(explicitFlag bool, envStr string, flagVal string) string {
+	if explicitFlag {
+		return flagVal
+	}
+	if v := os.Getenv(envStr); v != "" {
+		return v
+	}
+
+	return flagVal
+}

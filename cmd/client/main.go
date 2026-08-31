@@ -35,15 +35,20 @@ func main() {
 	c := pb.NewGoKeeperServiceClient(conn)
 
 	resp, err := c.Register(ctx, pb.RegisterRequest_builder{
-		Email:    "albert",
+		Email:    "example@mail.com",
 		Password: "12345",
 	}.Build())
 	if err == nil {
 		fmt.Println("Register OK", resp.String())
-	} else {
-		fmt.Printf("Register error: %v", err)
 	}
 
+	resp2, err := c.Login(ctx, pb.LoginRequest_builder{
+		Email:    "example@mail.com",
+		Password: "12345",
+	}.Build())
+	if err == nil {
+		fmt.Println("Register OK", resp2.String())
+	}
 }
 
 func clientInterceptor(

@@ -1,6 +1,9 @@
 package models
 
 type User struct {
-	Email    string
-	Password string
+	ID             string
+	Email          string
+	EmailToken     string
+	IsConfirmEmail bool
+	Password       string
 }

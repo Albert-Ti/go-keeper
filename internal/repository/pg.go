@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/Albert-Ti/go-keeper/internal/models"
+	"github.com/Albert-Ti/go-keeper/internal/utils"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
@@ -33,32 +34,51 @@ func NewPGStorage(connString string) (*PGStorage, error) {
 	}, nil
 }
 
-func (pg *PGStorage) AddUser(ctx context.Context, email, password string) (int, error) {
-	sql := `INSERT INTO users (login, password) VALUES ($1, $2) RETURNING id`
+func (pg *PGStorage) AddUser(ctx context.Context, email, password string) (string, error) {
+	emailToken := utils.GenerateUUID()
+	sql := `
+	INSERT INTO users (email, email_token, password) 
+	VALUES ($1, $2, $3)
+	`
 
-	var userID int
-	errUser := pg.pool.QueryRow(ctx, sql, email, password).Scan(&userID)
+	_, err := pg.pool.Exec(ctx, sql, email, emailToken, password)
 
-	if errUser != nil {
-		return 0, errUser
+	if err != nil {
+		return "", err
 	}
 
-	return userID, nil
+	return emailToken, nil
 }
 
 func (pg *PGStorage) GetUser(ctx context.Context, email string) (models.User, error) {
-	sql := `SELECT * FROM users WHERE email = $1`
+	sql := `
+	SELECT id, email, email_token, is_confirm_email, password 
+	FROM users 
+	WHERE email = $1
+	`
 
-	res, err := pg.pool.Query(ctx, sql, email)
+	rows, err := pg.pool.Query(ctx, sql, email)
 	if err != nil {
 		return models.User{}, err
 	}
 
 	var user models.User
-	for res.Next() {
-		if err := res.Scan(&user.Email, &user.Password); err != nil {
+	for rows.Next() {
+		err := rows.Scan(
+			&user.ID,
+			&user.Email,
+			&user.EmailToken,
+			&user.IsConfirmEmail,
+			&user.Password,
+		)
+
+		if err != nil {
 			return models.User{}, err
 		}
+	}
+
+	if err = rows.Err(); err != nil {
+		return models.User{}, err
 	}
 
 	return user, nil

@@ -15,7 +15,10 @@ import (
 )
 
 func main() {
-	opts := config.NewOptions()
+	opts, errCfg := config.Build()
+	if errCfg != nil {
+		panic(errCfg)
+	}
 
 	repo, err := repository.NewRepository(opts.DBConnStr)
 	if err != nil {
@@ -33,7 +36,7 @@ func main() {
 		grpc.ChainUnaryInterceptor(interceptor.Logging()),
 	)
 
-	pb.RegisterGoKeeperServiceServer(srv, handler.GrpcServer{
+	pb.RegisterGoKeeperServiceServer(srv, &handler.GrpcServer{
 		Svc:  svc,
 		Opts: opts,
 	})

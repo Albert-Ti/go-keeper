@@ -92,9 +92,10 @@ func (b0 RegisterRequest_builder) Build() *RegisterRequest {
 }
 
 type RegisterResponse struct {
-	state         protoimpl.MessageState `protogen:"opaque.v1"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
+	state                   protoimpl.MessageState `protogen:"opaque.v1"`
+	xxx_hidden_ConfirmToken string                 `protobuf:"bytes,1,opt,name=confirm_token,json=confirmToken,proto3"`
+	unknownFields           protoimpl.UnknownFields
+	sizeCache               protoimpl.SizeCache
 }
 
 func (x *RegisterResponse) Reset() {
@@ -122,15 +123,28 @@ func (x *RegisterResponse) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
+func (x *RegisterResponse) GetConfirmToken() string {
+	if x != nil {
+		return x.xxx_hidden_ConfirmToken
+	}
+	return ""
+}
+
+func (x *RegisterResponse) SetConfirmToken(v string) {
+	x.xxx_hidden_ConfirmToken = v
+}
+
 type RegisterResponse_builder struct {
 	_ [0]func() // Prevents comparability and use of unkeyed literals for the builder.
 
+	ConfirmToken string
 }
 
 func (b0 RegisterResponse_builder) Build() *RegisterResponse {
 	m0 := &RegisterResponse{}
 	b, x := &b0, m0
 	_, _ = b, x
+	x.xxx_hidden_ConfirmToken = b.ConfirmToken
 	return m0
 }
 
@@ -206,9 +220,11 @@ func (b0 LoginRequest_builder) Build() *LoginRequest {
 }
 
 type LoginResponse struct {
-	state         protoimpl.MessageState `protogen:"opaque.v1"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
+	state                   protoimpl.MessageState `protogen:"opaque.v1"`
+	xxx_hidden_AccessToken  string                 `protobuf:"bytes,1,opt,name=access_token,json=accessToken,proto3"`
+	xxx_hidden_RefreshToken string                 `protobuf:"bytes,2,opt,name=refresh_token,json=refreshToken,proto3"`
+	unknownFields           protoimpl.UnknownFields
+	sizeCache               protoimpl.SizeCache
 }
 
 func (x *LoginResponse) Reset() {
@@ -236,15 +252,169 @@ func (x *LoginResponse) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
+func (x *LoginResponse) GetAccessToken() string {
+	if x != nil {
+		return x.xxx_hidden_AccessToken
+	}
+	return ""
+}
+
+func (x *LoginResponse) GetRefreshToken() string {
+	if x != nil {
+		return x.xxx_hidden_RefreshToken
+	}
+	return ""
+}
+
+func (x *LoginResponse) SetAccessToken(v string) {
+	x.xxx_hidden_AccessToken = v
+}
+
+func (x *LoginResponse) SetRefreshToken(v string) {
+	x.xxx_hidden_RefreshToken = v
+}
+
 type LoginResponse_builder struct {
 	_ [0]func() // Prevents comparability and use of unkeyed literals for the builder.
 
+	AccessToken  string
+	RefreshToken string
 }
 
 func (b0 LoginResponse_builder) Build() *LoginResponse {
 	m0 := &LoginResponse{}
 	b, x := &b0, m0
 	_, _ = b, x
+	x.xxx_hidden_AccessToken = b.AccessToken
+	x.xxx_hidden_RefreshToken = b.RefreshToken
+	return m0
+}
+
+type TokenRequest struct {
+	state                   protoimpl.MessageState `protogen:"opaque.v1"`
+	xxx_hidden_RefreshToken string                 `protobuf:"bytes,1,opt,name=refresh_token,json=refreshToken,proto3"`
+	unknownFields           protoimpl.UnknownFields
+	sizeCache               protoimpl.SizeCache
+}
+
+func (x *TokenRequest) Reset() {
+	*x = TokenRequest{}
+	mi := &file_pkg_proto_base_proto_msgTypes[4]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *TokenRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*TokenRequest) ProtoMessage() {}
+
+func (x *TokenRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_pkg_proto_base_proto_msgTypes[4]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+func (x *TokenRequest) GetRefreshToken() string {
+	if x != nil {
+		return x.xxx_hidden_RefreshToken
+	}
+	return ""
+}
+
+func (x *TokenRequest) SetRefreshToken(v string) {
+	x.xxx_hidden_RefreshToken = v
+}
+
+type TokenRequest_builder struct {
+	_ [0]func() // Prevents comparability and use of unkeyed literals for the builder.
+
+	RefreshToken string
+}
+
+func (b0 TokenRequest_builder) Build() *TokenRequest {
+	m0 := &TokenRequest{}
+	b, x := &b0, m0
+	_, _ = b, x
+	x.xxx_hidden_RefreshToken = b.RefreshToken
+	return m0
+}
+
+type TokenResponse struct {
+	state                   protoimpl.MessageState `protogen:"opaque.v1"`
+	xxx_hidden_AccessToken  string                 `protobuf:"bytes,1,opt,name=access_token,json=accessToken,proto3"`
+	xxx_hidden_RefreshToken string                 `protobuf:"bytes,2,opt,name=refresh_token,json=refreshToken,proto3"`
+	unknownFields           protoimpl.UnknownFields
+	sizeCache               protoimpl.SizeCache
+}
+
+func (x *TokenResponse) Reset() {
+	*x = TokenResponse{}
+	mi := &file_pkg_proto_base_proto_msgTypes[5]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *TokenResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*TokenResponse) ProtoMessage() {}
+
+func (x *TokenResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_pkg_proto_base_proto_msgTypes[5]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+func (x *TokenResponse) GetAccessToken() string {
+	if x != nil {
+		return x.xxx_hidden_AccessToken
+	}
+	return ""
+}
+
+func (x *TokenResponse) GetRefreshToken() string {
+	if x != nil {
+		return x.xxx_hidden_RefreshToken
+	}
+	return ""
+}
+
+func (x *TokenResponse) SetAccessToken(v string) {
+	x.xxx_hidden_AccessToken = v
+}
+
+func (x *TokenResponse) SetRefreshToken(v string) {
+	x.xxx_hidden_RefreshToken = v
+}
+
+type TokenResponse_builder struct {
+	_ [0]func() // Prevents comparability and use of unkeyed literals for the builder.
+
+	AccessToken  string
+	RefreshToken string
+}
+
+func (b0 TokenResponse_builder) Build() *TokenResponse {
+	m0 := &TokenResponse{}
+	b, x := &b0, m0
+	_, _ = b, x
+	x.xxx_hidden_AccessToken = b.AccessToken
+	x.xxx_hidden_RefreshToken = b.RefreshToken
 	return m0
 }
 
@@ -255,30 +425,43 @@ const file_pkg_proto_base_proto_rawDesc = "" +
 	"\x14pkg/proto/base.proto\x12\bgokeeper\"C\n" +
 	"\x0fRegisterRequest\x12\x14\n" +
 	"\x05email\x18\x01 \x01(\tR\x05email\x12\x1a\n" +
-	"\bpassword\x18\x02 \x01(\tR\bpassword\"\x12\n" +
-	"\x10RegisterResponse\"@\n" +
+	"\bpassword\x18\x02 \x01(\tR\bpassword\"7\n" +
+	"\x10RegisterResponse\x12#\n" +
+	"\rconfirm_token\x18\x01 \x01(\tR\fconfirmToken\"@\n" +
 	"\fLoginRequest\x12\x14\n" +
 	"\x05email\x18\x01 \x01(\tR\x05email\x12\x1a\n" +
-	"\bpassword\x18\x02 \x01(\tR\bpassword\"\x0f\n" +
-	"\rLoginResponse2\x8e\x01\n" +
+	"\bpassword\x18\x02 \x01(\tR\bpassword\"W\n" +
+	"\rLoginResponse\x12!\n" +
+	"\faccess_token\x18\x01 \x01(\tR\vaccessToken\x12#\n" +
+	"\rrefresh_token\x18\x02 \x01(\tR\frefreshToken\"3\n" +
+	"\fTokenRequest\x12#\n" +
+	"\rrefresh_token\x18\x01 \x01(\tR\frefreshToken\"W\n" +
+	"\rTokenResponse\x12!\n" +
+	"\faccess_token\x18\x01 \x01(\tR\vaccessToken\x12#\n" +
+	"\rrefresh_token\x18\x02 \x01(\tR\frefreshToken2\xcf\x01\n" +
 	"\x0fGoKeeperService\x12A\n" +
 	"\bRegister\x12\x19.gokeeper.RegisterRequest\x1a\x1a.gokeeper.RegisterResponse\x128\n" +
-	"\x05Login\x12\x16.gokeeper.LoginRequest\x1a\x17.gokeeper.LoginResponseB*Z(github.com/Albert-Ti/go-keeper/pkg/protob\x06proto3"
+	"\x05Login\x12\x16.gokeeper.LoginRequest\x1a\x17.gokeeper.LoginResponse\x12?\n" +
+	"\fRefreshToken\x12\x16.gokeeper.TokenRequest\x1a\x17.gokeeper.TokenResponseB*Z(github.com/Albert-Ti/go-keeper/pkg/protob\x06proto3"
 
-var file_pkg_proto_base_proto_msgTypes = make([]protoimpl.MessageInfo, 4)
+var file_pkg_proto_base_proto_msgTypes = make([]protoimpl.MessageInfo, 6)
 var file_pkg_proto_base_proto_goTypes = []any{
 	(*RegisterRequest)(nil),  // 0: gokeeper.RegisterRequest
 	(*RegisterResponse)(nil), // 1: gokeeper.RegisterResponse
 	(*LoginRequest)(nil),     // 2: gokeeper.LoginRequest
 	(*LoginResponse)(nil),    // 3: gokeeper.LoginResponse
+	(*TokenRequest)(nil),     // 4: gokeeper.TokenRequest
+	(*TokenResponse)(nil),    // 5: gokeeper.TokenResponse
 }
 var file_pkg_proto_base_proto_depIdxs = []int32{
 	0, // 0: gokeeper.GoKeeperService.Register:input_type -> gokeeper.RegisterRequest
 	2, // 1: gokeeper.GoKeeperService.Login:input_type -> gokeeper.LoginRequest
-	1, // 2: gokeeper.GoKeeperService.Register:output_type -> gokeeper.RegisterResponse
-	3, // 3: gokeeper.GoKeeperService.Login:output_type -> gokeeper.LoginResponse
-	2, // [2:4] is the sub-list for method output_type
-	0, // [0:2] is the sub-list for method input_type
+	4, // 2: gokeeper.GoKeeperService.RefreshToken:input_type -> gokeeper.TokenRequest
+	1, // 3: gokeeper.GoKeeperService.Register:output_type -> gokeeper.RegisterResponse
+	3, // 4: gokeeper.GoKeeperService.Login:output_type -> gokeeper.LoginResponse
+	5, // 5: gokeeper.GoKeeperService.RefreshToken:output_type -> gokeeper.TokenResponse
+	3, // [3:6] is the sub-list for method output_type
+	0, // [0:3] is the sub-list for method input_type
 	0, // [0:0] is the sub-list for extension type_name
 	0, // [0:0] is the sub-list for extension extendee
 	0, // [0:0] is the sub-list for field type_name
@@ -295,7 +478,7 @@ func file_pkg_proto_base_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_pkg_proto_base_proto_rawDesc), len(file_pkg_proto_base_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   4,
+			NumMessages:   6,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

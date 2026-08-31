@@ -19,8 +19,9 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	GoKeeperService_Register_FullMethodName = "/gokeeper.GoKeeperService/Register"
-	GoKeeperService_Login_FullMethodName    = "/gokeeper.GoKeeperService/Login"
+	GoKeeperService_Register_FullMethodName     = "/gokeeper.GoKeeperService/Register"
+	GoKeeperService_Login_FullMethodName        = "/gokeeper.GoKeeperService/Login"
+	GoKeeperService_RefreshToken_FullMethodName = "/gokeeper.GoKeeperService/RefreshToken"
 )
 
 // GoKeeperServiceClient is the client API for GoKeeperService service.
@@ -29,6 +30,7 @@ const (
 type GoKeeperServiceClient interface {
 	Register(ctx context.Context, in *RegisterRequest, opts ...grpc.CallOption) (*RegisterResponse, error)
 	Login(ctx context.Context, in *LoginRequest, opts ...grpc.CallOption) (*LoginResponse, error)
+	RefreshToken(ctx context.Context, in *TokenRequest, opts ...grpc.CallOption) (*TokenResponse, error)
 }
 
 type goKeeperServiceClient struct {
@@ -59,12 +61,23 @@ func (c *goKeeperServiceClient) Login(ctx context.Context, in *LoginRequest, opt
 	return out, nil
 }
 
+func (c *goKeeperServiceClient) RefreshToken(ctx context.Context, in *TokenRequest, opts ...grpc.CallOption) (*TokenResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(TokenResponse)
+	err := c.cc.Invoke(ctx, GoKeeperService_RefreshToken_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // GoKeeperServiceServer is the server API for GoKeeperService service.
 // All implementations must embed UnimplementedGoKeeperServiceServer
 // for forward compatibility.
 type GoKeeperServiceServer interface {
 	Register(context.Context, *RegisterRequest) (*RegisterResponse, error)
 	Login(context.Context, *LoginRequest) (*LoginResponse, error)
+	RefreshToken(context.Context, *TokenRequest) (*TokenResponse, error)
 	mustEmbedUnimplementedGoKeeperServiceServer()
 }
 
@@ -80,6 +93,9 @@ func (UnimplementedGoKeeperServiceServer) Register(context.Context, *RegisterReq
 }
 func (UnimplementedGoKeeperServiceServer) Login(context.Context, *LoginRequest) (*LoginResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method Login not implemented")
+}
+func (UnimplementedGoKeeperServiceServer) RefreshToken(context.Context, *TokenRequest) (*TokenResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method RefreshToken not implemented")
 }
 func (UnimplementedGoKeeperServiceServer) mustEmbedUnimplementedGoKeeperServiceServer() {}
 func (UnimplementedGoKeeperServiceServer) testEmbeddedByValue()                         {}
@@ -138,6 +154,24 @@ func _GoKeeperService_Login_Handler(srv interface{}, ctx context.Context, dec fu
 	return interceptor(ctx, in, info, handler)
 }
 
+func _GoKeeperService_RefreshToken_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(TokenRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(GoKeeperServiceServer).RefreshToken(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: GoKeeperService_RefreshToken_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(GoKeeperServiceServer).RefreshToken(ctx, req.(*TokenRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // GoKeeperService_ServiceDesc is the grpc.ServiceDesc for GoKeeperService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -152,6 +186,10 @@ var GoKeeperService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "Login",
 			Handler:    _GoKeeperService_Login_Handler,
+		},
+		{
+			MethodName: "RefreshToken",
+			Handler:    _GoKeeperService_RefreshToken_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

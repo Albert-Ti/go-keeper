@@ -78,3 +78,9 @@ protoc:
   --go_opt=default_api_level=API_OPAQUE \
 	-I . \
   pkg/proto/base.proto
+
+
+# ---------------------- MOCKGEN
+# Сгенерировать моки репозитория через mockgen
+mockgen:
+	mockgen -source=internal/repository/repository.go -destination=internal/repository/mocks/mock_repository.go -package=mocks 

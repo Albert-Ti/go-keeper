@@ -7,30 +7,24 @@ import (
 
 	"github.com/Albert-Ti/go-keeper/internal/config"
 	"github.com/Albert-Ti/go-keeper/internal/handler"
-	"github.com/Albert-Ti/go-keeper/internal/interceptor"
 	"github.com/Albert-Ti/go-keeper/internal/service"
+	pb "github.com/Albert-Ti/go-keeper/pkg/proto"
 	"github.com/stretchr/testify/require"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/grpc/test/bufconn"
-
-	pb "github.com/Albert-Ti/go-keeper/pkg/proto"
 )
 
 const bufSize = 1024 * 1024
 
-func newTestGRPCServer(t *testing.T, svc *service.Service, opts *config.Options) pb.GoKeeperServiceClient {
+func NewTestGRPCServer(t *testing.T, svc *service.Service, opts *config.Options) pb.GoKeeperServiceClient {
 	t.Helper()
 
 	lis := bufconn.Listen(bufSize)
 
-	srv := grpc.NewServer(
-		grpc.ChainUnaryInterceptor(
-			interceptor.AuthGuard(opts.JWTSecret),
-			interceptor.Logging(),
-		),
-	)
-	gs := &handler.GrpcServer{Srv: srv, Svc: svc}
+	srv := grpc.NewServer()
+
+	gs := &handler.GrpcServer{Srv: srv, Svc: svc, Opts: opts}
 	pb.RegisterGoKeeperServiceServer(srv, gs)
 
 	go func() {

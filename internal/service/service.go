@@ -2,12 +2,20 @@ package service
 
 import (
 	"context"
-	"fmt"
+	"errors"
 	"strings"
 
 	"github.com/Albert-Ti/go-keeper/internal/models"
 	"github.com/Albert-Ti/go-keeper/internal/repository"
 	"github.com/Albert-Ti/go-keeper/internal/utils"
+	"github.com/jackc/pgerrcode"
+	"github.com/jackc/pgx/v5/pgconn"
+)
+
+var (
+	ErrAlreadyExists = errors.New("User already exist")
+	ErrUnauthorized  = errors.New("Invalid password")
+	ErrConfirmEmail  = errors.New("")
 )
 
 type Service struct {
@@ -18,13 +26,25 @@ func NewService(repo repository.Repository) *Service {
 	return &Service{repo}
 }
 
-func (s *Service) Register(ctx context.Context, email, password string) (int, error) {
+func (s *Service) Register(ctx context.Context, email, password string) (string, error) {
 	salt, err := utils.RandomHash(8)
+
+	var pgErr *pgconn.PgError
 	if err != nil {
-		return 0, err
+		return "", err
 	}
+
 	hash := utils.HashPassword(salt, password)
-	return s.repo.AddUser(ctx, email, hash)
+
+	token, err := s.repo.AddUser(ctx, email, hash)
+	if err != nil {
+		if errors.As(err, &pgErr) && pgerrcode.IsIntegrityConstraintViolation(pgErr.Code) {
+			return "", ErrAlreadyExists
+		}
+		return "", err
+	}
+
+	return token, nil
 }
 
 func (s *Service) Login(ctx context.Context, email string, password string) (models.User, error) {
@@ -34,7 +54,11 @@ func (s *Service) Login(ctx context.Context, email string, password string) (mod
 	}
 
 	salt := strings.Split(user.Password, ".")[0]
-	fmt.Println(salt)
+	hashPass := utils.HashPassword(salt, password)
 
-	return models.User{}, nil
+	if hashPass != user.Password {
+		return models.User{}, ErrUnauthorized
+	}
+
+	return user, nil
 }

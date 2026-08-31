@@ -2,34 +2,27 @@ package handler
 
 import (
 	"context"
-	"fmt"
-	"strconv"
+	"errors"
 
-	mytoken "github.com/Albert-Ti/go-keeper/internal/token"
+	"github.com/Albert-Ti/go-keeper/internal/service"
 
 	pb "github.com/Albert-Ti/go-keeper/pkg/proto"
-	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/metadata"
 	"google.golang.org/grpc/status"
 )
 
-func (g GrpcServer) Register(ctx context.Context, in *pb.RegisterRequest) (*pb.RegisterResponse, error) {
-	userID, err := g.Svc.Register(ctx, in.GetEmail(), in.GetPassword())
-	fmt.Println(err)
+func (g *GrpcServer) Register(ctx context.Context, in *pb.RegisterRequest) (*pb.RegisterResponse, error) {
+	token, err := g.Svc.Register(ctx, in.GetEmail(), in.GetPassword())
 	if err != nil {
-		return nil, err
+		if errors.Is(err, service.ErrAlreadyExists) {
+			return nil, status.Errorf(codes.AlreadyExists, "user %s is already registered", in.GetEmail())
+		}
+		return nil, status.Error(codes.Internal, "db error")
 	}
 
-	token, err := mytoken.CreateToken(strconv.Itoa(userID), g.Opts.JWTSecret)
-	if err != nil {
-		return nil, status.Error(codes.Internal, "failed to create token")
-	}
+	response := pb.RegisterResponse_builder{
+		ConfirmToken: token,
+	}.Build()
 
-	err = grpc.SetHeader(ctx, metadata.Pairs("authorization", token))
-	if err != nil {
-		return nil, status.Error(codes.Internal, "failed to set header")
-	}
-
-	return &pb.RegisterResponse{}, nil
+	return response, nil
 }
