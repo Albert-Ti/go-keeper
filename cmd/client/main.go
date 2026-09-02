@@ -1,11 +1,13 @@
 package main
 
 import (
+	"bufio"
 	"context"
 	"fmt"
 	"log"
 	"log/slog"
 	"os"
+	"strings"
 	"time"
 
 	"google.golang.org/grpc"
@@ -34,20 +36,69 @@ func main() {
 	defer conn.Close()
 	c := pb.NewGoKeeperServiceClient(conn)
 
-	resp, err := c.Register(ctx, pb.RegisterRequest_builder{
-		Email:    "example@mail.com",
-		Password: "12345",
-	}.Build())
-	if err == nil {
-		fmt.Println("Register OK", resp.String())
-	}
+	in := bufio.NewReader(os.Stdin)
 
-	resp2, err := c.Login(ctx, pb.LoginRequest_builder{
-		Email:    "example@mail.com",
-		Password: "12345",
-	}.Build())
-	if err == nil {
-		fmt.Println("Register OK", resp2.String())
+	fmt.Println("  register email password - регистрация")
+	fmt.Println("  login email password    - вход")
+	fmt.Println("  exit                    - выход")
+
+	for {
+		fmt.Print("client > ")
+
+		line, err := in.ReadString('\n')
+		if err != nil {
+			fmt.Println("Ошибка чтения:", err)
+			continue
+		}
+
+		line = strings.TrimSpace(line)
+		if line == "" {
+			continue
+		}
+
+		parts := strings.Fields(line)
+		if len(parts) == 0 {
+			continue
+		}
+
+		fmt.Println(parts)
+
+		command := parts[0]
+
+		switch command {
+		case "register":
+			if len(parts) < 3 {
+				fmt.Println("Использование: register email password")
+				continue
+			}
+			email := parts[1]
+			password := parts[2]
+
+			resp, err := c.Register(ctx, pb.RegisterRequest_builder{
+				Email:    email,
+				Password: password,
+			}.Build())
+			if err == nil {
+				fmt.Println("Register OK", resp.String())
+			}
+
+		case "login":
+			email := parts[1]
+			password := parts[2]
+
+			resp, err := c.Login(ctx, pb.LoginRequest_builder{
+				Email:    email,
+				Password: password,
+			}.Build())
+			if err == nil {
+				fmt.Println("Login OK", resp.String())
+			}
+
+		default:
+			fmt.Printf("Неизвестная команда: %s\n", command)
+			fmt.Println("Доступные команды: register, login, exit")
+		}
+
 	}
 }
 

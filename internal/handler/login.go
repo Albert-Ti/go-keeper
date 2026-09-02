@@ -14,8 +14,8 @@ func (g *GrpcServer) Login(ctx context.Context, in *pb.LoginRequest) (*pb.LoginR
 	if err != nil {
 		return nil, err
 	}
-	accessToken, err := mytoken.CreateAccessToken(user.ID, g.Opts.JWTSecret)
-	refreshToken, err := mytoken.CreateRefreshToken(user.ID, g.Opts.JWTSecret)
+	accessToken, err := mytoken.CreateAccessToken(user.UUID, g.Opts.JWTSecret)
+	refreshToken, err := mytoken.CreateRefreshToken(user.UUID, g.Opts.JWTSecret)
 	if err != nil {
 		return nil, status.Error(codes.Internal, "failed to create token")
 	}

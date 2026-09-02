@@ -52,7 +52,7 @@ func (pg *PGStorage) AddUser(ctx context.Context, email, password string) (strin
 
 func (pg *PGStorage) GetUser(ctx context.Context, email string) (models.User, error) {
 	sql := `
-	SELECT id, email, email_token, is_confirm_email, password 
+	SELECT uuid, email, email_token, is_confirm_email, password 
 	FROM users 
 	WHERE email = $1
 	`
@@ -65,7 +65,7 @@ func (pg *PGStorage) GetUser(ctx context.Context, email string) (models.User, er
 	var user models.User
 	for rows.Next() {
 		err := rows.Scan(
-			&user.ID,
+			&user.UUID,
 			&user.Email,
 			&user.EmailToken,
 			&user.IsConfirmEmail,

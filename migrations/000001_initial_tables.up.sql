@@ -1,6 +1,6 @@
 CREATE TABLE
   IF NOT EXISTS users (
-    id UUID PRIMARY KEY DEFAULT uuidv7 (),
+    uuid UUID PRIMARY KEY DEFAULT uuidv7 (),
     email VARCHAR(255) UNIQUE NOT NULL,
     email_token VARCHAR(32),
     is_confirm_email BOOLEAN DEFAULT FALSE,

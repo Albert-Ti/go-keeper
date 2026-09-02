@@ -1,7 +1,7 @@
 package models
 
 type User struct {
-	ID             string
+	UUID           string
 	Email          string
 	EmailToken     string
 	IsConfirmEmail bool
