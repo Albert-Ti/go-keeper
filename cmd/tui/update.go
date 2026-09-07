@@ -58,6 +58,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			m.token = msg.accessToken
 			m.authUser = m.form.email.Value()
 			m.page = profilePage
+			m.history = append(m.history, profilePage)
 		}
 		return m, nil
 
@@ -66,8 +67,19 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		switch msg.String() {
 		case "ctrl+c":
 			return m, tea.Quit
-		case "esc":
+		case "ctrl+q":
 			m.page = homePage
+			m.authUser = ""
+			return m, nil
+		case "esc":
+			if m.authUser != "" {
+				m.textError = "to log out, press ctrl+q"
+				return m, clearErrorAfter(m.errorSeq)
+			}
+			if len(m.history) > 1 {
+				m.history = m.history[:len(m.history)-1]
+				m.page = m.history[len(m.history)-1]
+			}
 			return m, nil
 		}
 
@@ -132,9 +144,11 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				m.form.pass.SetValue("")
 				if m.choices[m.cursor] == "register" {
 					m.page = registerPage
+					m.history = append(m.history, registerPage)
 				}
 				if m.choices[m.cursor] == "login" {
 					m.page = loginPage
+					m.history = append(m.history, loginPage)
 				}
 				return m, nil
 			}

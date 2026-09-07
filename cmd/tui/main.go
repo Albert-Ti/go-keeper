@@ -49,6 +49,7 @@ type Form struct {
 
 type model struct {
 	page      pageType
+	history   []pageType
 	choices   []string
 	cursor    int
 	form      Form
@@ -77,6 +78,7 @@ func initialModel(client pb.GoKeeperServiceClient) model {
 	return model{
 		client:  client,
 		page:    homePage,
+		history: []pageType{homePage},
 		choices: []string{"register", "login"},
 		form: Form{
 			email:   email,

@@ -46,7 +46,7 @@ func (m model) View() tea.View {
 		s += "\n"
 	}
 	s += divider(cardWidth) + "\n"
-	s += footerView(cardWidth, "ctrl+c quit · esc discard · tab focus", "© Albert Taygibov")
+	s += footerView(cardWidth, "ctrl+c quit· ctrl+q logout · esc back · tab focus", "© Albert Taygibov")
 	content = s
 
 	centered := lipgloss.Place(m.width, m.height, lipgloss.Center, lipgloss.Center, content)

@@ -9,6 +9,7 @@ import (
 
 const cardWidth = 80
 
+// Color
 var (
 	colorPrimary     = lipgloss.Color("212") // розовый — акцент на активном поле
 	colorMuted       = lipgloss.Color("240") // серый — неактивные элементы
@@ -17,8 +18,12 @@ var (
 	colorText        = lipgloss.Color("255")
 )
 
+// Component UI Style
 var (
-	errorStyle      = lipgloss.NewStyle().Foreground(colorError)
+	menuStyle  = lipgloss.NewStyle().Foreground(colorText)
+	labelStyle = lipgloss.NewStyle().Foreground(lipgloss.Color("245"))
+	errorStyle = lipgloss.NewStyle().Foreground(colorError)
+
 	inputBoxFocused = lipgloss.NewStyle().
 			Border(lipgloss.RoundedBorder()).
 			BorderForeground(colorPrimary).
@@ -28,10 +33,6 @@ var (
 			Border(lipgloss.RoundedBorder()).
 			BorderForeground(colorMuted).
 			Padding(0, 1)
-
-	labelStyle = lipgloss.NewStyle().
-			Foreground(lipgloss.Color("245")).
-			MarginBottom(0)
 )
 
 func newStyledInput(placeholder string, isPassword bool) textinput.Model {
@@ -73,7 +74,6 @@ func headerView(width int, left, right string) string {
 		gapWidth = 0
 	}
 	gap := lipgloss.NewStyle().Width(gapWidth).Render("")
-
 	return lipgloss.JoinHorizontal(lipgloss.Top, leftRendered, gap, rightRendered)
 }
 
@@ -86,7 +86,6 @@ func footerView(width int, left, right string) string {
 		gapWidth = 0
 	}
 	gap := lipgloss.NewStyle().Width(gapWidth).Render("")
-
 	return lipgloss.JoinHorizontal(lipgloss.Top, leftRendered, gap, rightRendered)
 }
 
