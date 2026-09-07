@@ -20,9 +20,10 @@ func TestLogin(t *testing.T) {
 	defer ctrl.Finish()
 	mockRepo := mocks.NewMockRepository(ctrl)
 
-	svc := service.NewService(mockRepo)
-
 	opts := config.NewOptions()
+
+	svc := service.NewService(mockRepo, opts, nil)
+
 	client := NewTestGRPCServer(t, svc, opts)
 
 	tests := []struct {

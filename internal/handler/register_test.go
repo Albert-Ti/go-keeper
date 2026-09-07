@@ -19,9 +19,10 @@ func TestRegister(t *testing.T) {
 	defer ctrl.Finish()
 	mockRepo := mocks.NewMockRepository(ctrl)
 
-	svc := service.NewService(mockRepo)
-
 	opts := config.NewOptions()
+
+	svc := service.NewService(mockRepo, opts, nil)
+
 	client := NewTestGRPCServer(t, svc, opts)
 
 	tests := []struct {
@@ -34,7 +35,7 @@ func TestRegister(t *testing.T) {
 			wantCode: codes.OK,
 			setupMock: func(mock *mocks.MockRepository) {
 				mock.EXPECT().
-					AddUser(gomock.Any(), "example@mail.com", gomock.Any()).
+					AddUser(gomock.Any(), "example@mail.com", gomock.Any(), gomock.Any()).
 					Return("some-user-id", nil)
 			},
 		},
@@ -44,7 +45,7 @@ func TestRegister(t *testing.T) {
 			wantCode: codes.AlreadyExists,
 			setupMock: func(mock *mocks.MockRepository) {
 				mock.EXPECT().
-					AddUser(gomock.Any(), "example@mail.com", gomock.Any()).
+					AddUser(gomock.Any(), "example@mail.com", gomock.Any(), gomock.Any()).
 					Return("", service.ErrAlreadyExists)
 			},
 		},

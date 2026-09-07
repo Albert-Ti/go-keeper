@@ -7,8 +7,9 @@ import (
 )
 
 type Repository interface {
-	AddUser(ctx context.Context, email, password string) (string, error)
+	AddUser(ctx context.Context, email, code, password string) error
 	GetUser(ctx context.Context, email string) (models.User, error)
+	UpdateUser(ctx context.Context, p models.UpdateUserParams) error
 }
 
 func NewRepository(connString string) (Repository, error) {

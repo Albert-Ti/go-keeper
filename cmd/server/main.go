@@ -5,6 +5,7 @@ import (
 	"net"
 
 	"github.com/Albert-Ti/go-keeper/internal/config"
+	"github.com/Albert-Ti/go-keeper/internal/email"
 	"github.com/Albert-Ti/go-keeper/internal/handler"
 	"github.com/Albert-Ti/go-keeper/internal/interceptor"
 	"github.com/Albert-Ti/go-keeper/internal/repository"
@@ -24,7 +25,16 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	svc := service.NewService(repo)
+
+	var sender *email.Sender
+	if opts.EnableSMTP {
+		sender, err = email.NewSender("smtp.yandex.ru", 465, "maze-chat@ya.ru", "qpaqjtfrrdwplfdf", "maze-chat@ya.ru")
+		if err != nil {
+			panic(err)
+		}
+	}
+
+	svc := service.NewService(repo, opts, sender)
 
 	lis, err := net.Listen("tcp", "localhost:8080")
 
@@ -45,4 +55,5 @@ func main() {
 	if err := srv.Serve(lis); err != nil {
 		panic(err)
 	}
+
 }

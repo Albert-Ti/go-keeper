@@ -15,6 +15,9 @@ endif
 run:
 	go run $(RACE_FLAG) $(RUN_PATH) -d="$(DB_URL)"
 
+run-smtp:
+	go run $(RACE_FLAG) $(RUN_PATH) -d="$(DB_URL)" -e="true"
+
 # ---------------------- MIGRATIONS
 # Создание новой миграции: make migrate-create name=my_migration
 migrate-create:

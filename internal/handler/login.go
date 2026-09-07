@@ -2,7 +2,9 @@ package handler
 
 import (
 	"context"
+	"errors"
 
+	"github.com/Albert-Ti/go-keeper/internal/service"
 	mytoken "github.com/Albert-Ti/go-keeper/internal/token"
 	pb "github.com/Albert-Ti/go-keeper/pkg/proto"
 	"google.golang.org/grpc/codes"
@@ -12,7 +14,13 @@ import (
 func (g *GrpcServer) Login(ctx context.Context, in *pb.LoginRequest) (*pb.LoginResponse, error) {
 	user, err := g.Svc.Login(ctx, in.GetEmail(), in.GetPassword())
 	if err != nil {
-		return nil, err
+		if errors.Is(err, service.ErrUnauthorized) {
+			return nil, status.Errorf(codes.Unauthenticated, "email: %v, invalid email or password", in.GetEmail())
+		}
+		if errors.Is(err, service.ErrEmailNotConfirmed) {
+			return nil, status.Errorf(codes.PermissionDenied, "email: %v, has not been confirmed", in.GetEmail())
+		}
+		return nil, status.Error(codes.Internal, "internal server")
 	}
 	accessToken, err := mytoken.CreateAccessToken(user.UUID, g.Opts.JWTSecret)
 	refreshToken, err := mytoken.CreateRefreshToken(user.UUID, g.Opts.JWTSecret)

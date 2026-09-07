@@ -21,7 +21,7 @@ const _ = grpc.SupportPackageIsVersion9
 const (
 	GoKeeperService_Register_FullMethodName     = "/gokeeper.GoKeeperService/Register"
 	GoKeeperService_Login_FullMethodName        = "/gokeeper.GoKeeperService/Login"
-	GoKeeperService_RefreshToken_FullMethodName = "/gokeeper.GoKeeperService/RefreshToken"
+	GoKeeperService_ConfirmEmail_FullMethodName = "/gokeeper.GoKeeperService/ConfirmEmail"
 )
 
 // GoKeeperServiceClient is the client API for GoKeeperService service.
@@ -30,7 +30,7 @@ const (
 type GoKeeperServiceClient interface {
 	Register(ctx context.Context, in *RegisterRequest, opts ...grpc.CallOption) (*RegisterResponse, error)
 	Login(ctx context.Context, in *LoginRequest, opts ...grpc.CallOption) (*LoginResponse, error)
-	RefreshToken(ctx context.Context, in *TokenRequest, opts ...grpc.CallOption) (*TokenResponse, error)
+	ConfirmEmail(ctx context.Context, in *ConfirmEmailRequest, opts ...grpc.CallOption) (*ConfirmEmailResponse, error)
 }
 
 type goKeeperServiceClient struct {
@@ -61,10 +61,10 @@ func (c *goKeeperServiceClient) Login(ctx context.Context, in *LoginRequest, opt
 	return out, nil
 }
 
-func (c *goKeeperServiceClient) RefreshToken(ctx context.Context, in *TokenRequest, opts ...grpc.CallOption) (*TokenResponse, error) {
+func (c *goKeeperServiceClient) ConfirmEmail(ctx context.Context, in *ConfirmEmailRequest, opts ...grpc.CallOption) (*ConfirmEmailResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(TokenResponse)
-	err := c.cc.Invoke(ctx, GoKeeperService_RefreshToken_FullMethodName, in, out, cOpts...)
+	out := new(ConfirmEmailResponse)
+	err := c.cc.Invoke(ctx, GoKeeperService_ConfirmEmail_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -77,7 +77,7 @@ func (c *goKeeperServiceClient) RefreshToken(ctx context.Context, in *TokenReque
 type GoKeeperServiceServer interface {
 	Register(context.Context, *RegisterRequest) (*RegisterResponse, error)
 	Login(context.Context, *LoginRequest) (*LoginResponse, error)
-	RefreshToken(context.Context, *TokenRequest) (*TokenResponse, error)
+	ConfirmEmail(context.Context, *ConfirmEmailRequest) (*ConfirmEmailResponse, error)
 	mustEmbedUnimplementedGoKeeperServiceServer()
 }
 
@@ -94,8 +94,8 @@ func (UnimplementedGoKeeperServiceServer) Register(context.Context, *RegisterReq
 func (UnimplementedGoKeeperServiceServer) Login(context.Context, *LoginRequest) (*LoginResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method Login not implemented")
 }
-func (UnimplementedGoKeeperServiceServer) RefreshToken(context.Context, *TokenRequest) (*TokenResponse, error) {
-	return nil, status.Error(codes.Unimplemented, "method RefreshToken not implemented")
+func (UnimplementedGoKeeperServiceServer) ConfirmEmail(context.Context, *ConfirmEmailRequest) (*ConfirmEmailResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method ConfirmEmail not implemented")
 }
 func (UnimplementedGoKeeperServiceServer) mustEmbedUnimplementedGoKeeperServiceServer() {}
 func (UnimplementedGoKeeperServiceServer) testEmbeddedByValue()                         {}
@@ -154,20 +154,20 @@ func _GoKeeperService_Login_Handler(srv interface{}, ctx context.Context, dec fu
 	return interceptor(ctx, in, info, handler)
 }
 
-func _GoKeeperService_RefreshToken_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(TokenRequest)
+func _GoKeeperService_ConfirmEmail_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ConfirmEmailRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(GoKeeperServiceServer).RefreshToken(ctx, in)
+		return srv.(GoKeeperServiceServer).ConfirmEmail(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: GoKeeperService_RefreshToken_FullMethodName,
+		FullMethod: GoKeeperService_ConfirmEmail_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(GoKeeperServiceServer).RefreshToken(ctx, req.(*TokenRequest))
+		return srv.(GoKeeperServiceServer).ConfirmEmail(ctx, req.(*ConfirmEmailRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -188,8 +188,8 @@ var GoKeeperService_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _GoKeeperService_Login_Handler,
 		},
 		{
-			MethodName: "RefreshToken",
-			Handler:    _GoKeeperService_RefreshToken_Handler,
+			MethodName: "ConfirmEmail",
+			Handler:    _GoKeeperService_ConfirmEmail_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

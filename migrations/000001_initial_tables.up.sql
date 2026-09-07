@@ -2,7 +2,7 @@ CREATE TABLE
   IF NOT EXISTS users (
     uuid UUID PRIMARY KEY DEFAULT uuidv7 (),
     email VARCHAR(255) UNIQUE NOT NULL,
-    email_token VARCHAR(32),
+    email_code VARCHAR(32),
     is_confirm_email BOOLEAN DEFAULT FALSE,
     password VARCHAR(255) NOT NULL,
     created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
@@ -14,7 +14,7 @@ CREATE TABLE
     user_id UUID NOT NULL,
     old_password VARCHAR(255) NOT NULL,
     life_time INTERVAL,
-    FOREIGN KEY (user_id) REFERENCES users (id)
+    FOREIGN KEY (user_id) REFERENCES users (uuid)
   );
 
 CREATE TABLE
@@ -25,5 +25,5 @@ CREATE TABLE
     expiry_date DATE NOT NULL,
     active BOOLEAN,
     created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (user_id) REFERENCES users (id)
+    FOREIGN KEY (user_id) REFERENCES users (uuid)
   );

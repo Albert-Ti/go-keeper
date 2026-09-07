@@ -17,10 +17,11 @@ const (
 // и значений по умолчанию.
 // generate:reset
 type Options struct {
-	RunAddr   string
-	DBConnStr string
-	JWTSecret string
-	Mode      string
+	RunAddr    string
+	DBConnStr  string
+	JWTSecret  string
+	Mode       string
+	EnableSMTP bool
 }
 
 // NewOptions создаёт Options со значениями по умолчанию и применяет
@@ -46,6 +47,7 @@ func Build() (*Options, error) {
 	var raw Options
 	fs.StringVar(&raw.RunAddr, "a", "localhost:8080", "адрес и порт запуска HTTP-сервера, например: -a=localhost:8080")
 	fs.StringVar(&raw.DBConnStr, "d", "", "строка подключения к БД, например: -d=\"postgres://user:pass@localhost:5432/shortener\"")
+	fs.BoolVar(&raw.EnableSMTP, "e", false, "")
 
 	if err := fs.Parse(os.Args[1:]); err != nil {
 		return nil, err
@@ -60,6 +62,7 @@ func Build() (*Options, error) {
 
 	opts.RunAddr = pickString(explicit["a"], "SERVER_ADDRESS", raw.RunAddr)
 	opts.DBConnStr = pickString(explicit["d"], "DB_CONN_STRING", raw.DBConnStr)
+	opts.EnableSMTP = pickBool(explicit["e"], "ENABLE_SMTP", raw.EnableSMTP)
 
 	return opts, nil
 }
@@ -76,12 +79,26 @@ func WithJWTSecret(v string) func(*Options) { return func(o *Options) { o.JWTSec
 // WithMode задаёт режим работы приложения (например, "dev" или "debug").
 func WithMode(v string) func(*Options) { return func(o *Options) { o.Mode = v } }
 
+// WithEnableSMTP.
+func WithEnableSMTP(v bool) func(*Options) { return func(o *Options) { o.EnableSMTP = v } }
+
 func pickString(explicitFlag bool, envStr string, flagVal string) string {
 	if explicitFlag {
 		return flagVal
 	}
 	if v := os.Getenv(envStr); v != "" {
 		return v
+	}
+
+	return flagVal
+}
+
+func pickBool(explicitFlag bool, envStr string, flagVal bool) bool {
+	if explicitFlag {
+		return flagVal
+	}
+	if v := os.Getenv(envStr); v != "" {
+		return v == "true" || v == "1"
 	}
 
 	return flagVal

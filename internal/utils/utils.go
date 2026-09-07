@@ -6,6 +6,7 @@ import (
 	"encoding/base64"
 	"encoding/hex"
 	"fmt"
+	"math/big"
 	"strconv"
 	"strings"
 )
@@ -14,6 +15,18 @@ var GenerateUUID = func() string {
 	key := make([]byte, 9)
 	rand.Read(key)
 	return base64.RawURLEncoding.EncodeToString(key)
+}
+
+var GenerateCodeEmail = func() string {
+	const letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+	const length = 5
+
+	result := make([]byte, length)
+	for i := range result {
+		n, _ := rand.Int(rand.Reader, big.NewInt(int64(len(letters))))
+		result[i] = letters[n.Int64()]
+	}
+	return string(result)
 }
 
 func GenerateMockUUID() func() {

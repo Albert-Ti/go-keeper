@@ -5,25 +5,33 @@ import (
 	"errors"
 	"strings"
 
+	"github.com/Albert-Ti/go-keeper/internal/config"
+	"github.com/Albert-Ti/go-keeper/internal/email"
 	"github.com/Albert-Ti/go-keeper/internal/models"
 	"github.com/Albert-Ti/go-keeper/internal/repository"
 	"github.com/Albert-Ti/go-keeper/internal/utils"
+	"github.com/aws/smithy-go/ptr"
 	"github.com/jackc/pgerrcode"
 	"github.com/jackc/pgx/v5/pgconn"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/metadata"
 )
 
 var (
-	ErrAlreadyExists = errors.New("User already exist")
-	ErrUnauthorized  = errors.New("Invalid password")
-	ErrConfirmEmail  = errors.New("")
+	ErrAlreadyExists     = errors.New("user already exist")
+	ErrUnauthorized      = errors.New("incorrect email or password")
+	ErrInvalidCodeEmail  = errors.New("invalid confirmation code")
+	ErrEmailNotConfirmed = errors.New("email has not been confirmed")
 )
 
 type Service struct {
-	repo repository.Repository
+	repo   repository.Repository
+	opts   *config.Options
+	sender *email.Sender
 }
 
-func NewService(repo repository.Repository) *Service {
-	return &Service{repo}
+func NewService(repo repository.Repository, opts *config.Options, sender *email.Sender) *Service {
+	return &Service{repo, opts, sender}
 }
 
 func (s *Service) Register(ctx context.Context, email, password string) (string, error) {
@@ -35,22 +43,43 @@ func (s *Service) Register(ctx context.Context, email, password string) (string,
 	}
 
 	hash := utils.HashPassword(salt, password)
+	code := utils.GenerateCodeEmail()
 
-	token, err := s.repo.AddUser(ctx, email, hash)
-	if err != nil {
+	if s.sender != nil {
+		err := s.sender.SendConfirmationCode(email, code)
+		if err != nil {
+			return "", err
+		}
+	}
+
+	if err := s.repo.AddUser(ctx, email, code, hash); err != nil {
 		if errors.As(err, &pgErr) && pgerrcode.IsIntegrityConstraintViolation(pgErr.Code) {
 			return "", ErrAlreadyExists
 		}
 		return "", err
 	}
 
-	return token, nil
+	return code, nil
 }
 
 func (s *Service) Login(ctx context.Context, email string, password string) (models.User, error) {
 	user, err := s.repo.GetUser(ctx, email)
 	if err != nil {
 		return models.User{}, err
+	}
+
+	if !user.IsConfirmEmail {
+		code := utils.GenerateCodeEmail()
+		if s.sender != nil {
+			if err := s.sender.SendConfirmationCode(email, code); err != nil {
+				return models.User{}, err
+			}
+		}
+
+		if err := s.sendEmailCode(ctx, email, code, user.UUID); err != nil {
+			return models.User{}, err
+		}
+		return models.User{}, ErrEmailNotConfirmed
 	}
 
 	salt := strings.Split(user.Password, ".")[0]
@@ -61,4 +90,36 @@ func (s *Service) Login(ctx context.Context, email string, password string) (mod
 	}
 
 	return user, nil
+}
+
+func (s *Service) ConfirmEmail(ctx context.Context, email, code string) error {
+	user, err := s.repo.GetUser(ctx, email)
+	if err != nil {
+		return err
+	}
+
+	if user.EmailCode == code {
+		params := models.UpdateUserParams{UUID: user.UUID, IsConfirmEmail: ptr.Bool(true)}
+		if err := s.repo.UpdateUser(ctx, params); err != nil {
+			return err
+		}
+	} else {
+		return ErrInvalidCodeEmail
+	}
+
+	return nil
+}
+
+func (s *Service) sendEmailCode(ctx context.Context, email, code, uuid string) error {
+	params := models.UpdateUserParams{UUID: uuid, EmailCode: &code}
+	err := grpc.SetHeader(ctx, metadata.Pairs("email_code", code))
+	if err != nil {
+		return err
+	}
+
+	if err := s.repo.UpdateUser(ctx, params); err != nil {
+		return err
+	}
+
+	return nil
 }
