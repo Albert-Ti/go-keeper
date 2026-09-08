@@ -55,7 +55,8 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case "confirm":
 			return m, loginCmd(m.client, m.form.email.Value(), m.form.pass.Value())
 		case "login":
-			m.token = msg.accessToken
+			m.accessToken = msg.accessToken
+			m.refreshToken = msg.refreshToken
 			m.authUser = m.form.email.Value()
 			m.page = profilePage
 			m.history = append(m.history, profilePage)
@@ -70,6 +71,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case "ctrl+q":
 			m.page = homePage
 			m.authUser = ""
+			m.accessToken = ""
 			return m, nil
 		case "esc":
 			if m.authUser != "" {

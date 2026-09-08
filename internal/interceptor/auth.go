@@ -17,8 +17,19 @@ type UserIDType string
 // UserIDKey — ключ контекста.
 const UserIDKey UserIDType = "userID"
 
-func AuthGuard(secretKey string) grpc.UnaryServerInterceptor {
+var publicMethods = map[string]bool{
+	"/gokeeper.GoKeeperService/Register":     true,
+	"/gokeeper.GoKeeperService/Login":        true,
+	"/gokeeper.GoKeeperService/ConfirmEmail": true,
+	"/gokeeper.GoKeeperService/RefreshToken": true,
+}
+
+func Auth(secretKey string) grpc.UnaryServerInterceptor {
 	return func(ctx context.Context, req any, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (any, error) {
+		if publicMethods[info.FullMethod] {
+			return handler(ctx, req)
+		}
+
 		var tokenStr string
 		var authorizedUserID string
 
@@ -27,7 +38,6 @@ func AuthGuard(secretKey string) grpc.UnaryServerInterceptor {
 			values := md.Get("authorization")
 			if len(values) > 0 {
 				tokenStr = values[0]
-
 				claims := &mytoken.MyCustomClaims{}
 
 				token, err := jwt.ParseWithClaims(
@@ -41,9 +51,13 @@ func AuthGuard(secretKey string) grpc.UnaryServerInterceptor {
 				if err != nil || !token.Valid || claims.UserID == "" {
 					return nil, status.Error(codes.Unauthenticated, "token no valid")
 				}
-
 				authorizedUserID = claims.UserID
+
+			} else {
+				return nil, status.Error(codes.Unauthenticated, "token not found")
 			}
+		} else {
+			return nil, status.Error(codes.Unauthenticated, "token not found")
 		}
 
 		ctx = context.WithValue(ctx, UserIDKey, authorizedUserID)

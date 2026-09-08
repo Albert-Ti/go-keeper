@@ -11,7 +11,7 @@ CREATE TABLE
 CREATE TABLE
   IF NOT EXISTS history (
     id BIGSERIAL PRIMARY KEY,
-    user_id UUID NOT NULL,
+    user_uuid UUID NOT NULL,
     old_password VARCHAR(255) NOT NULL,
     life_time INTERVAL,
     FOREIGN KEY (user_id) REFERENCES users (uuid)
@@ -20,7 +20,7 @@ CREATE TABLE
 CREATE TABLE
   IF NOT EXISTS bank_cards (
     id BIGSERIAL PRIMARY KEY,
-    user_id UUID NOT NULL,
+    user_uuid UUID NOT NULL,
     card_number VARCHAR(19) NOT NULL,
     expiry_date DATE NOT NULL,
     active BOOLEAN,

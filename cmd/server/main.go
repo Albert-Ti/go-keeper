@@ -49,7 +49,9 @@ func main() {
 	}
 
 	srv := grpc.NewServer(
-		grpc.ChainUnaryInterceptor(interceptor.Logging()),
+		grpc.ChainUnaryInterceptor(
+			interceptor.Logging(), interceptor.Auth(opts.JWTSecret),
+		),
 	)
 
 	pb.RegisterGoKeeperServiceServer(srv, &handler.GrpcServer{

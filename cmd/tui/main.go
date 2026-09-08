@@ -48,18 +48,19 @@ type Form struct {
 }
 
 type model struct {
-	page      pageType
-	history   []pageType
-	choices   []string
-	cursor    int
-	form      Form
-	authUser  string
-	textError string
-	errorSeq  int
-	codeEmail string
-	token     string
-	width     int
-	height    int
+	page         pageType
+	history      []pageType
+	choices      []string
+	cursor       int
+	form         Form
+	authUser     string
+	textError    string
+	errorSeq     int
+	codeEmail    string
+	accessToken  string
+	refreshToken string
+	width        int
+	height       int
 
 	client pb.GoKeeperServiceClient
 }
@@ -85,10 +86,6 @@ func initialModel(client pb.GoKeeperServiceClient) model {
 			pass:    pass,
 			confirm: confirm,
 		},
-		authUser:  "",
-		textError: "",
-		codeEmail: "",
-		token:     "",
 	}
 }
 
