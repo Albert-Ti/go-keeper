@@ -34,32 +34,28 @@ func NewService(repo repository.Repository, opts *config.Options, sender *email.
 	return &Service{repo, opts, sender}
 }
 
-func (s *Service) Register(ctx context.Context, email, password string) (string, error) {
+func (s *Service) Register(ctx context.Context, email, password string) error {
 	salt, err := utils.RandomHash(8)
 
 	var pgErr *pgconn.PgError
 	if err != nil {
-		return "", err
+		return err
 	}
 
 	hash := utils.HashPassword(salt, password)
 	code := utils.GenerateCodeEmail()
 
-	if s.sender != nil {
-		err := s.sender.SendConfirmationCode(email, code)
-		if err != nil {
-			return "", err
-		}
-	}
-
 	if err := s.repo.AddUser(ctx, email, code, hash); err != nil {
 		if errors.As(err, &pgErr) && pgerrcode.IsIntegrityConstraintViolation(pgErr.Code) {
-			return "", ErrAlreadyExists
+			return ErrAlreadyExists
 		}
-		return "", err
+		return err
 	}
 
-	return code, nil
+	if err := s.sendEmailCode(ctx, email, code); err != nil {
+		return err
+	}
+	return nil
 }
 
 func (s *Service) Login(ctx context.Context, email string, password string) (models.User, error) {
@@ -70,13 +66,7 @@ func (s *Service) Login(ctx context.Context, email string, password string) (mod
 
 	if !user.IsConfirmEmail {
 		code := utils.GenerateCodeEmail()
-		if s.sender != nil {
-			if err := s.sender.SendConfirmationCode(email, code); err != nil {
-				return models.User{}, err
-			}
-		}
-
-		if err := s.sendEmailCode(ctx, email, code, user.UUID); err != nil {
+		if err := s.sendEmailCode(ctx, email, code); err != nil {
 			return models.User{}, err
 		}
 		return models.User{}, ErrEmailNotConfirmed
@@ -99,7 +89,7 @@ func (s *Service) ConfirmEmail(ctx context.Context, email, code string) error {
 	}
 
 	if user.EmailCode == code {
-		params := models.UpdateUserParams{UUID: user.UUID, IsConfirmEmail: ptr.Bool(true)}
+		params := models.UpdateUserParams{Email: user.Email, IsConfirmEmail: ptr.Bool(true)}
 		if err := s.repo.UpdateUser(ctx, params); err != nil {
 			return err
 		}
@@ -110,8 +100,15 @@ func (s *Service) ConfirmEmail(ctx context.Context, email, code string) error {
 	return nil
 }
 
-func (s *Service) sendEmailCode(ctx context.Context, email, code, uuid string) error {
-	params := models.UpdateUserParams{UUID: uuid, EmailCode: &code}
+func (s *Service) sendEmailCode(ctx context.Context, email, code string) error {
+	if s.sender != nil {
+		if err := s.sender.SendConfirmationCode(email, code); err != nil {
+			return err
+		}
+		return nil
+	}
+
+	params := models.UpdateUserParams{Email: email, EmailCode: &code}
 	err := grpc.SetHeader(ctx, metadata.Pairs("email_code", code))
 	if err != nil {
 		return err

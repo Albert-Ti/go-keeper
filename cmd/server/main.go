@@ -28,7 +28,13 @@ func main() {
 
 	var sender *email.Sender
 	if opts.EnableSMTP {
-		sender, err = email.NewSender("smtp.yandex.ru", 465, "maze-chat@ya.ru", "qpaqjtfrrdwplfdf", "maze-chat@ya.ru")
+		sender, err = email.NewSender(
+			opts.SMTPOpt.Host,
+			opts.SMTPOpt.Port,
+			opts.SMTPOpt.Username,
+			opts.SMTPOpt.Password,
+			opts.SMTPOpt.Username,
+		)
 		if err != nil {
 			panic(err)
 		}

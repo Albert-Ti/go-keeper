@@ -9,9 +9,7 @@ message RegisterRequest {
   string password = 2;
 }
 
-message  RegisterResponse {
-  string confirm_code = 1;
-}
+message  RegisterResponse {}
 
 message LoginRequest {
   string email  = 1;

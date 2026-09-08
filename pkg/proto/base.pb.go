@@ -92,10 +92,9 @@ func (b0 RegisterRequest_builder) Build() *RegisterRequest {
 }
 
 type RegisterResponse struct {
-	state                  protoimpl.MessageState `protogen:"opaque.v1"`
-	xxx_hidden_ConfirmCode string                 `protobuf:"bytes,1,opt,name=confirm_code,json=confirmCode,proto3"`
-	unknownFields          protoimpl.UnknownFields
-	sizeCache              protoimpl.SizeCache
+	state         protoimpl.MessageState `protogen:"opaque.v1"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
 }
 
 func (x *RegisterResponse) Reset() {
@@ -123,28 +122,15 @@ func (x *RegisterResponse) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-func (x *RegisterResponse) GetConfirmCode() string {
-	if x != nil {
-		return x.xxx_hidden_ConfirmCode
-	}
-	return ""
-}
-
-func (x *RegisterResponse) SetConfirmCode(v string) {
-	x.xxx_hidden_ConfirmCode = v
-}
-
 type RegisterResponse_builder struct {
 	_ [0]func() // Prevents comparability and use of unkeyed literals for the builder.
 
-	ConfirmCode string
 }
 
 func (b0 RegisterResponse_builder) Build() *RegisterResponse {
 	m0 := &RegisterResponse{}
 	b, x := &b0, m0
 	_, _ = b, x
-	x.xxx_hidden_ConfirmCode = b.ConfirmCode
 	return m0
 }
 
@@ -539,9 +525,8 @@ const file_pkg_proto_base_proto_rawDesc = "" +
 	"\x14pkg/proto/base.proto\x12\bgokeeper\"C\n" +
 	"\x0fRegisterRequest\x12\x14\n" +
 	"\x05email\x18\x01 \x01(\tR\x05email\x12\x1a\n" +
-	"\bpassword\x18\x02 \x01(\tR\bpassword\"5\n" +
-	"\x10RegisterResponse\x12!\n" +
-	"\fconfirm_code\x18\x01 \x01(\tR\vconfirmCode\"@\n" +
+	"\bpassword\x18\x02 \x01(\tR\bpassword\"\x12\n" +
+	"\x10RegisterResponse\"@\n" +
 	"\fLoginRequest\x12\x14\n" +
 	"\x05email\x18\x01 \x01(\tR\x05email\x12\x1a\n" +
 	"\bpassword\x18\x02 \x01(\tR\bpassword\"W\n" +

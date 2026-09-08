@@ -19,14 +19,22 @@ type resultMsg struct {
 
 func registerCmd(client pb.GoKeeperServiceClient, email, pass string) tea.Cmd {
 	return func() tea.Msg {
-		resp, err := client.Register(
+		var header metadata.MD
+
+		_, err := client.Register(
 			context.Background(),
 			pb.RegisterRequest_builder{Email: email, Password: pass}.Build(),
+			grpc.Header(&header),
 		)
 		if err != nil {
 			return resultMsg{err: err, kind: "register"}
 		}
-		return resultMsg{kind: "register", emailCode: resp.GetConfirmCode()}
+
+		var emailCode string
+		if values := header.Get("email_code"); len(values) > 0 {
+			emailCode = values[0]
+		}
+		return resultMsg{kind: "register", emailCode: emailCode}
 	}
 }
 

@@ -89,11 +89,6 @@ func (pg *PGStorage) UpdateUser(ctx context.Context, p models.UpdateUserParams) 
 	args := make([]any, 0, 5)
 	argIdx := 1
 
-	if p.Email != nil {
-		setParts = append(setParts, fmt.Sprintf("email = $%d", argIdx))
-		args = append(args, *p.Email)
-		argIdx++
-	}
 	if p.EmailCode != nil {
 		setParts = append(setParts, fmt.Sprintf("email_code = $%d", argIdx))
 		args = append(args, *p.EmailCode)
@@ -114,9 +109,9 @@ func (pg *PGStorage) UpdateUser(ctx context.Context, p models.UpdateUserParams) 
 		return nil
 	}
 
-	args = append(args, p.UUID)
+	args = append(args, p.Email)
 	query := fmt.Sprintf(
-		"UPDATE users SET %s WHERE uuid = $%d",
+		"UPDATE users SET %s WHERE email = $%d",
 		strings.Join(setParts, ", "),
 		argIdx,
 	)

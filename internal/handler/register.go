@@ -16,7 +16,7 @@ func (g *GrpcServer) Register(ctx context.Context, in *pb.RegisterRequest) (*pb.
 		return nil, status.Errorf(codes.InvalidArgument, "password: %v, is too short", in.GetPassword())
 	}
 
-	code, err := g.Svc.Register(ctx, in.GetEmail(), in.GetPassword())
+	err := g.Svc.Register(ctx, in.GetEmail(), in.GetPassword())
 	if err != nil {
 		if errors.Is(err, service.ErrAlreadyExists) {
 			return nil, status.Errorf(codes.AlreadyExists, "user: %s, is already registered", in.GetEmail())
@@ -24,9 +24,7 @@ func (g *GrpcServer) Register(ctx context.Context, in *pb.RegisterRequest) (*pb.
 		return nil, status.Error(codes.Internal, "internal server")
 	}
 
-	response := pb.RegisterResponse_builder{
-		ConfirmCode: code,
-	}.Build()
+	response := pb.RegisterResponse_builder{}.Build()
 
 	return response, nil
 }

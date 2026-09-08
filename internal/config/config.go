@@ -2,7 +2,9 @@
 package config
 
 import (
+	"encoding/json"
 	"flag"
+	"log/slog"
 	"os"
 )
 
@@ -22,6 +24,14 @@ type Options struct {
 	JWTSecret  string
 	Mode       string
 	EnableSMTP bool
+	SMTPOpt    *smtpFileOptions
+}
+
+type smtpFileOptions struct {
+	Port     int    `json:"port"`
+	Host     string `json:"host"`
+	Username string `json:"username"`
+	Password string `json:"password"`
 }
 
 // NewOptions создаёт Options со значениями по умолчанию и применяет
@@ -64,6 +74,17 @@ func Build() (*Options, error) {
 	opts.DBConnStr = pickString(explicit["d"], "DB_CONN_STRING", raw.DBConnStr)
 	opts.EnableSMTP = pickBool(explicit["e"], "ENABLE_SMTP", raw.EnableSMTP)
 
+	var smtpOpts smtpFileOptions
+	if opts.EnableSMTP {
+		parsed, err := parseFileOptions("smtp_config.json")
+		if err != nil {
+			slog.Error("parse config file", "path", "smtp_config.json", "error", err)
+		} else {
+			smtpOpts = *parsed
+		}
+		opts.SMTPOpt = &smtpOpts
+	}
+
 	return opts, nil
 }
 
@@ -102,4 +123,18 @@ func pickBool(explicitFlag bool, envStr string, flagVal bool) bool {
 	}
 
 	return flagVal
+}
+
+func parseFileOptions(fname string) (*smtpFileOptions, error) {
+	file, err := os.Open(fname)
+	if err != nil {
+		return nil, err
+	}
+	defer file.Close()
+
+	var fc smtpFileOptions
+	if err := json.NewDecoder(file).Decode(&fc); err != nil {
+		return nil, err
+	}
+	return &fc, nil
 }

@@ -9,8 +9,7 @@ type User struct {
 }
 
 type UpdateUserParams struct {
-	UUID           string
-	Email          *string
+	Email          string
 	EmailCode      *string
 	IsConfirmEmail *bool
 	Password       *string
