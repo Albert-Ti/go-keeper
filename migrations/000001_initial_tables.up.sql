@@ -14,16 +14,16 @@ CREATE TABLE
     user_uuid UUID NOT NULL,
     old_password VARCHAR(255) NOT NULL,
     life_time INTERVAL,
-    FOREIGN KEY (user_id) REFERENCES users (uuid)
+    FOREIGN KEY (user_uuid) REFERENCES users (uuid)
   );
 
 CREATE TABLE
   IF NOT EXISTS bank_cards (
     id BIGSERIAL PRIMARY KEY,
     user_uuid UUID NOT NULL,
-    card_number VARCHAR(19) NOT NULL,
+    card_number BYTEA NOT NULL,
     expiry_date DATE NOT NULL,
     active BOOLEAN,
     created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (user_id) REFERENCES users (uuid)
+    FOREIGN KEY (user_uuid) REFERENCES users (uuid)
   );

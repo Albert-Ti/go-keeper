@@ -1,10 +1,84 @@
 package main
 
 import (
+	"strings"
+
 	"charm.land/bubbles/v2/textinput"
-	tea "charm.land/bubbletea/v2"
 	"charm.land/lipgloss/v2"
 )
+
+func dividerView(width int) string {
+	return lipgloss.NewStyle().
+		Foreground(colorMuted).Render(strings.Repeat("─", width))
+}
+
+func headerView(width int, left, right string) string {
+	leftRendered := lipgloss.NewStyle().Foreground(colorPrimary).Render(left)
+	rightRendered := right
+
+	gapWidth := width - lipgloss.Width(leftRendered) - lipgloss.Width(rightRendered)
+	if gapWidth < 0 {
+		gapWidth = 0
+	}
+	gap := lipgloss.NewStyle().Width(gapWidth).Render("")
+	return lipgloss.JoinHorizontal(lipgloss.Top, leftRendered, gap, rightRendered)
+}
+
+func mainView(m model) string {
+	s := ""
+	if m.page == homePage {
+		for i, choice := range m.choices {
+			label := choice.String()
+			if i == m.cursor {
+				s += "* " + lipgloss.NewStyle().Foreground(colorText).Render(label)
+			} else {
+				s += "  " + lipgloss.NewStyle().Foreground(colorText).Render(label)
+			}
+			s += "\n\n"
+		}
+	}
+
+	if m.page == registerPage || m.page == loginPage {
+		s += fieldView("Email", m.form.email) + "\n\n"
+		s += fieldView("Password", m.form.pass) + "\n"
+	}
+
+	if m.page == confirmPage {
+		s += "Keep a code to confirm your email: " + m.codeEmail + "\n\n"
+		s += fieldView("Confirmation code", m.form.confirm) + "\n"
+	}
+
+	if m.page == profilePage {
+		s += "PROFILE USER \n\n"
+	}
+
+	if m.textError != "" {
+		s += errorStyle.Width(cardWidth).Align(lipgloss.Center).Render(m.textError) + "\n"
+	} else {
+		s += "\n"
+	}
+	return s
+}
+
+func footerView(width int, left, right string) string {
+	leftRendered := lipgloss.NewStyle().Foreground(colorText).Faint(true).Render(left)
+	rightRendered := lipgloss.NewStyle().Foreground(colorPrimary).Render(right)
+
+	gapWidth := width - lipgloss.Width(leftRendered) - lipgloss.Width(rightRendered)
+	if gapWidth < 0 {
+		gapWidth = 0
+	}
+	gap := lipgloss.NewStyle().Width(gapWidth).Render("")
+	return lipgloss.JoinHorizontal(lipgloss.Top, leftRendered, gap, rightRendered)
+}
+
+func breadcrumbView(page, user string) string {
+	text := page
+	if user != "" {
+		text += "/" + user
+	}
+	return text
+}
 
 func fieldView(label string, input textinput.Model) string {
 	box := inputBoxBlurred
@@ -12,51 +86,4 @@ func fieldView(label string, input textinput.Model) string {
 		box = inputBoxFocused
 	}
 	return labelStyle.Render(label) + "\n" + box.Render(input.View())
-}
-
-func (m model) View() tea.View {
-	var content string
-	s := headerView(cardWidth, "Go Keeper", breadcrumbView(m.page.String(), m.authUser)) + "\n"
-	s += divider(cardWidth) + lipgloss.NewStyle().MarginBottom(2).Render("\n")
-
-	if m.page == homePage {
-		for i, choice := range m.choices {
-			if i == m.cursor {
-				s += "* " + lipgloss.NewStyle().Foreground(colorText).Render(choice)
-			} else {
-				s += "  " + lipgloss.NewStyle().Foreground(colorText).Render(choice)
-			}
-			s += "\n\n"
-		}
-	}
-	if m.page == registerPage || m.page == loginPage {
-		s += fieldView("Email", m.form.email) + "\n\n"
-		s += fieldView("Password", m.form.pass) + "\n"
-	}
-	if m.page == confirmPage {
-		s += "Keep a code to confirm your email: " + m.codeEmail + "\n\n"
-		s += fieldView("Confirmation code", m.form.confirm) + "\n"
-	}
-	if m.page == profilePage {
-		s += "PROFILE USER \n\n"
-	}
-	if m.textError != "" {
-		s += errorStyle.Width(cardWidth).Align(lipgloss.Center).Render(m.textError) + "\n"
-	} else {
-		s += "\n"
-	}
-	s += divider(cardWidth) + "\n"
-	s += footerView(cardWidth, "ctrl+c quit· ctrl+q logout · esc back · tab focus", "© Albert Taygibov")
-	content = s
-
-	centered := lipgloss.Place(m.width, m.height, lipgloss.Center, lipgloss.Center, content)
-
-	// фон для отладки
-	// debugBackground := lipgloss.NewStyle().
-	// 	Width(m.width).
-	// 	Height(m.height).
-	// 	Background(lipgloss.Color("#1a1a2e")).
-	// 	Foreground(lipgloss.Color("#e0e0e0"))
-	// return tea.NewView(debugBackground.Render(centered))
-	return tea.NewView(centered)
 }
