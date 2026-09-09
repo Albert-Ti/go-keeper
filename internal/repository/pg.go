@@ -56,28 +56,17 @@ func (pg *PGStorage) GetUser(ctx context.Context, email string) (models.User, er
 	FROM users 
 	WHERE email = $1
 	`
-
-	rows, err := pg.pool.Query(ctx, sql, email)
-	if err != nil {
-		return models.User{}, err
-	}
-
 	var user models.User
-	for rows.Next() {
-		err := rows.Scan(
-			&user.UUID,
-			&user.Email,
-			&user.EmailCode,
-			&user.IsConfirmEmail,
-			&user.Password,
-		)
 
-		if err != nil {
-			return models.User{}, err
-		}
-	}
+	err := pg.pool.QueryRow(ctx, sql, email).Scan(
+		&user.UUID,
+		&user.Email,
+		&user.EmailCode,
+		&user.IsConfirmEmail,
+		&user.Password,
+	)
 
-	if err = rows.Err(); err != nil {
+	if err != nil {
 		return models.User{}, err
 	}
 

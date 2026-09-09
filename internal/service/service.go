@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"database/sql"
 	"errors"
 	"strings"
 
@@ -22,6 +23,7 @@ var (
 	ErrUnauthorized      = errors.New("incorrect email or password")
 	ErrInvalidCodeEmail  = errors.New("invalid confirmation code")
 	ErrEmailNotConfirmed = errors.New("email has not been confirmed")
+	ErrNoRows            = errors.New("no rows")
 )
 
 type Service struct {
@@ -61,6 +63,9 @@ func (s *Service) Register(ctx context.Context, email, password string) error {
 func (s *Service) Login(ctx context.Context, email string, password string) (models.User, error) {
 	user, err := s.repo.GetUser(ctx, email)
 	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return models.User{}, ErrNoRows
+		}
 		return models.User{}, err
 	}
 
