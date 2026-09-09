@@ -29,6 +29,15 @@ var (
 			Border(lipgloss.RoundedBorder()).
 			BorderForeground(colorMuted).
 			Padding(0, 1)
+
+	tabActiveStyle = lipgloss.NewStyle().
+			Foreground(colorText).
+			Background(colorPrimary).
+			Padding(0, 2)
+
+	tabInactiveStyle = lipgloss.NewStyle().
+				Foreground(colorMuted).
+				Padding(0, 2)
 )
 
 func newStyledInput(placeholder string, isPassword bool) textinput.Model {

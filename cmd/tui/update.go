@@ -36,8 +36,7 @@ func registerUpdate(msg tea.KeyPressMsg, m model) (model, tea.Cmd) {
 		}
 		return m, nil
 	case "enter", "space":
-		m.form.email.Blur()
-		m.form.pass.Blur()
+		m.isLoad = true
 		return m, registerCmd(m.client, m.form.email.Value(), m.form.pass.Value())
 	}
 
@@ -53,6 +52,7 @@ func registerUpdate(msg tea.KeyPressMsg, m model) (model, tea.Cmd) {
 func confirmUpdate(msg tea.KeyPressMsg, m model) (model, tea.Cmd) {
 	switch msg.String() {
 	case "enter":
+		m.isLoad = true
 		return m, confirmEmailCmd(m.client, m.form.email.Value(), m.form.confirm.Value())
 	}
 
@@ -73,6 +73,7 @@ func loginUpdate(msg tea.KeyPressMsg, m model) (model, tea.Cmd) {
 		}
 		return m, nil
 	case "enter":
+		m.isLoad = true
 		return m, loginCmd(m.client, m.form.email.Value(), m.form.pass.Value())
 	}
 
@@ -83,4 +84,19 @@ func loginUpdate(msg tea.KeyPressMsg, m model) (model, tea.Cmd) {
 		m.form.pass, cmd = m.form.pass.Update(msg)
 	}
 	return m, cmd
+}
+
+func contentUpdate(msg tea.KeyPressMsg, m model) (model, tea.Cmd) {
+	switch msg.String() {
+	case "left", "h":
+		if m.activeTab > 0 {
+			m.activeTab--
+		}
+	case "right", "l":
+		if int(m.activeTab) < len(m.allTabs)-1 {
+			m.activeTab++
+		}
+	}
+
+	return m, nil
 }

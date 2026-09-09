@@ -7,16 +7,23 @@ import (
 	"charm.land/lipgloss/v2"
 )
 
-func dividerView(width int) string {
+func dividerView() string {
 	return lipgloss.NewStyle().
-		Foreground(colorMuted).Render(strings.Repeat("─", width))
+		Foreground(colorMuted).Render(strings.Repeat("─", cardWidth))
 }
 
-func headerView(width int, left, right string) string {
-	leftRendered := lipgloss.NewStyle().Foreground(colorPrimary).Render(left)
-	rightRendered := right
+func headerView(m model) string {
+	spinner := ""
+	if m.isLoad {
+		spinner = m.spinner.View()
+	}
 
-	gapWidth := width - lipgloss.Width(leftRendered) - lipgloss.Width(rightRendered)
+	leftRendered := lipgloss.NewStyle().Foreground(colorPrimary).
+		Render("Go Keeper") + " " + spinner
+
+	rightRendered := breadcrumbView(m.activePage.String(), m.authUser)
+
+	gapWidth := cardWidth - lipgloss.Width(leftRendered) - lipgloss.Width(rightRendered)
 	if gapWidth < 0 {
 		gapWidth = 0
 	}
@@ -26,7 +33,7 @@ func headerView(width int, left, right string) string {
 
 func mainView(m model) string {
 	s := ""
-	if m.page == homePage {
+	if m.activePage == homePage {
 		for i, choice := range m.choices {
 			label := choice.String()
 			if i == m.cursor {
@@ -38,18 +45,36 @@ func mainView(m model) string {
 		}
 	}
 
-	if m.page == registerPage || m.page == loginPage {
+	if m.activePage == registerPage || m.activePage == loginPage {
 		s += fieldView("Email", m.form.email) + "\n\n"
 		s += fieldView("Password", m.form.pass) + "\n"
 	}
 
-	if m.page == confirmPage {
+	if m.activePage == confirmPage {
 		s += "Keep a code to confirm your email: " + m.codeEmail + "\n\n"
 		s += fieldView("Confirmation code", m.form.confirm) + "\n"
 	}
 
-	if m.page == profilePage {
-		s += "PROFILE USER \n\n"
+	if m.activePage == userPage {
+		var rendered []string
+		for _, t := range m.allTabs {
+			if t == m.activeTab {
+				rendered = append(rendered, tabActiveStyle.Render(t.String()))
+			} else {
+				rendered = append(rendered, tabInactiveStyle.Render(t.String()))
+			}
+		}
+		s += lipgloss.JoinHorizontal(lipgloss.Top, rendered...)
+		s += "\n\n"
+		switch m.activeTab {
+		case tabProfile:
+			s += "PROFILE\n"
+		case tabCards:
+			s += "CARDS\n"
+		case tabData:
+			s += "DATA\n"
+		}
+
 	}
 
 	if m.textError != "" {
@@ -60,11 +85,13 @@ func mainView(m model) string {
 	return s
 }
 
-func footerView(width int, left, right string) string {
-	leftRendered := lipgloss.NewStyle().Foreground(colorText).Faint(true).Render(left)
-	rightRendered := lipgloss.NewStyle().Foreground(colorPrimary).Render(right)
+func footerView() string {
+	leftRendered := lipgloss.NewStyle().Foreground(colorText).Faint(true).
+		Render("ctrl+c quit· ctrl+q logout · esc back · tab focus")
 
-	gapWidth := width - lipgloss.Width(leftRendered) - lipgloss.Width(rightRendered)
+	rightRendered := lipgloss.NewStyle().Foreground(colorPrimary).Render("© Albert Taygibov")
+
+	gapWidth := cardWidth - lipgloss.Width(leftRendered) - lipgloss.Width(rightRendered)
 	if gapWidth < 0 {
 		gapWidth = 0
 	}
@@ -72,8 +99,8 @@ func footerView(width int, left, right string) string {
 	return lipgloss.JoinHorizontal(lipgloss.Top, leftRendered, gap, rightRendered)
 }
 
-func breadcrumbView(page, user string) string {
-	text := page
+func breadcrumbView(activePage, user string) string {
+	text := activePage
 	if user != "" {
 		text += "/" + user
 	}

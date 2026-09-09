@@ -3,6 +3,7 @@ package handler
 import (
 	"context"
 	"errors"
+	"time"
 
 	"github.com/Albert-Ti/go-keeper/internal/service"
 	mytoken "github.com/Albert-Ti/go-keeper/internal/token"
@@ -12,6 +13,7 @@ import (
 )
 
 func (g *GrpcServer) Login(ctx context.Context, in *pb.LoginRequest) (*pb.LoginResponse, error) {
+	time.Sleep(time.Second * 2)
 	user, err := g.Svc.Login(ctx, in.GetEmail(), in.GetPassword())
 	if err != nil {
 		if errors.Is(err, service.ErrUnauthorized) {

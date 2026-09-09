@@ -19,6 +19,27 @@ import (
 	pb "github.com/Albert-Ti/go-keeper/pkg/proto"
 )
 
+type tabType uint
+
+const (
+	tabProfile tabType = iota
+	tabCards
+	tabData
+)
+
+func (t tabType) String() string {
+	switch t {
+	case tabProfile:
+		return "profile"
+	case tabCards:
+		return "cards"
+	case tabData:
+		return "data"
+	default:
+		return ""
+	}
+}
+
 type pageType uint
 
 const (
@@ -26,7 +47,7 @@ const (
 	registerPage
 	loginPage
 	confirmPage
-	profilePage
+	userPage
 )
 
 func (p pageType) String() string {
@@ -39,8 +60,8 @@ func (p pageType) String() string {
 		return "login"
 	case confirmPage:
 		return "confirm"
-	case profilePage:
-		return "profile"
+	case userPage:
+		return "user"
 	default:
 		return ""
 	}
@@ -53,10 +74,12 @@ type Form struct {
 }
 
 type model struct {
-	page    pageType
-	history []pageType
-	choices []pageType
-	cursor  int
+	activePage pageType
+	activeTab  tabType
+	history    []pageType
+	choices    []pageType
+	allTabs    []tabType
+	cursor     int
 
 	form      Form
 	width     int
@@ -84,13 +107,14 @@ func NewModel(client pb.GoKeeperServiceClient) model {
 
 	s := spinner.New()
 	s.Spinner = spinner.Dot
-	s.Style = lipgloss.NewStyle().Foreground(lipgloss.Color("205"))
+	s.Style = lipgloss.NewStyle().Foreground(colorPrimary)
 
 	return model{
-		client:  client,
-		page:    homePage,
-		history: []pageType{homePage},
-		choices: []pageType{registerPage, loginPage},
+		client:     client,
+		activePage: homePage,
+		history:    []pageType{homePage},
+		choices:    []pageType{registerPage, loginPage},
+		allTabs:    []tabType{tabProfile, tabCards, tabData},
 		form: Form{
 			email:   email,
 			pass:    pass,
@@ -101,7 +125,10 @@ func NewModel(client pb.GoKeeperServiceClient) model {
 }
 
 func (m model) Init() tea.Cmd {
-	return textinput.Blink
+	return tea.Batch(
+		textinput.Blink,
+		m.spinner.Tick,
+	)
 }
 
 func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
@@ -122,7 +149,6 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case resultMsg:
 		if msg.err != nil {
 			m.textError = msg.err.Error()
-
 			st, _ := status.FromError(msg.err)
 			if st.Code() == codes.PermissionDenied {
 				m.codeEmail = msg.emailCode
@@ -130,22 +156,25 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				m.form.email.Blur()
 				m.form.pass.Blur()
 				m.form.confirm.Focus()
-				m.page = confirmPage
+				m.activePage = confirmPage
 			}
+			m.isLoad = false
 			return m, clearErrorAfter(m.errorSeq)
 		}
 		switch msg.kind {
 		case "register":
 			m.codeEmail = msg.emailCode
-			m.page = confirmPage
+			m.activePage = confirmPage
 		case "confirm":
+			m.isLoad = true
 			return m, loginCmd(m.client, m.form.email.Value(), m.form.pass.Value())
 		case "login":
 			m.accessToken = msg.accessToken
 			m.refreshToken = msg.refreshToken
 			m.authUser = m.form.email.Value()
-			m = m.navigateTo(profilePage)
+			m = m.navigateTo(userPage)
 		}
+		m.isLoad = false
 		return m, nil
 
 	case tea.KeyPressMsg:
@@ -153,7 +182,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case "ctrl+c":
 			return m, tea.Quit
 		case "ctrl+q":
-			m.page = homePage
+			m.activePage = homePage
 			m.authUser = ""
 			m.accessToken = ""
 			return m, nil
@@ -164,12 +193,12 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			}
 			if len(m.history) > 1 {
 				m.history = m.history[:len(m.history)-1]
-				m.page = m.history[len(m.history)-1]
+				m.activePage = m.history[len(m.history)-1]
 			}
 			return m, nil
 		}
 
-		switch m.page {
+		switch m.activePage {
 		case registerPage:
 			return registerUpdate(msg, m)
 		case confirmPage:
@@ -178,20 +207,42 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return loginUpdate(msg, m)
 		case homePage:
 			return homeUpdate(msg, m)
+		case userPage:
+			return contentUpdate(msg, m)
 		}
+
+	default:
+		var (
+			cmd  tea.Cmd
+			cmds []tea.Cmd
+		)
+		m.spinner, cmd = m.spinner.Update(msg)
+		cmds = append(cmds, cmd)
+
+		switch {
+		case m.form.email.Focused():
+			m.form.email, cmd = m.form.email.Update(msg)
+		case m.form.pass.Focused():
+			m.form.pass, cmd = m.form.pass.Update(msg)
+		case m.form.confirm.Focused():
+			m.form.confirm, cmd = m.form.confirm.Update(msg)
+		}
+		cmds = append(cmds, cmd)
+		return m, tea.Batch(cmds...)
 	}
+
 	return m, nil
 }
 
 func (m model) View() tea.View {
 	var content string
-	s := headerView(cardWidth, "Go Keeper", breadcrumbView(m.page.String(), m.authUser)) + "\n"
-	s += dividerView(cardWidth) + lipgloss.NewStyle().MarginBottom(2).Render("\n")
+	s := headerView(m) + "\n"
+	s += dividerView() + lipgloss.NewStyle().MarginBottom(2).Render("\n")
 
 	s += mainView(m)
 
-	s += dividerView(cardWidth) + "\n"
-	s += footerView(cardWidth, "ctrl+c quit· ctrl+q logout · esc back · tab focus", "© Albert Taygibov")
+	s += dividerView() + "\n"
+	s += footerView()
 
 	content = s
 	centered := lipgloss.Place(m.width, m.height, lipgloss.Center, lipgloss.Center, content)
@@ -209,9 +260,9 @@ func clearErrorAfter(seq int) tea.Cmd {
 	})
 }
 
-func (m model) navigateTo(page pageType) model {
-	m.page = page
-	m.history = append(m.history, page)
+func (m model) navigateTo(activePage pageType) model {
+	m.activePage = activePage
+	m.history = append(m.history, activePage)
 
 	return m
 }
