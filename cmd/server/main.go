@@ -10,9 +10,9 @@ import (
 	"github.com/Albert-Ti/go-keeper/internal/interceptor"
 	"github.com/Albert-Ti/go-keeper/internal/repository"
 	"github.com/Albert-Ti/go-keeper/internal/service"
+	"google.golang.org/grpc"
 
 	pb "github.com/Albert-Ti/go-keeper/pkg/proto"
-	"google.golang.org/grpc"
 )
 
 func main() {

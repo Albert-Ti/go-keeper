@@ -17,8 +17,6 @@ func homeUpdate(msg tea.KeyPressMsg, m model) (model, tea.Cmd) {
 		}
 		return m, nil
 	case "enter", "space":
-		m.form.email.SetValue("")
-		m.form.pass.SetValue("")
 		return m.navigateTo(m.choices[m.cursor]), nil
 	}
 	return m, nil
@@ -50,6 +48,11 @@ func registerUpdate(msg tea.KeyPressMsg, m model) (model, tea.Cmd) {
 }
 
 func confirmUpdate(msg tea.KeyPressMsg, m model) (model, tea.Cmd) {
+	m.form.pass.Blur()
+	m.form.email.Blur()
+	m.form.confirm.Focus()
+	m.form.confirm.SetValue("")
+
 	switch msg.String() {
 	case "enter":
 		m.isLoad = true
@@ -86,7 +89,7 @@ func loginUpdate(msg tea.KeyPressMsg, m model) (model, tea.Cmd) {
 	return m, cmd
 }
 
-func contentUpdate(msg tea.KeyPressMsg, m model) (model, tea.Cmd) {
+func userUpdate(msg tea.KeyPressMsg, m model) (model, tea.Cmd) {
 	switch msg.String() {
 	case "left", "h":
 		if m.activeTab > 0 {
@@ -96,6 +99,26 @@ func contentUpdate(msg tea.KeyPressMsg, m model) (model, tea.Cmd) {
 		if int(m.activeTab) < len(m.allTabs)-1 {
 			m.activeTab++
 		}
+	}
+	switch m.activeTab {
+	case tabProfile:
+		cmd := getProfileCmd(m.client, m.accessToken)
+		switch msg.String() {
+		case "up":
+			if len(m.user) > 0 {
+				m.cursor--
+			}
+		case "down":
+			if m.cursor < len(m.user)-1 {
+				m.cursor++
+			}
+		case "enter":
+		}
+		m.isLoad = true
+		return m, cmd
+	case tabCards:
+		return m, getCardsCmd(m.client, m.accessToken)
+	case tabData:
 	}
 
 	return m, nil

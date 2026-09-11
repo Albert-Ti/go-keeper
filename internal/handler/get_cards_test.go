@@ -15,7 +15,8 @@ import (
 	"google.golang.org/grpc/status"
 )
 
-func TestLogin(t *testing.T) {
+func TestGetCards(t *testing.T) {
+
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 	mockRepo := mocks.NewMockRepository(ctrl)
@@ -35,8 +36,8 @@ func TestLogin(t *testing.T) {
 			name:     "Success",
 			wantCode: codes.OK,
 			setupMock: func(mock *mocks.MockRepository) {
-				mock.EXPECT().GetUserByEmail(gomock.Any(), "example@mail.com").
-					Return(models.User{}, nil)
+				mock.EXPECT().GetCards(gomock.Any(), gomock.Any()).
+					Return([]models.Card{}, nil)
 			},
 		},
 	}
@@ -45,12 +46,12 @@ func TestLogin(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			tt.setupMock(mockRepo)
 
-			req := pb.LoginRequest_builder{Email: "example@mail.com", Password: "12345"}.Build()
-			_, err := client.Login(context.Background(), req)
+			_, err := client.GetCards(context.Background(), &pb.CardsRequest{})
 
 			st, ok := status.FromError(err)
 			require.True(t, ok)
 			require.Equal(t, tt.wantCode, st.Code())
 		})
 	}
+
 }

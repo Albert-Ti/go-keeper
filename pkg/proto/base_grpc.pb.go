@@ -2,7 +2,7 @@
 // versions:
 // - protoc-gen-go-grpc v1.6.2
 // - protoc             v7.35.1
-// source: pkg/proto/base.proto
+// source: base.proto
 
 package proto
 
@@ -19,9 +19,12 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	GoKeeperService_Register_FullMethodName     = "/gokeeper.GoKeeperService/Register"
-	GoKeeperService_Login_FullMethodName        = "/gokeeper.GoKeeperService/Login"
-	GoKeeperService_ConfirmEmail_FullMethodName = "/gokeeper.GoKeeperService/ConfirmEmail"
+	GoKeeperService_Register_FullMethodName       = "/gokeeper.GoKeeperService/Register"
+	GoKeeperService_Login_FullMethodName          = "/gokeeper.GoKeeperService/Login"
+	GoKeeperService_ConfirmEmail_FullMethodName   = "/gokeeper.GoKeeperService/ConfirmEmail"
+	GoKeeperService_GetProfile_FullMethodName     = "/gokeeper.GoKeeperService/GetProfile"
+	GoKeeperService_UpdatePassword_FullMethodName = "/gokeeper.GoKeeperService/UpdatePassword"
+	GoKeeperService_GetCards_FullMethodName       = "/gokeeper.GoKeeperService/GetCards"
 )
 
 // GoKeeperServiceClient is the client API for GoKeeperService service.
@@ -31,6 +34,9 @@ type GoKeeperServiceClient interface {
 	Register(ctx context.Context, in *RegisterRequest, opts ...grpc.CallOption) (*RegisterResponse, error)
 	Login(ctx context.Context, in *LoginRequest, opts ...grpc.CallOption) (*LoginResponse, error)
 	ConfirmEmail(ctx context.Context, in *ConfirmEmailRequest, opts ...grpc.CallOption) (*ConfirmEmailResponse, error)
+	GetProfile(ctx context.Context, in *ProfileRequest, opts ...grpc.CallOption) (*ProfileResponse, error)
+	UpdatePassword(ctx context.Context, in *PasswordRequest, opts ...grpc.CallOption) (*PasswordResponse, error)
+	GetCards(ctx context.Context, in *CardsRequest, opts ...grpc.CallOption) (*CardsResponse, error)
 }
 
 type goKeeperServiceClient struct {
@@ -71,6 +77,36 @@ func (c *goKeeperServiceClient) ConfirmEmail(ctx context.Context, in *ConfirmEma
 	return out, nil
 }
 
+func (c *goKeeperServiceClient) GetProfile(ctx context.Context, in *ProfileRequest, opts ...grpc.CallOption) (*ProfileResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(ProfileResponse)
+	err := c.cc.Invoke(ctx, GoKeeperService_GetProfile_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *goKeeperServiceClient) UpdatePassword(ctx context.Context, in *PasswordRequest, opts ...grpc.CallOption) (*PasswordResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(PasswordResponse)
+	err := c.cc.Invoke(ctx, GoKeeperService_UpdatePassword_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *goKeeperServiceClient) GetCards(ctx context.Context, in *CardsRequest, opts ...grpc.CallOption) (*CardsResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(CardsResponse)
+	err := c.cc.Invoke(ctx, GoKeeperService_GetCards_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // GoKeeperServiceServer is the server API for GoKeeperService service.
 // All implementations must embed UnimplementedGoKeeperServiceServer
 // for forward compatibility.
@@ -78,6 +114,9 @@ type GoKeeperServiceServer interface {
 	Register(context.Context, *RegisterRequest) (*RegisterResponse, error)
 	Login(context.Context, *LoginRequest) (*LoginResponse, error)
 	ConfirmEmail(context.Context, *ConfirmEmailRequest) (*ConfirmEmailResponse, error)
+	GetProfile(context.Context, *ProfileRequest) (*ProfileResponse, error)
+	UpdatePassword(context.Context, *PasswordRequest) (*PasswordResponse, error)
+	GetCards(context.Context, *CardsRequest) (*CardsResponse, error)
 	mustEmbedUnimplementedGoKeeperServiceServer()
 }
 
@@ -96,6 +135,15 @@ func (UnimplementedGoKeeperServiceServer) Login(context.Context, *LoginRequest) 
 }
 func (UnimplementedGoKeeperServiceServer) ConfirmEmail(context.Context, *ConfirmEmailRequest) (*ConfirmEmailResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method ConfirmEmail not implemented")
+}
+func (UnimplementedGoKeeperServiceServer) GetProfile(context.Context, *ProfileRequest) (*ProfileResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method GetProfile not implemented")
+}
+func (UnimplementedGoKeeperServiceServer) UpdatePassword(context.Context, *PasswordRequest) (*PasswordResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method UpdatePassword not implemented")
+}
+func (UnimplementedGoKeeperServiceServer) GetCards(context.Context, *CardsRequest) (*CardsResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method GetCards not implemented")
 }
 func (UnimplementedGoKeeperServiceServer) mustEmbedUnimplementedGoKeeperServiceServer() {}
 func (UnimplementedGoKeeperServiceServer) testEmbeddedByValue()                         {}
@@ -172,6 +220,60 @@ func _GoKeeperService_ConfirmEmail_Handler(srv interface{}, ctx context.Context,
 	return interceptor(ctx, in, info, handler)
 }
 
+func _GoKeeperService_GetProfile_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ProfileRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(GoKeeperServiceServer).GetProfile(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: GoKeeperService_GetProfile_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(GoKeeperServiceServer).GetProfile(ctx, req.(*ProfileRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _GoKeeperService_UpdatePassword_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(PasswordRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(GoKeeperServiceServer).UpdatePassword(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: GoKeeperService_UpdatePassword_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(GoKeeperServiceServer).UpdatePassword(ctx, req.(*PasswordRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _GoKeeperService_GetCards_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(CardsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(GoKeeperServiceServer).GetCards(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: GoKeeperService_GetCards_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(GoKeeperServiceServer).GetCards(ctx, req.(*CardsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // GoKeeperService_ServiceDesc is the grpc.ServiceDesc for GoKeeperService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -191,7 +293,19 @@ var GoKeeperService_ServiceDesc = grpc.ServiceDesc{
 			MethodName: "ConfirmEmail",
 			Handler:    _GoKeeperService_ConfirmEmail_Handler,
 		},
+		{
+			MethodName: "GetProfile",
+			Handler:    _GoKeeperService_GetProfile_Handler,
+		},
+		{
+			MethodName: "UpdatePassword",
+			Handler:    _GoKeeperService_UpdatePassword_Handler,
+		},
+		{
+			MethodName: "GetCards",
+			Handler:    _GoKeeperService_GetCards_Handler,
+		},
 	},
 	Streams:  []grpc.StreamDesc{},
-	Metadata: "pkg/proto/base.proto",
+	Metadata: "base.proto",
 }

@@ -8,8 +8,7 @@ import (
 )
 
 func dividerView() string {
-	return lipgloss.NewStyle().
-		Foreground(colorMuted).Render(strings.Repeat("─", cardWidth))
+	return lipgloss.NewStyle().Faint(true).Render(strings.Repeat("─", cardWidth))
 }
 
 func headerView(m model) string {
@@ -33,13 +32,24 @@ func headerView(m model) string {
 
 func mainView(m model) string {
 	s := ""
+
+	if len(m.history) > 1 {
+		s += lipgloss.NewStyle().
+			Width(cardWidth).     // Устанавливаем ширину как у карточки
+			Align(lipgloss.Left). // Прижимаем к левому краю
+			Faint(true).
+			Render("← "+m.history[len(m.history)-2].String()) + "\n\n"
+	}
+
 	if m.activePage == homePage {
+		s += "\n\n"
+		s += "Welcome to the Go Keeper project! version 1.0.0\n\n\n"
 		for i, choice := range m.choices {
 			label := choice.String()
 			if i == m.cursor {
-				s += "* " + lipgloss.NewStyle().Foreground(colorText).Render(label)
+				s += "> " + lipgloss.NewStyle().Render(label)
 			} else {
-				s += "  " + lipgloss.NewStyle().Foreground(colorText).Render(label)
+				s += "  " + lipgloss.NewStyle().Render(label)
 			}
 			s += "\n\n"
 		}
@@ -68,25 +78,36 @@ func mainView(m model) string {
 		s += "\n\n"
 		switch m.activeTab {
 		case tabProfile:
-			s += "PROFILE\n"
+			// for key, value := range m.user {
+			// 	s += key + ": " + value + "\n"
+			// }
+			// s += contentView("Email: "+m.authUser+"\nPassword: *******\n") + "\n"
 		case tabCards:
-			s += "CARDS\n"
+			if len(m.cards) > 0 {
+				s += "CARDS\n"
+			} else {
+				s += "NO CARDS\n"
+			}
 		case tabData:
 			s += "DATA\n"
 		}
-
 	}
 
 	if m.textError != "" {
-		s += errorStyle.Width(cardWidth).Align(lipgloss.Center).Render(m.textError) + "\n"
-	} else {
-		s += "\n"
+		s += "\n" + errorStyle.Width(cardWidth).Align(lipgloss.Center).Render(m.textError) + "\n"
 	}
+
+	// Добавляем пустые строки, чтобы заполнить пространство
+	currentHeight := lipgloss.Height(s)
+	if currentHeight < minHeight {
+		s += strings.Repeat("\n", minHeight-currentHeight)
+	}
+
 	return s
 }
 
 func footerView() string {
-	leftRendered := lipgloss.NewStyle().Foreground(colorText).Faint(true).
+	leftRendered := lipgloss.NewStyle().Faint(true).
 		Render("ctrl+c quit· ctrl+q logout · esc back · tab focus")
 
 	rightRendered := lipgloss.NewStyle().Foreground(colorPrimary).Render("© Albert Taygibov")
@@ -113,4 +134,8 @@ func fieldView(label string, input textinput.Model) string {
 		box = inputBoxFocused
 	}
 	return labelStyle.Render(label) + "\n" + box.Render(input.View())
+}
+
+func contentView(str string) string {
+	return lipgloss.NewStyle().MarginTop(1).PaddingLeft(3).Width(cardWidth).Align(lipgloss.Left).Render(str)
 }

@@ -2,6 +2,7 @@ package interceptor
 
 import (
 	"context"
+	"errors"
 
 	mytoken "github.com/Albert-Ti/go-keeper/internal/token"
 	"github.com/golang-jwt/jwt/v5"
@@ -63,4 +64,13 @@ func Auth(secretKey string) grpc.UnaryServerInterceptor {
 		ctx = context.WithValue(ctx, UserIDKey, authorizedUserID)
 		return handler(ctx, req)
 	}
+}
+
+// GetAuthUserID извлекает идентификатор пользователя.
+func GetAuthUserID(ctx context.Context) (string, error) {
+	userID, ok := ctx.Value(UserIDKey).(string)
+	if !ok || userID == "" {
+		return "", errors.New("user id not found")
+	}
+	return userID, nil
 }

@@ -1,5 +1,7 @@
 package models
 
+import "time"
+
 type User struct {
 	UUID           string
 	Email          string
@@ -13,4 +15,16 @@ type UpdateUserParams struct {
 	EmailCode      *string
 	IsConfirmEmail *bool
 	Password       *string
+}
+
+type Profile struct {
+	Email     string
+	Password  string
+	CreatedAt time.Time
+}
+
+type Card struct {
+	CardNumber string
+	Active     bool
+	ExpiryDate time.Time
 }

@@ -55,19 +55,49 @@ func (mr *MockRepositoryMockRecorder) AddUser(ctx, email, code, password any) *g
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddUser", reflect.TypeOf((*MockRepository)(nil).AddUser), ctx, email, code, password)
 }
 
-// GetUser mocks base method.
-func (m *MockRepository) GetUser(ctx context.Context, email string) (models.User, error) {
+// GetCards mocks base method.
+func (m *MockRepository) GetCards(ctx context.Context, uuid string) ([]models.Card, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetUser", ctx, email)
+	ret := m.ctrl.Call(m, "GetCards", ctx, uuid)
+	ret0, _ := ret[0].([]models.Card)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetCards indicates an expected call of GetCards.
+func (mr *MockRepositoryMockRecorder) GetCards(ctx, uuid any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetCards", reflect.TypeOf((*MockRepository)(nil).GetCards), ctx, uuid)
+}
+
+// GetUserByEmail mocks base method.
+func (m *MockRepository) GetUserByEmail(ctx context.Context, email string) (models.User, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetUserByEmail", ctx, email)
 	ret0, _ := ret[0].(models.User)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// GetUser indicates an expected call of GetUser.
-func (mr *MockRepositoryMockRecorder) GetUser(ctx, email any) *gomock.Call {
+// GetUserByEmail indicates an expected call of GetUserByEmail.
+func (mr *MockRepositoryMockRecorder) GetUserByEmail(ctx, email any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetUser", reflect.TypeOf((*MockRepository)(nil).GetUser), ctx, email)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetUserByEmail", reflect.TypeOf((*MockRepository)(nil).GetUserByEmail), ctx, email)
+}
+
+// GetUserByID mocks base method.
+func (m *MockRepository) GetUserByID(ctx context.Context, uuid string) (models.Profile, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetUserByID", ctx, uuid)
+	ret0, _ := ret[0].(models.Profile)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetUserByID indicates an expected call of GetUserByID.
+func (mr *MockRepositoryMockRecorder) GetUserByID(ctx, uuid any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetUserByID", reflect.TypeOf((*MockRepository)(nil).GetUserByID), ctx, uuid)
 }
 
 // UpdateUser mocks base method.

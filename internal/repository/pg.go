@@ -50,7 +50,7 @@ func (pg *PGStorage) AddUser(ctx context.Context, email, code, password string) 
 	return nil
 }
 
-func (pg *PGStorage) GetUser(ctx context.Context, email string) (models.User, error) {
+func (pg *PGStorage) GetUserByEmail(ctx context.Context, email string) (models.User, error) {
 	sql := `
 	SELECT uuid, email, email_code, is_confirm_email, password 
 	FROM users 
@@ -68,6 +68,27 @@ func (pg *PGStorage) GetUser(ctx context.Context, email string) (models.User, er
 
 	if err != nil {
 		return models.User{}, err
+	}
+
+	return user, nil
+}
+
+func (pg *PGStorage) GetUserByID(ctx context.Context, uuid string) (models.Profile, error) {
+	sql := `
+	SELECT email, password, created_at
+	FROM users 
+	WHERE uuid = $1
+	`
+	var user models.Profile
+
+	err := pg.pool.QueryRow(ctx, sql, uuid).Scan(
+		&user.Email,
+		&user.Password,
+		&user.CreatedAt,
+	)
+
+	if err != nil {
+		return models.Profile{}, err
 	}
 
 	return user, nil
@@ -107,4 +128,28 @@ func (pg *PGStorage) UpdateUser(ctx context.Context, p models.UpdateUserParams) 
 
 	_, err := pg.pool.Exec(ctx, query, args...)
 	return err
+}
+
+func (pg *PGStorage) GetCards(ctx context.Context, uuid string) ([]models.Card, error) {
+	sql := `
+	SELECT card_number, active, expiry_date
+	FROM bank_cards 
+	WHERE user_uuid = $1
+	`
+	rows, err := pg.pool.Query(ctx, sql, uuid)
+	if err != nil {
+		return nil, err
+	}
+
+	var list []models.Card
+	for rows.Next() {
+		var card models.Card
+		err := rows.Scan(&card.CardNumber, &card.Active, &card.ExpiryDate)
+		if err != nil {
+			return nil, err
+		}
+		list = append(list, card)
+	}
+
+	return list, nil
 }

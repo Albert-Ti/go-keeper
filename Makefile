@@ -1,8 +1,10 @@
 DB_URL = postgres://postgres:postgres@localhost:5432/db?sslmode=disable
 RUN_PATH = cmd/server/main.go
 MIGRATIONS_PATH = ./migrations
+PROTO_DIR := pkg/proto
+PROTO_FILES := $(wildcard $(PROTO_DIR)/*.proto)
 
-.PHONY: run ping test migrate-up migrate-down migrate-create
+.PHONY: run ping test migrate-up migrate-down migrate-create protoc
 
 # Использование: make run-pg RACE=1 (Запуск сервера или теста с флагом -race)
 RACE_FLAG :=
@@ -76,12 +78,13 @@ docker-volume-rm:
 # ---------------------- PROTOBUF
 protoc:
 	protoc \
-  --go_out=. --go_opt=paths=source_relative \
-  --go-grpc_out=. --go-grpc_opt=paths=source_relative \
-  --go_opt=default_api_level=API_OPAQUE \
-	-I . \
-  pkg/proto/base.proto
-
+		--go_out=$(PROTO_DIR) \
+		--go_opt=paths=source_relative \
+		--go_opt=default_api_level=API_OPAQUE \
+		--go-grpc_out=$(PROTO_DIR) \
+		--go-grpc_opt=paths=source_relative \
+		-I $(PROTO_DIR) \
+		$(PROTO_FILES)
 
 # ---------------------- MOCKGEN
 # Сгенерировать моки репозитория через mockgen

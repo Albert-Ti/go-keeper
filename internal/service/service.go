@@ -61,7 +61,7 @@ func (s *Service) Register(ctx context.Context, email, password string) error {
 }
 
 func (s *Service) Login(ctx context.Context, email string, password string) (models.User, error) {
-	user, err := s.repo.GetUser(ctx, email)
+	user, err := s.repo.GetUserByEmail(ctx, email)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return models.User{}, ErrNoRows
@@ -88,7 +88,7 @@ func (s *Service) Login(ctx context.Context, email string, password string) (mod
 }
 
 func (s *Service) ConfirmEmail(ctx context.Context, email, code string) error {
-	user, err := s.repo.GetUser(ctx, email)
+	user, err := s.repo.GetUserByEmail(ctx, email)
 	if err != nil {
 		return err
 	}
@@ -103,6 +103,23 @@ func (s *Service) ConfirmEmail(ctx context.Context, email, code string) error {
 	}
 
 	return nil
+}
+
+func (s *Service) GetProfile(ctx context.Context, uuid string) (models.Profile, error) {
+	user, err := s.repo.GetUserByID(ctx, uuid)
+	if err != nil {
+		return models.Profile{}, err
+	}
+
+	return user, nil
+}
+
+func (s *Service) UpdatePassword(ctx context.Context, uuid string) error {
+	return nil
+}
+
+func (s *Service) GetCards(ctx context.Context, uuid string) ([]models.Card, error) {
+	return s.repo.GetCards(ctx, uuid)
 }
 
 func (s *Service) sendEmailCode(ctx context.Context, email, code string) error {

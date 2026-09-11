@@ -7,6 +7,9 @@ import (
 
 const cardWidth = 80
 
+// Устанавливаем минимальную высоту для контента
+const minHeight = 15
+
 // Color
 var (
 	colorPrimary     = lipgloss.Color("212") // розовый — акцент на активном поле
@@ -52,7 +55,7 @@ func newStyledInput(placeholder string, isPassword bool) textinput.Model {
 
 	s := t.Styles()
 	s.Focused.Prompt = lipgloss.NewStyle().Foreground(colorPrimary)
-	s.Focused.Text = lipgloss.NewStyle().Foreground(colorText)
+	s.Focused.Text = lipgloss.NewStyle().Foreground(colorPrimary)
 	s.Focused.Placeholder = lipgloss.NewStyle().Foreground(colorPlaceholder)
 	s.Blurred.Prompt = lipgloss.NewStyle().Foreground(colorMuted)
 	s.Blurred.Text = lipgloss.NewStyle().Foreground(colorMuted)

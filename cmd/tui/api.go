@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"time"
 
 	tea "charm.land/bubbletea/v2"
 	pb "github.com/Albert-Ti/go-keeper/pkg/proto"
@@ -10,11 +11,16 @@ import (
 )
 
 type resultMsg struct {
-	err          error
-	kind         string
-	emailCode    string
+	err  error
+	kind string
+
+	emailCode string
+
 	accessToken  string
 	refreshToken string
+
+	cards []*pb.CardData
+	user  map[string]string
 }
 
 func registerCmd(client pb.GoKeeperServiceClient, email, pass string) tea.Cmd {
@@ -63,8 +69,43 @@ func loginCmd(client pb.GoKeeperServiceClient, email, pass string) tea.Cmd {
 				emailCode = values[0]
 			}
 			return resultMsg{err: err, kind: "login", emailCode: emailCode}
-
 		}
-		return resultMsg{kind: "login", accessToken: resp.GetAccessToken()}
+		return resultMsg{
+			kind:         "login",
+			accessToken:  resp.GetAccessToken(),
+			refreshToken: resp.GetRefreshToken(),
+		}
+	}
+}
+
+func getProfileCmd(client pb.GoKeeperServiceClient, token string) tea.Cmd {
+	return func() tea.Msg {
+		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+		defer cancel()
+		ctx = metadata.AppendToOutgoingContext(ctx, "authorization", token)
+
+		resp, err := client.GetProfile(ctx, &pb.ProfileRequest{})
+		if err != nil {
+			return resultMsg{err: err, kind: "profile"}
+		}
+		return resultMsg{err: err, kind: "profile", user: map[string]string{
+			"email":    resp.GetEmail(),
+			"password": "*******",
+			"date":     resp.GetCreatedAt(),
+		}}
+	}
+}
+
+func getCardsCmd(client pb.GoKeeperServiceClient, token string) tea.Cmd {
+	return func() tea.Msg {
+		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+		defer cancel()
+		ctx = metadata.AppendToOutgoingContext(ctx, "authorization", token)
+
+		resp, err := client.GetCards(ctx, &pb.CardsRequest{})
+		if err != nil {
+			return resultMsg{err: err, kind: "cards"}
+		}
+		return resultMsg{err: err, kind: "cards", cards: resp.GetCards()}
 	}
 }

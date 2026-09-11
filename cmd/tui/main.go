@@ -91,6 +91,8 @@ type model struct {
 	codeEmail    string
 	accessToken  string
 	refreshToken string
+	user         map[string]string
+	cards        []*pb.CardData
 
 	isLoad  bool
 	spinner spinner.Model
@@ -112,8 +114,9 @@ func NewModel(client pb.GoKeeperServiceClient) model {
 	return model{
 		client:     client,
 		activePage: homePage,
+		activeTab:  tabProfile,
 		history:    []pageType{homePage},
-		choices:    []pageType{registerPage, loginPage},
+		choices:    []pageType{loginPage, registerPage},
 		allTabs:    []tabType{tabProfile, tabCards, tabData},
 		form: Form{
 			email:   email,
@@ -121,6 +124,7 @@ func NewModel(client pb.GoKeeperServiceClient) model {
 			confirm: confirm,
 		},
 		spinner: s,
+		cards:   []*pb.CardData{},
 	}
 }
 
@@ -145,46 +149,55 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 		return m, nil
 
-	// обработка ответа API(успех или ошибка)
+	// обработка ответа API
 	case resultMsg:
+		// в случае ошибки
 		if msg.err != nil {
 			m.textError = msg.err.Error()
 			st, _ := status.FromError(msg.err)
-			if st.Code() == codes.PermissionDenied {
-				m.codeEmail = msg.emailCode
-				m.form.confirm.SetValue("")
-				m.form.email.Blur()
-				m.form.pass.Blur()
-				m.form.confirm.Focus()
-				m.activePage = confirmPage
+			switch msg.kind {
+			case "login":
+				if st.Code() == codes.PermissionDenied {
+					m.codeEmail = msg.emailCode
+					m.activePage = confirmPage
+				}
+				m.isLoad = false
+			case "profile":
+				m.activePage = homePage
+				m.isLoad = false
+				return m, clearErrorAfter(m.errorSeq)
 			}
 			m.isLoad = false
 			return m, clearErrorAfter(m.errorSeq)
+			// в случае успеха
+		} else {
+			switch msg.kind {
+			case "register":
+				m.codeEmail = msg.emailCode
+				m.activePage = confirmPage
+			case "confirm":
+				m.isLoad = true
+				return m, loginCmd(m.client, m.form.email.Value(), m.form.pass.Value())
+			case "login":
+				m.accessToken = msg.accessToken
+				m.refreshToken = msg.refreshToken
+				m.authUser = m.form.email.Value()
+				m = m.navigateTo(userPage)
+			case "profile":
+				m.user = msg.user
+			case "cards":
+				m.cards = msg.cards
+			}
+			m.isLoad = false
+			return m, nil
 		}
-		switch msg.kind {
-		case "register":
-			m.codeEmail = msg.emailCode
-			m.activePage = confirmPage
-		case "confirm":
-			m.isLoad = true
-			return m, loginCmd(m.client, m.form.email.Value(), m.form.pass.Value())
-		case "login":
-			m.accessToken = msg.accessToken
-			m.refreshToken = msg.refreshToken
-			m.authUser = m.form.email.Value()
-			m = m.navigateTo(userPage)
-		}
-		m.isLoad = false
-		return m, nil
 
 	case tea.KeyPressMsg:
 		switch msg.String() {
 		case "ctrl+c":
 			return m, tea.Quit
 		case "ctrl+q":
-			m.activePage = homePage
-			m.authUser = ""
-			m.accessToken = ""
+			m.Reset()
 			return m, nil
 		case "esc":
 			if m.authUser != "" {
@@ -208,7 +221,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case homePage:
 			return homeUpdate(msg, m)
 		case userPage:
-			return contentUpdate(msg, m)
+			return userUpdate(msg, m)
 		}
 
 	default:
@@ -237,7 +250,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 func (m model) View() tea.View {
 	var content string
 	s := headerView(m) + "\n"
-	s += dividerView() + lipgloss.NewStyle().MarginBottom(2).Render("\n")
+	s += dividerView() + lipgloss.NewStyle().Render("\n")
 
 	s += mainView(m)
 
@@ -248,6 +261,24 @@ func (m model) View() tea.View {
 	centered := lipgloss.Place(m.width, m.height, lipgloss.Center, lipgloss.Center, content)
 
 	return tea.NewView(centered)
+}
+
+func (m *model) Reset() {
+	m.activePage = homePage
+	m.history = []pageType{homePage}
+
+	m.authUser = ""
+	m.accessToken = ""
+	m.refreshToken = ""
+	m.codeEmail = ""
+	m.cards = []*pb.CardData{}
+
+	m.form.email.Focus()
+	m.form.pass.Blur()
+	m.form.confirm.Blur()
+	m.form.email.SetValue("")
+	m.form.pass.SetValue("")
+	m.form.confirm.SetValue("")
 }
 
 type clearErrorMsg struct {
