@@ -153,3 +153,18 @@ func (pg *PGStorage) GetCards(ctx context.Context, uuid string) ([]models.Card, 
 
 	return list, nil
 }
+
+func (pg *PGStorage) CreateCard(ctx context.Context, number string, date time.Time) error {
+	sql := `
+	INSERT INTO bank_cards (card_number, expiry_date, active)
+	VALUES ($1, $2, $3)
+	`
+
+	_, err := pg.pool.Exec(ctx, sql, number, date, true)
+
+	if err != nil {
+		return err
+	}
+
+	return nil
+}

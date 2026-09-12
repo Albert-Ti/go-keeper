@@ -27,7 +27,8 @@ const file_base_proto_rawDesc = "" +
 	"\n" +
 	"base.proto\x12\bgokeeper\x1a\n" +
 	"auth.proto\x1a\n" +
-	"user.proto2\xa6\x03\n" +
+	"user.proto\x1a\n" +
+	"card.proto2\xef\x03\n" +
 	"\x0fGoKeeperService\x12A\n" +
 	"\bRegister\x12\x19.gokeeper.RegisterRequest\x1a\x1a.gokeeper.RegisterResponse\x128\n" +
 	"\x05Login\x12\x16.gokeeper.LoginRequest\x1a\x17.gokeeper.LoginResponse\x12M\n" +
@@ -35,7 +36,9 @@ const file_base_proto_rawDesc = "" +
 	"\n" +
 	"GetProfile\x12\x18.gokeeper.ProfileRequest\x1a\x19.gokeeper.ProfileResponse\x12G\n" +
 	"\x0eUpdatePassword\x12\x19.gokeeper.PasswordRequest\x1a\x1a.gokeeper.PasswordResponse\x12;\n" +
-	"\bGetCards\x12\x16.gokeeper.CardsRequest\x1a\x17.gokeeper.CardsResponseB*Z(github.com/Albert-Ti/go-keeper/pkg/protob\x06proto3"
+	"\bGetCards\x12\x16.gokeeper.CardsRequest\x1a\x17.gokeeper.CardsResponse\x12G\n" +
+	"\n" +
+	"CreateCard\x12\x1b.gokeeper.CreateCardRequest\x1a\x1c.gokeeper.CreateCardResponseB*Z(github.com/Albert-Ti/go-keeper/pkg/protob\x06proto3"
 
 var file_base_proto_goTypes = []any{
 	(*RegisterRequest)(nil),      // 0: gokeeper.RegisterRequest
@@ -44,12 +47,14 @@ var file_base_proto_goTypes = []any{
 	(*ProfileRequest)(nil),       // 3: gokeeper.ProfileRequest
 	(*PasswordRequest)(nil),      // 4: gokeeper.PasswordRequest
 	(*CardsRequest)(nil),         // 5: gokeeper.CardsRequest
-	(*RegisterResponse)(nil),     // 6: gokeeper.RegisterResponse
-	(*LoginResponse)(nil),        // 7: gokeeper.LoginResponse
-	(*ConfirmEmailResponse)(nil), // 8: gokeeper.ConfirmEmailResponse
-	(*ProfileResponse)(nil),      // 9: gokeeper.ProfileResponse
-	(*PasswordResponse)(nil),     // 10: gokeeper.PasswordResponse
-	(*CardsResponse)(nil),        // 11: gokeeper.CardsResponse
+	(*CreateCardRequest)(nil),    // 6: gokeeper.CreateCardRequest
+	(*RegisterResponse)(nil),     // 7: gokeeper.RegisterResponse
+	(*LoginResponse)(nil),        // 8: gokeeper.LoginResponse
+	(*ConfirmEmailResponse)(nil), // 9: gokeeper.ConfirmEmailResponse
+	(*ProfileResponse)(nil),      // 10: gokeeper.ProfileResponse
+	(*PasswordResponse)(nil),     // 11: gokeeper.PasswordResponse
+	(*CardsResponse)(nil),        // 12: gokeeper.CardsResponse
+	(*CreateCardResponse)(nil),   // 13: gokeeper.CreateCardResponse
 }
 var file_base_proto_depIdxs = []int32{
 	0,  // 0: gokeeper.GoKeeperService.Register:input_type -> gokeeper.RegisterRequest
@@ -58,14 +63,16 @@ var file_base_proto_depIdxs = []int32{
 	3,  // 3: gokeeper.GoKeeperService.GetProfile:input_type -> gokeeper.ProfileRequest
 	4,  // 4: gokeeper.GoKeeperService.UpdatePassword:input_type -> gokeeper.PasswordRequest
 	5,  // 5: gokeeper.GoKeeperService.GetCards:input_type -> gokeeper.CardsRequest
-	6,  // 6: gokeeper.GoKeeperService.Register:output_type -> gokeeper.RegisterResponse
-	7,  // 7: gokeeper.GoKeeperService.Login:output_type -> gokeeper.LoginResponse
-	8,  // 8: gokeeper.GoKeeperService.ConfirmEmail:output_type -> gokeeper.ConfirmEmailResponse
-	9,  // 9: gokeeper.GoKeeperService.GetProfile:output_type -> gokeeper.ProfileResponse
-	10, // 10: gokeeper.GoKeeperService.UpdatePassword:output_type -> gokeeper.PasswordResponse
-	11, // 11: gokeeper.GoKeeperService.GetCards:output_type -> gokeeper.CardsResponse
-	6,  // [6:12] is the sub-list for method output_type
-	0,  // [0:6] is the sub-list for method input_type
+	6,  // 6: gokeeper.GoKeeperService.CreateCard:input_type -> gokeeper.CreateCardRequest
+	7,  // 7: gokeeper.GoKeeperService.Register:output_type -> gokeeper.RegisterResponse
+	8,  // 8: gokeeper.GoKeeperService.Login:output_type -> gokeeper.LoginResponse
+	9,  // 9: gokeeper.GoKeeperService.ConfirmEmail:output_type -> gokeeper.ConfirmEmailResponse
+	10, // 10: gokeeper.GoKeeperService.GetProfile:output_type -> gokeeper.ProfileResponse
+	11, // 11: gokeeper.GoKeeperService.UpdatePassword:output_type -> gokeeper.PasswordResponse
+	12, // 12: gokeeper.GoKeeperService.GetCards:output_type -> gokeeper.CardsResponse
+	13, // 13: gokeeper.GoKeeperService.CreateCard:output_type -> gokeeper.CreateCardResponse
+	7,  // [7:14] is the sub-list for method output_type
+	0,  // [0:7] is the sub-list for method input_type
 	0,  // [0:0] is the sub-list for extension type_name
 	0,  // [0:0] is the sub-list for extension extendee
 	0,  // [0:0] is the sub-list for field type_name
@@ -78,6 +85,7 @@ func file_base_proto_init() {
 	}
 	file_auth_proto_init()
 	file_user_proto_init()
+	file_card_proto_init()
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{

@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"errors"
 	"strings"
+	"time"
 
 	"github.com/Albert-Ti/go-keeper/internal/config"
 	"github.com/Albert-Ti/go-keeper/internal/email"
@@ -120,6 +121,10 @@ func (s *Service) UpdatePassword(ctx context.Context, uuid string) error {
 
 func (s *Service) GetCards(ctx context.Context, uuid string) ([]models.Card, error) {
 	return s.repo.GetCards(ctx, uuid)
+}
+
+func (s *Service) CreateCard(ctx context.Context, number string, expiry time.Time) error {
+	return s.repo.CreateCard(ctx, number, expiry)
 }
 
 func (s *Service) sendEmailCode(ctx context.Context, email, code string) error {

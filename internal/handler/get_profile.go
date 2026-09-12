@@ -7,6 +7,7 @@ import (
 	pb "github.com/Albert-Ti/go-keeper/pkg/proto"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
+	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
 func (g *GrpcServer) GetProfile(ctx context.Context, in *pb.ProfileRequest) (*pb.ProfileResponse, error) {
@@ -21,8 +22,9 @@ func (g *GrpcServer) GetProfile(ctx context.Context, in *pb.ProfileRequest) (*pb
 	}
 
 	response := pb.ProfileResponse_builder{
-		Email:    profile.Email,
-		Password: profile.Password,
+		Email:     profile.Email,
+		Password:  profile.Password,
+		CreatedAt: timestamppb.New(profile.CreatedAt),
 	}.Build()
 
 	return response, nil

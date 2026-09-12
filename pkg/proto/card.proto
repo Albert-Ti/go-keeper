@@ -1,0 +1,26 @@
+syntax = "proto3";
+
+package gokeeper;
+
+option go_package = "github.com/Albert-Ti/go-keeper/pkg/proto";
+
+import "google/protobuf/timestamp.proto";
+
+message CardsRequest {}
+
+message CardData {
+  string card_number = 1;
+  bool active = 2;
+  google.protobuf.Timestamp expiry_date = 3;
+}
+
+message CardsResponse {
+  repeated CardData cards = 1;
+}
+
+message CreateCardRequest {
+  string card_number = 1;
+  string expiry_date = 2;
+}
+
+message CreateCardResponse {}

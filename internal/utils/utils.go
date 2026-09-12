@@ -11,12 +11,6 @@ import (
 	"strings"
 )
 
-var GenerateUUID = func() string {
-	key := make([]byte, 9)
-	rand.Read(key)
-	return base64.RawURLEncoding.EncodeToString(key)
-}
-
 var GenerateCodeEmail = func() string {
 	const letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
 	const length = 5
@@ -27,20 +21,6 @@ var GenerateCodeEmail = func() string {
 		result[i] = letters[n.Int64()]
 	}
 	return string(result)
-}
-
-func GenerateMockUUID() func() {
-	original := GenerateUUID
-	counter := 0
-
-	GenerateUUID = func() string {
-		counter++
-		return "key_" + string(rune('0'+counter))
-	}
-
-	return func() {
-		GenerateUUID = original
-	}
 }
 
 func RandomHash(length int) (string, error) {

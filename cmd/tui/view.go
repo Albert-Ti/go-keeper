@@ -20,7 +20,7 @@ func headerView(m model) string {
 	leftRendered := lipgloss.NewStyle().Foreground(colorPrimary).
 		Render("Go Keeper") + " " + spinner
 
-	rightRendered := breadcrumbView(m.activePage.String(), m.authUser)
+	rightRendered := breadcrumbView(m)
 
 	gapWidth := cardWidth - lipgloss.Width(leftRendered) - lipgloss.Width(rightRendered)
 	if gapWidth < 0 {
@@ -56,13 +56,13 @@ func mainView(m model) string {
 	}
 
 	if m.activePage == registerPage || m.activePage == loginPage {
-		s += fieldView("Email", m.form.email) + "\n\n"
-		s += fieldView("Password", m.form.pass) + "\n"
+		s += fieldView("Email", m.authForm.email) + "\n\n"
+		s += fieldView("Password", m.authForm.pass) + "\n"
 	}
 
 	if m.activePage == confirmPage {
 		s += "Keep a code to confirm your email: " + m.codeEmail + "\n\n"
-		s += fieldView("Confirmation code", m.form.confirm) + "\n"
+		s += fieldView("Confirmation code", m.authForm.confirm) + "\n"
 	}
 
 	if m.activePage == userPage {
@@ -78,16 +78,9 @@ func mainView(m model) string {
 		s += "\n\n"
 		switch m.activeTab {
 		case tabProfile:
-			// for key, value := range m.user {
-			// 	s += key + ": " + value + "\n"
-			// }
-			// s += contentView("Email: "+m.authUser+"\nPassword: *******\n") + "\n"
+			s += contentProfileView(m)
 		case tabCards:
-			if len(m.cards) > 0 {
-				s += "CARDS\n"
-			} else {
-				s += "NO CARDS\n"
-			}
+			s += contentCardsView(m)
 		case tabData:
 			s += "DATA\n"
 		}
@@ -120,10 +113,10 @@ func footerView() string {
 	return lipgloss.JoinHorizontal(lipgloss.Top, leftRendered, gap, rightRendered)
 }
 
-func breadcrumbView(activePage, user string) string {
-	text := activePage
-	if user != "" {
-		text += "/" + user
+func breadcrumbView(m model) string {
+	text := m.activePage.String()
+	if m.authUser != "" {
+		text += "/" + m.authUser + "#" + m.activeTab.String()
 	}
 	return text
 }
@@ -136,6 +129,43 @@ func fieldView(label string, input textinput.Model) string {
 	return labelStyle.Render(label) + "\n" + box.Render(input.View())
 }
 
-func contentView(str string) string {
-	return lipgloss.NewStyle().MarginTop(1).PaddingLeft(3).Width(cardWidth).Align(lipgloss.Left).Render(str)
+var infoProfile = map[string]string{
+	"email":       "cannot be updated",
+	"password":    "to update, press enter",
+	"create_date": "cannot be updated",
+}
+
+func contentProfileView(m model) string {
+	s := ""
+	for i, v := range m.contentTabProfile {
+		if i == m.cursor {
+
+			s += "✎ " + lipgloss.NewStyle().Width(12).Foreground(colorPrimary).Render(v) +
+				": " + m.user[v] + lipgloss.NewStyle().Faint(true).Render(" - "+infoProfile[v]) + "\n"
+		} else {
+			s += "  " + lipgloss.NewStyle().Width(12).Foreground(colorPrimary).Render(v) +
+				": " + m.user[v] + "\n"
+		}
+	}
+
+	return lipgloss.NewStyle().MarginTop(1).PaddingLeft(3).Width(cardWidth).Align(lipgloss.Left).Render(s)
+}
+
+func contentCardsView(m model) string {
+	s := ""
+
+	if len(m.cards) == 0 {
+		pressKey := lipgloss.NewStyle().Foreground(colorPrimary).Render("[ enter ]")
+		textInfo := lipgloss.NewStyle().Faint(true).Render("You have not added a bank card yet, to add : ")
+		s = "\n\n" + textInfo + pressKey + "\n"
+	} else {
+		s = "CARDS!!!"
+	}
+
+	if m.cardFormActive {
+		s = fieldView("card number", m.cardForm.number) + "\n"
+		s += fieldView("expiry date", m.cardForm.date) + "\n"
+	}
+
+	return lipgloss.NewStyle().MarginTop(1).Render(s)
 }

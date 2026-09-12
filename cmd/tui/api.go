@@ -10,17 +10,30 @@ import (
 	"google.golang.org/grpc/metadata"
 )
 
-type resultMsg struct {
-	err  error
-	kind string
-
+type registerResultMsg struct {
+	err       error
 	emailCode string
+}
 
+type confirmResultMsg struct {
+	err error
+}
+
+type loginResultMsg struct {
+	err          error
+	emailCode    string
 	accessToken  string
 	refreshToken string
+}
 
+type profileResultMsg struct {
+	err  error
+	user map[string]string
+}
+
+type cardsResultMsg struct {
+	err   error
 	cards []*pb.CardData
-	user  map[string]string
 }
 
 func registerCmd(client pb.GoKeeperServiceClient, email, pass string) tea.Cmd {
@@ -33,14 +46,14 @@ func registerCmd(client pb.GoKeeperServiceClient, email, pass string) tea.Cmd {
 			grpc.Header(&header),
 		)
 		if err != nil {
-			return resultMsg{err: err, kind: "register"}
+			return registerResultMsg{err: err}
 		}
 
 		var emailCode string
 		if values := header.Get("email_code"); len(values) > 0 {
 			emailCode = values[0]
 		}
-		return resultMsg{kind: "register", emailCode: emailCode}
+		return registerResultMsg{emailCode: emailCode}
 	}
 }
 
@@ -50,7 +63,7 @@ func confirmEmailCmd(client pb.GoKeeperServiceClient, email, code string) tea.Cm
 			context.Background(),
 			pb.ConfirmEmailRequest_builder{Email: email, EmailCode: code}.Build(),
 		)
-		return resultMsg{err: err, kind: "confirm"}
+		return confirmResultMsg{err: err}
 	}
 }
 
@@ -68,10 +81,9 @@ func loginCmd(client pb.GoKeeperServiceClient, email, pass string) tea.Cmd {
 			if values := header.Get("email_code"); len(values) > 0 {
 				emailCode = values[0]
 			}
-			return resultMsg{err: err, kind: "login", emailCode: emailCode}
+			return loginResultMsg{err: err, emailCode: emailCode}
 		}
-		return resultMsg{
-			kind:         "login",
+		return loginResultMsg{
 			accessToken:  resp.GetAccessToken(),
 			refreshToken: resp.GetRefreshToken(),
 		}
@@ -86,12 +98,12 @@ func getProfileCmd(client pb.GoKeeperServiceClient, token string) tea.Cmd {
 
 		resp, err := client.GetProfile(ctx, &pb.ProfileRequest{})
 		if err != nil {
-			return resultMsg{err: err, kind: "profile"}
+			return profileResultMsg{err: err}
 		}
-		return resultMsg{err: err, kind: "profile", user: map[string]string{
-			"email":    resp.GetEmail(),
-			"password": "*******",
-			"date":     resp.GetCreatedAt(),
+		return profileResultMsg{err: err, user: map[string]string{
+			"email":       resp.GetEmail(),
+			"password":    "*******",
+			"create_date": resp.GetCreatedAt().AsTime().Format("02 Jan 2006, 15:04"),
 		}}
 	}
 }
@@ -104,8 +116,8 @@ func getCardsCmd(client pb.GoKeeperServiceClient, token string) tea.Cmd {
 
 		resp, err := client.GetCards(ctx, &pb.CardsRequest{})
 		if err != nil {
-			return resultMsg{err: err, kind: "cards"}
+			return cardsResultMsg{err: err}
 		}
-		return resultMsg{err: err, kind: "cards", cards: resp.GetCards()}
+		return cardsResultMsg{err: err, cards: resp.GetCards()}
 	}
 }

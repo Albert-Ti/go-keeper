@@ -25,6 +25,7 @@ const (
 	GoKeeperService_GetProfile_FullMethodName     = "/gokeeper.GoKeeperService/GetProfile"
 	GoKeeperService_UpdatePassword_FullMethodName = "/gokeeper.GoKeeperService/UpdatePassword"
 	GoKeeperService_GetCards_FullMethodName       = "/gokeeper.GoKeeperService/GetCards"
+	GoKeeperService_CreateCard_FullMethodName     = "/gokeeper.GoKeeperService/CreateCard"
 )
 
 // GoKeeperServiceClient is the client API for GoKeeperService service.
@@ -37,6 +38,7 @@ type GoKeeperServiceClient interface {
 	GetProfile(ctx context.Context, in *ProfileRequest, opts ...grpc.CallOption) (*ProfileResponse, error)
 	UpdatePassword(ctx context.Context, in *PasswordRequest, opts ...grpc.CallOption) (*PasswordResponse, error)
 	GetCards(ctx context.Context, in *CardsRequest, opts ...grpc.CallOption) (*CardsResponse, error)
+	CreateCard(ctx context.Context, in *CreateCardRequest, opts ...grpc.CallOption) (*CreateCardResponse, error)
 }
 
 type goKeeperServiceClient struct {
@@ -107,6 +109,16 @@ func (c *goKeeperServiceClient) GetCards(ctx context.Context, in *CardsRequest, 
 	return out, nil
 }
 
+func (c *goKeeperServiceClient) CreateCard(ctx context.Context, in *CreateCardRequest, opts ...grpc.CallOption) (*CreateCardResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(CreateCardResponse)
+	err := c.cc.Invoke(ctx, GoKeeperService_CreateCard_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // GoKeeperServiceServer is the server API for GoKeeperService service.
 // All implementations must embed UnimplementedGoKeeperServiceServer
 // for forward compatibility.
@@ -117,6 +129,7 @@ type GoKeeperServiceServer interface {
 	GetProfile(context.Context, *ProfileRequest) (*ProfileResponse, error)
 	UpdatePassword(context.Context, *PasswordRequest) (*PasswordResponse, error)
 	GetCards(context.Context, *CardsRequest) (*CardsResponse, error)
+	CreateCard(context.Context, *CreateCardRequest) (*CreateCardResponse, error)
 	mustEmbedUnimplementedGoKeeperServiceServer()
 }
 
@@ -144,6 +157,9 @@ func (UnimplementedGoKeeperServiceServer) UpdatePassword(context.Context, *Passw
 }
 func (UnimplementedGoKeeperServiceServer) GetCards(context.Context, *CardsRequest) (*CardsResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method GetCards not implemented")
+}
+func (UnimplementedGoKeeperServiceServer) CreateCard(context.Context, *CreateCardRequest) (*CreateCardResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method CreateCard not implemented")
 }
 func (UnimplementedGoKeeperServiceServer) mustEmbedUnimplementedGoKeeperServiceServer() {}
 func (UnimplementedGoKeeperServiceServer) testEmbeddedByValue()                         {}
@@ -274,6 +290,24 @@ func _GoKeeperService_GetCards_Handler(srv interface{}, ctx context.Context, dec
 	return interceptor(ctx, in, info, handler)
 }
 
+func _GoKeeperService_CreateCard_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(CreateCardRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(GoKeeperServiceServer).CreateCard(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: GoKeeperService_CreateCard_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(GoKeeperServiceServer).CreateCard(ctx, req.(*CreateCardRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // GoKeeperService_ServiceDesc is the grpc.ServiceDesc for GoKeeperService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -304,6 +338,10 @@ var GoKeeperService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetCards",
 			Handler:    _GoKeeperService_GetCards_Handler,
+		},
+		{
+			MethodName: "CreateCard",
+			Handler:    _GoKeeperService_CreateCard_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

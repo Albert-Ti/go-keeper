@@ -67,35 +67,40 @@ func (p pageType) String() string {
 	}
 }
 
-type Form struct {
+type authForm struct {
 	email   textinput.Model
 	confirm textinput.Model
 	pass    textinput.Model
 }
 
+type cardForm struct {
+	number textinput.Model
+	date   textinput.Model
+}
+
 type model struct {
-	activePage pageType
-	activeTab  tabType
-	history    []pageType
-	choices    []pageType
-	allTabs    []tabType
-	cursor     int
-
-	form      Form
-	width     int
-	height    int
-	textError string
-	errorSeq  int
-
-	authUser     string
-	codeEmail    string
-	accessToken  string
-	refreshToken string
-	user         map[string]string
-	cards        []*pb.CardData
-
-	isLoad  bool
-	spinner spinner.Model
+	cursor            int
+	activePage        pageType
+	activeTab         tabType
+	history           []pageType
+	choices           []pageType
+	allTabs           []tabType
+	contentTabProfile []string
+	authForm          authForm
+	cardForm          cardForm
+	cardFormActive    bool
+	width             int
+	height            int
+	textError         string
+	errorSeq          int
+	authUser          string
+	codeEmail         string
+	accessToken       string
+	refreshToken      string
+	user              map[string]string
+	cards             []*pb.CardData
+	isLoad            bool
+	spinner           spinner.Model
 
 	client pb.GoKeeperServiceClient
 }
@@ -111,20 +116,28 @@ func NewModel(client pb.GoKeeperServiceClient) model {
 	s.Spinner = spinner.Dot
 	s.Style = lipgloss.NewStyle().Foreground(colorPrimary)
 
+	number := newStyledInput("card number", false)
+	date := newStyledInput("09/26", false)
+
 	return model{
-		client:     client,
-		activePage: homePage,
-		activeTab:  tabProfile,
-		history:    []pageType{homePage},
-		choices:    []pageType{loginPage, registerPage},
-		allTabs:    []tabType{tabProfile, tabCards, tabData},
-		form: Form{
+		activePage:        homePage,
+		activeTab:         tabProfile,
+		history:           []pageType{homePage},
+		choices:           []pageType{loginPage, registerPage},
+		allTabs:           []tabType{tabProfile, tabCards, tabData},
+		contentTabProfile: []string{"email", "password", "create_date"},
+		authForm: authForm{
 			email:   email,
 			pass:    pass,
 			confirm: confirm,
 		},
+		cardForm: cardForm{
+			number: number,
+			date:   date,
+		},
 		spinner: s,
 		cards:   []*pb.CardData{},
+		client:  client,
 	}
 }
 
@@ -150,47 +163,53 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		return m, nil
 
 	// обработка ответа API
-	case resultMsg:
-		// в случае ошибки
+	case registerResultMsg:
 		if msg.err != nil {
-			m.textError = msg.err.Error()
+			return m, m.handleError(msg.err)
+		}
+		m.codeEmail = msg.emailCode
+		m.activePage = confirmPage
+		m.isLoad = false
+
+	case loginResultMsg:
+		if msg.err != nil {
 			st, _ := status.FromError(msg.err)
-			switch msg.kind {
-			case "login":
-				if st.Code() == codes.PermissionDenied {
-					m.codeEmail = msg.emailCode
-					m.activePage = confirmPage
-				}
-				m.isLoad = false
-			case "profile":
-				m.activePage = homePage
-				m.isLoad = false
-				return m, clearErrorAfter(m.errorSeq)
+			if st.Code() == codes.PermissionDenied {
+				m.codeEmail = msg.emailCode
+				m.activePage = confirmPage
+			} else {
+				m.textError = msg.err.Error()
 			}
 			m.isLoad = false
 			return m, clearErrorAfter(m.errorSeq)
-			// в случае успеха
-		} else {
-			switch msg.kind {
-			case "register":
-				m.codeEmail = msg.emailCode
-				m.activePage = confirmPage
-			case "confirm":
-				m.isLoad = true
-				return m, loginCmd(m.client, m.form.email.Value(), m.form.pass.Value())
-			case "login":
-				m.accessToken = msg.accessToken
-				m.refreshToken = msg.refreshToken
-				m.authUser = m.form.email.Value()
-				m = m.navigateTo(userPage)
-			case "profile":
-				m.user = msg.user
-			case "cards":
-				m.cards = msg.cards
-			}
-			m.isLoad = false
-			return m, nil
 		}
+		m.accessToken = msg.accessToken
+		m.refreshToken = msg.refreshToken
+		m.authUser = m.authForm.email.Value()
+		m = m.navigateTo(userPage)
+		return m, getProfileCmd(m.client, m.accessToken)
+
+	case confirmResultMsg:
+		if msg.err != nil {
+			return m, m.handleError(msg.err)
+		}
+		m.isLoad = true
+		return m, loginCmd(m.client, m.authForm.email.Value(), m.authForm.pass.Value())
+
+	case profileResultMsg:
+		if msg.err != nil {
+			m.activePage = homePage
+			return m, m.handleError(msg.err)
+		}
+		m.user = msg.user
+		m.isLoad = false
+
+	case cardsResultMsg:
+		if msg.err != nil {
+			return m, m.handleError(msg.err)
+		}
+		m.cards = msg.cards
+		m.isLoad = false
 
 	case tea.KeyPressMsg:
 		switch msg.String() {
@@ -200,7 +219,8 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			m.Reset()
 			return m, nil
 		case "esc":
-			if m.authUser != "" {
+			if m.authUser != "" &&
+				m.history[len(m.history)-1] == loginPage {
 				m.textError = "to log out, press ctrl+q"
 				return m, clearErrorAfter(m.errorSeq)
 			}
@@ -233,12 +253,12 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		cmds = append(cmds, cmd)
 
 		switch {
-		case m.form.email.Focused():
-			m.form.email, cmd = m.form.email.Update(msg)
-		case m.form.pass.Focused():
-			m.form.pass, cmd = m.form.pass.Update(msg)
-		case m.form.confirm.Focused():
-			m.form.confirm, cmd = m.form.confirm.Update(msg)
+		case m.authForm.email.Focused():
+			m.authForm.email, cmd = m.authForm.email.Update(msg)
+		case m.authForm.pass.Focused():
+			m.authForm.pass, cmd = m.authForm.pass.Update(msg)
+		case m.authForm.confirm.Focused():
+			m.authForm.confirm, cmd = m.authForm.confirm.Update(msg)
 		}
 		cmds = append(cmds, cmd)
 		return m, tea.Batch(cmds...)
@@ -263,6 +283,13 @@ func (m model) View() tea.View {
 	return tea.NewView(centered)
 }
 
+func (m *model) handleError(err error) tea.Cmd {
+	m.textError = err.Error()
+	m.isLoad = false
+
+	return clearErrorAfter(m.errorSeq)
+}
+
 func (m *model) Reset() {
 	m.activePage = homePage
 	m.history = []pageType{homePage}
@@ -273,12 +300,12 @@ func (m *model) Reset() {
 	m.codeEmail = ""
 	m.cards = []*pb.CardData{}
 
-	m.form.email.Focus()
-	m.form.pass.Blur()
-	m.form.confirm.Blur()
-	m.form.email.SetValue("")
-	m.form.pass.SetValue("")
-	m.form.confirm.SetValue("")
+	m.authForm.email.Focus()
+	m.authForm.pass.Blur()
+	m.authForm.confirm.Blur()
+	m.authForm.email.SetValue("")
+	m.authForm.pass.SetValue("")
+	m.authForm.confirm.SetValue("")
 }
 
 type clearErrorMsg struct {

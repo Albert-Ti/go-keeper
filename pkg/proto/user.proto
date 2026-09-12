@@ -12,22 +12,9 @@ message ProfileRequest {}
 message ProfileResponse {
   string email = 1;
   string password = 2;
-  string created_at = 3;
+  google.protobuf.Timestamp created_at = 3;
 }
 
 message PasswordRequest {}
 
 message PasswordResponse {}
-
-message CardsRequest {}
-
-message CardData {
-  string card_number = 1;
-  bool active = 2;
-  google.protobuf.Timestamp expiry_date = 3;
-}
-
-message CardsResponse {
-  repeated CardData cards = 1;
-}
-

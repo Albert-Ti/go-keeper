@@ -46,7 +46,7 @@ var (
 func newStyledInput(placeholder string, isPassword bool) textinput.Model {
 	t := textinput.New()
 	t.Placeholder = placeholder
-	t.SetWidth(30)
+	t.SetWidth(25)
 
 	if isPassword {
 		t.EchoMode = textinput.EchoPassword

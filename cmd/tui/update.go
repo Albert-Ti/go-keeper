@@ -25,71 +25,92 @@ func homeUpdate(msg tea.KeyPressMsg, m model) (model, tea.Cmd) {
 func registerUpdate(msg tea.KeyPressMsg, m model) (model, tea.Cmd) {
 	switch msg.String() {
 	case "tab":
-		if m.form.email.Focused() {
-			m.form.email.Blur()
-			m.form.pass.Focus()
+		if m.authForm.email.Focused() {
+			m.authForm.email.Blur()
+			m.authForm.pass.Focus()
 		} else {
-			m.form.pass.Blur()
-			m.form.email.Focus()
+			m.authForm.pass.Blur()
+			m.authForm.email.Focus()
 		}
 		return m, nil
 	case "enter", "space":
 		m.isLoad = true
-		return m, registerCmd(m.client, m.form.email.Value(), m.form.pass.Value())
+		return m, registerCmd(m.client, m.authForm.email.Value(), m.authForm.pass.Value())
 	}
 
 	var cmd tea.Cmd
-	if m.form.email.Focused() {
-		m.form.email, cmd = m.form.email.Update(msg)
-	} else if m.form.pass.Focused() {
-		m.form.pass, cmd = m.form.pass.Update(msg)
+	if m.authForm.email.Focused() {
+		m.authForm.email, cmd = m.authForm.email.Update(msg)
+	} else if m.authForm.pass.Focused() {
+		m.authForm.pass, cmd = m.authForm.pass.Update(msg)
 	}
 	return m, cmd
 }
 
 func confirmUpdate(msg tea.KeyPressMsg, m model) (model, tea.Cmd) {
-	m.form.pass.Blur()
-	m.form.email.Blur()
-	m.form.confirm.Focus()
-	m.form.confirm.SetValue("")
+	m.authForm.pass.Blur()
+	m.authForm.email.Blur()
+	m.authForm.confirm.Focus()
 
 	switch msg.String() {
 	case "enter":
 		m.isLoad = true
-		return m, confirmEmailCmd(m.client, m.form.email.Value(), m.form.confirm.Value())
+		return m, confirmEmailCmd(m.client, m.authForm.email.Value(), m.authForm.confirm.Value())
 	}
 
 	var cmd tea.Cmd
-	m.form.confirm, cmd = m.form.confirm.Update(msg)
+	m.authForm.confirm, cmd = m.authForm.confirm.Update(msg)
 	return m, cmd
 }
 
 func loginUpdate(msg tea.KeyPressMsg, m model) (model, tea.Cmd) {
 	switch msg.String() {
 	case "tab":
-		if m.form.email.Focused() {
-			m.form.email.Blur()
-			m.form.pass.Focus()
+		if m.authForm.email.Focused() {
+			m.authForm.email.Blur()
+			m.authForm.pass.Focus()
 		} else {
-			m.form.pass.Blur()
-			m.form.email.Focus()
+			m.authForm.pass.Blur()
+			m.authForm.email.Focus()
 		}
 		return m, nil
 	case "enter":
 		m.isLoad = true
-		return m, loginCmd(m.client, m.form.email.Value(), m.form.pass.Value())
+		return m, loginCmd(m.client, m.authForm.email.Value(), m.authForm.pass.Value())
 	}
 
 	var cmd tea.Cmd
-	if m.form.email.Focused() {
-		m.form.email, cmd = m.form.email.Update(msg)
-	} else if m.form.pass.Focused() {
-		m.form.pass, cmd = m.form.pass.Update(msg)
+	if m.authForm.email.Focused() {
+		m.authForm.email, cmd = m.authForm.email.Update(msg)
+	} else if m.authForm.pass.Focused() {
+		m.authForm.pass, cmd = m.authForm.pass.Update(msg)
 	}
 	return m, cmd
 }
 
 func userUpdate(msg tea.KeyPressMsg, m model) (model, tea.Cmd) {
+	// 1. Сначала обрабатываем фокус формы, если она активна
+	if m.cardFormActive {
+		switch msg.String() {
+		case "tab":
+			if m.cardForm.number.Focused() {
+				m.cardForm.number.Blur()
+				m.cardForm.date.Focus()
+			} else {
+				m.cardForm.date.Blur()
+				m.cardForm.number.Focus()
+			}
+			return m, nil
+		case "esc": // полезно добавить выход из формы
+			m.cardForm.number.Blur()
+			m.cardForm.date.Blur()
+			m.cardFormActive = false
+			return m, nil
+		}
+	}
+
+	prevTab := m.activeTab
+
 	switch msg.String() {
 	case "left", "h":
 		if m.activeTab > 0 {
@@ -99,26 +120,33 @@ func userUpdate(msg tea.KeyPressMsg, m model) (model, tea.Cmd) {
 		if int(m.activeTab) < len(m.allTabs)-1 {
 			m.activeTab++
 		}
+	case "up":
+		if m.cursor > 0 {
+			m.cursor--
+		}
+	case "down":
+		if m.cursor < len(m.contentTabProfile)-1 {
+			m.cursor++
+		}
+	case "enter":
+		m.cardFormActive = true
+		m.cardForm.number.Focus()
+		return m, nil
+	}
+
+	if m.activeTab == prevTab {
+		return m, nil // вкладка не изменилась — ничего не запрашиваем
 	}
 	switch m.activeTab {
 	case tabProfile:
-		cmd := getProfileCmd(m.client, m.accessToken)
-		switch msg.String() {
-		case "up":
-			if len(m.user) > 0 {
-				m.cursor--
-			}
-		case "down":
-			if m.cursor < len(m.user)-1 {
-				m.cursor++
-			}
-		case "enter":
-		}
+		m.cursor = 0
 		m.isLoad = true
-		return m, cmd
+		return m, getProfileCmd(m.client, m.accessToken)
 	case tabCards:
+		m.cursor = 0
 		return m, getCardsCmd(m.client, m.accessToken)
 	case tabData:
+		m.cursor = 0
 	}
 
 	return m, nil

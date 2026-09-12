@@ -2,6 +2,7 @@ package repository
 
 import (
 	"context"
+	"time"
 
 	"github.com/Albert-Ti/go-keeper/internal/models"
 )
@@ -12,6 +13,7 @@ type Repository interface {
 	GetUserByID(ctx context.Context, uuid string) (models.Profile, error)
 	UpdateUser(ctx context.Context, p models.UpdateUserParams) error
 	GetCards(ctx context.Context, uuid string) ([]models.Card, error)
+	CreateCard(ctx context.Context, number string, expiry time.Time) error
 }
 
 func NewRepository(connString string) (Repository, error) {
