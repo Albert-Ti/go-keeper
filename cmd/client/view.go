@@ -86,6 +86,11 @@ func mainView(m model) string {
 		}
 	}
 
+	if m.activePage == cardFormPage {
+		s = "\n\n" + fieldView("Card number", m.cardForm.number) + "\n"
+		s += fieldView("Expiry date", m.cardForm.date) + "\n"
+	}
+
 	if m.textError != "" {
 		s += "\n" + errorStyle.Width(cardWidth).Align(lipgloss.Center).Render(m.textError) + "\n"
 	}
@@ -116,7 +121,7 @@ func footerView() string {
 func breadcrumbView(m model) string {
 	text := m.activePage.String()
 	if m.authUser != "" {
-		text += "/" + m.authUser + "#" + m.activeTab.String()
+		text += "/" + m.authUser + "/" + m.activeTab.String()
 	}
 	return text
 }
@@ -141,10 +146,10 @@ func contentProfileView(m model) string {
 		if i == m.cursor {
 
 			s += "✎ " + lipgloss.NewStyle().Width(12).Foreground(colorPrimary).Render(v) +
-				": " + m.user[v] + lipgloss.NewStyle().Faint(true).Render(" - "+infoProfile[v]) + "\n"
+				": " + m.profile[v] + lipgloss.NewStyle().Faint(true).Render(" - "+infoProfile[v]) + "\n"
 		} else {
 			s += "  " + lipgloss.NewStyle().Width(12).Foreground(colorPrimary).Render(v) +
-				": " + m.user[v] + "\n"
+				": " + m.profile[v] + "\n"
 		}
 	}
 
@@ -154,18 +159,25 @@ func contentProfileView(m model) string {
 func contentCardsView(m model) string {
 	s := ""
 
+	pressKey := lipgloss.NewStyle().Foreground(colorPrimary).Render("[ enter ]")
 	if len(m.cards) == 0 {
-		pressKey := lipgloss.NewStyle().Foreground(colorPrimary).Render("[ enter ]")
 		textInfo := lipgloss.NewStyle().Faint(true).Render("You have not added a bank card yet, to add : ")
 		s = "\n\n" + textInfo + pressKey + "\n"
 	} else {
-		s = "CARDS!!!"
+		for i, card := range m.cards {
+			isActive := lipgloss.NewStyle().Faint(true).Render("no active")
+			if card.GetActive() {
+				isActive = "active"
+			}
+			prefix := "  "
+			if i == m.cursor {
+				prefix = "✎ "
+			}
+			s += prefix + lipgloss.NewStyle().Faint(true).Render("**** **** **** ") + card.GetCardNumber() + "  " + card.GetExpiryDate().AsTime().Format("02/06") + "  " + isActive + "\n"
+		}
+		textInfo := lipgloss.NewStyle().Faint(true).Render(" to add new card.")
+		s += "\n" + pressKey + textInfo + "\n"
 	}
 
-	if m.cardFormActive {
-		s = fieldView("card number", m.cardForm.number) + "\n"
-		s += fieldView("expiry date", m.cardForm.date) + "\n"
-	}
-
-	return lipgloss.NewStyle().MarginTop(1).Render(s)
+	return lipgloss.NewStyle().MarginTop(1).PaddingLeft(3).Width(cardWidth).Align(lipgloss.Left).Render(s)
 }

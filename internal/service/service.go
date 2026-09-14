@@ -123,8 +123,8 @@ func (s *Service) GetCards(ctx context.Context, uuid string) ([]models.Card, err
 	return s.repo.GetCards(ctx, uuid)
 }
 
-func (s *Service) CreateCard(ctx context.Context, number string, expiry time.Time) error {
-	return s.repo.CreateCard(ctx, number, expiry)
+func (s *Service) CreateCard(ctx context.Context, uuid string, number string, expiry time.Time) error {
+	return s.repo.CreateCard(ctx, uuid, number, expiry)
 }
 
 func (s *Service) sendEmailCode(ctx context.Context, email, code string) error {

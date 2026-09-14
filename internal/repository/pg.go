@@ -132,7 +132,7 @@ func (pg *PGStorage) UpdateUser(ctx context.Context, p models.UpdateUserParams) 
 
 func (pg *PGStorage) GetCards(ctx context.Context, uuid string) ([]models.Card, error) {
 	sql := `
-	SELECT card_number, active, expiry_date
+	SELECT card_number, expiry_date, active
 	FROM bank_cards 
 	WHERE user_uuid = $1
 	`
@@ -144,7 +144,7 @@ func (pg *PGStorage) GetCards(ctx context.Context, uuid string) ([]models.Card, 
 	var list []models.Card
 	for rows.Next() {
 		var card models.Card
-		err := rows.Scan(&card.CardNumber, &card.Active, &card.ExpiryDate)
+		err := rows.Scan(&card.CardNumber, &card.ExpiryDate, &card.Active)
 		if err != nil {
 			return nil, err
 		}
@@ -154,17 +154,28 @@ func (pg *PGStorage) GetCards(ctx context.Context, uuid string) ([]models.Card, 
 	return list, nil
 }
 
-func (pg *PGStorage) CreateCard(ctx context.Context, number string, date time.Time) error {
-	sql := `
-	INSERT INTO bank_cards (card_number, expiry_date, active)
-	VALUES ($1, $2, $3)
-	`
+func (pg *PGStorage) CreateCard(ctx context.Context, uuid string, number string, expiry time.Time) error {
+	tx, err := pg.pool.Begin(ctx)
+	if err != nil {
+		return err
+	}
+	defer tx.Rollback(ctx)
 
-	_, err := pg.pool.Exec(ctx, sql, number, date, true)
-
+	_, err = tx.Exec(ctx,
+		`UPDATE bank_cards SET active = false WHERE user_uuid = $1 AND active = true`,
+		uuid,
+	)
 	if err != nil {
 		return err
 	}
 
-	return nil
+	_, err = tx.Exec(ctx,
+		`INSERT INTO bank_cards (user_uuid, card_number, expiry_date, active) VALUES ($1, $2, $3, $4)`,
+		uuid, number, expiry, true,
+	)
+	if err != nil {
+		return err
+	}
+
+	return tx.Commit(ctx)
 }

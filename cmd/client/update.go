@@ -88,66 +88,95 @@ func loginUpdate(msg tea.KeyPressMsg, m model) (model, tea.Cmd) {
 	return m, cmd
 }
 
-func userUpdate(msg tea.KeyPressMsg, m model) (model, tea.Cmd) {
-	// 1. Сначала обрабатываем фокус формы, если она активна
-	if m.cardFormActive {
-		switch msg.String() {
-		case "tab":
-			if m.cardForm.number.Focused() {
-				m.cardForm.number.Blur()
-				m.cardForm.date.Focus()
-			} else {
-				m.cardForm.date.Blur()
-				m.cardForm.number.Focus()
-			}
-			return m, nil
-		case "esc": // полезно добавить выход из формы
-			m.cardForm.number.Blur()
-			m.cardForm.date.Blur()
-			m.cardFormActive = false
-			return m, nil
-		}
+func loadActiveTab(activeTab tabType, m model) tea.Cmd {
+	switch activeTab {
+	case tabProfile:
+		return getProfileCmd(m.client, m.accessToken)
+	case tabCards:
+		return getCardsCmd(m.client, m.accessToken)
+	case tabData:
 	}
+	return nil
+}
 
-	prevTab := m.activeTab
-
+func userUpdate(msg tea.KeyPressMsg, m model) (model, tea.Cmd) {
 	switch msg.String() {
-	case "left", "h":
+	case "left":
 		if m.activeTab > 0 {
 			m.activeTab--
+			m.cursor = 0
+			m.isLoad = true
+			return m, loadActiveTab(m.activeTab, m)
 		}
-	case "right", "l":
+	case "right":
 		if int(m.activeTab) < len(m.allTabs)-1 {
 			m.activeTab++
+			m.cursor = 0
+			m.isLoad = true
+			return m, loadActiveTab(m.activeTab, m)
 		}
-	case "up":
-		if m.cursor > 0 {
-			m.cursor--
-		}
-	case "down":
-		if m.cursor < len(m.contentTabProfile)-1 {
-			m.cursor++
-		}
-	case "enter":
-		m.cardFormActive = true
-		m.cardForm.number.Focus()
-		return m, nil
 	}
 
-	if m.activeTab == prevTab {
-		return m, nil // вкладка не изменилась — ничего не запрашиваем
-	}
 	switch m.activeTab {
 	case tabProfile:
-		m.cursor = 0
-		m.isLoad = true
-		return m, getProfileCmd(m.client, m.accessToken)
+		switch msg.String() {
+		case "up":
+			if m.cursor > 0 {
+				m.cursor--
+			}
+		case "down":
+			if m.cursor < len(m.contentTabProfile)-1 {
+				m.cursor++
+			}
+		}
+
 	case tabCards:
-		m.cursor = 0
-		return m, getCardsCmd(m.client, m.accessToken)
+		switch msg.String() {
+		case "up":
+			if m.cursor > 0 {
+				m.cursor--
+			}
+		case "down":
+			if m.cursor < len(m.cards)-1 {
+				m.cursor++
+			}
+		case "enter":
+			m = m.navigateTo(cardFormPage)
+			cmd := m.cardForm.number.Focus()
+			return m, cmd
+		}
+
 	case tabData:
-		m.cursor = 0
+	}
+	return m, nil
+}
+
+func cardFormUpdate(msg tea.KeyPressMsg, m model) (model, tea.Cmd) {
+	switch msg.String() {
+	case "tab":
+		var cmd tea.Cmd
+		if m.cardForm.number.Focused() {
+			m.cardForm.number.Blur()
+			cmd = m.cardForm.date.Focus()
+		} else {
+			m.cardForm.date.Blur()
+			cmd = m.cardForm.number.Focus()
+		}
+		return m, cmd
+	case "enter":
+		m.isLoad = true
+		cmd := createCardCmd(m.client, m.accessToken,
+			m.cardForm.number.Value(),
+			m.cardForm.date.Value())
+		return m, cmd
 	}
 
-	return m, nil
+	var cmd tea.Cmd
+	switch {
+	case m.cardForm.number.Focused():
+		m.cardForm.number, cmd = m.cardForm.number.Update(msg)
+	case m.cardForm.date.Focused():
+		m.cardForm.date, cmd = m.cardForm.date.Update(msg)
+	}
+	return m, cmd
 }

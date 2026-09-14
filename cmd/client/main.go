@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"log/slog"
 	"os"
@@ -14,6 +15,7 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/credentials/insecure"
+	"google.golang.org/grpc/metadata"
 	"google.golang.org/grpc/status"
 
 	pb "github.com/Albert-Ti/go-keeper/pkg/proto"
@@ -48,6 +50,7 @@ const (
 	loginPage
 	confirmPage
 	userPage
+	cardFormPage
 )
 
 func (p pageType) String() string {
@@ -88,7 +91,6 @@ type model struct {
 	contentTabProfile []string
 	authForm          authForm
 	cardForm          cardForm
-	cardFormActive    bool
 	width             int
 	height            int
 	textError         string
@@ -97,16 +99,18 @@ type model struct {
 	codeEmail         string
 	accessToken       string
 	refreshToken      string
-	user              map[string]string
+	profile           map[string]string
 	cards             []*pb.CardData
 	isLoad            bool
 	spinner           spinner.Model
+	localStorage      *FileStorage
 
 	client pb.GoKeeperServiceClient
 }
 
-func NewModel(client pb.GoKeeperServiceClient) model {
+func NewModel(client pb.GoKeeperServiceClient, localStorage *FileStorage) (*model, error) {
 	email := newStyledInput("email@example.com", false)
+	email.SetValue(localStorage.Get("email"))
 	email.Focus()
 
 	pass := newStyledInput("password", true)
@@ -119,8 +123,27 @@ func NewModel(client pb.GoKeeperServiceClient) model {
 	number := newStyledInput("card number", false)
 	date := newStyledInput("09/26", false)
 
-	return model{
-		activePage:        homePage,
+	initPage := homePage
+	initProfile := map[string]string{}
+	token := localStorage.Get("access_token")
+	if token != "" {
+		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+		defer cancel()
+		ctx = metadata.AppendToOutgoingContext(ctx, "authorization", localStorage.Get("access_token"))
+
+		resp, err := client.GetProfile(ctx, &pb.ProfileRequest{})
+		if err == nil {
+			initPage = userPage
+		}
+
+		initProfile = map[string]string{
+			"email":       resp.GetEmail(),
+			"password":    "*******",
+			"create_date": resp.GetCreatedAt().AsTime().Format("02 Jan 2006, 15:04")}
+	}
+
+	return &model{
+		activePage:        initPage,
 		activeTab:         tabProfile,
 		history:           []pageType{homePage},
 		choices:           []pageType{loginPage, registerPage},
@@ -138,7 +161,13 @@ func NewModel(client pb.GoKeeperServiceClient) model {
 		spinner: s,
 		cards:   []*pb.CardData{},
 		client:  client,
-	}
+
+		localStorage: localStorage,
+		authUser:     localStorage.Get("email"),
+		accessToken:  localStorage.Get("access_token"),
+		refreshToken: localStorage.Get("refresh_token"),
+		profile:      initProfile,
+	}, nil
 }
 
 func (m model) Init() tea.Cmd {
@@ -186,6 +215,11 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.accessToken = msg.accessToken
 		m.refreshToken = msg.refreshToken
 		m.authUser = m.authForm.email.Value()
+
+		msg.err = m.localStorage.Set("email", m.authUser)
+		msg.err = m.localStorage.Set("access_token", m.accessToken)
+		msg.err = m.localStorage.Set("refresh_token", m.refreshToken)
+
 		m = m.navigateTo(userPage)
 		return m, getProfileCmd(m.client, m.accessToken)
 
@@ -198,18 +232,29 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 	case profileResultMsg:
 		if msg.err != nil {
-			m.activePage = homePage
+			m.Reset()
 			return m, m.handleError(msg.err)
 		}
-		m.user = msg.user
+		m.profile = msg.profile
 		m.isLoad = false
 
 	case cardsResultMsg:
 		if msg.err != nil {
+			m.Reset()
 			return m, m.handleError(msg.err)
 		}
 		m.cards = msg.cards
 		m.isLoad = false
+
+	case createCardResultMsg:
+		if msg.err != nil {
+			return m, m.handleError(msg.err)
+		}
+		m.cardForm.number.SetValue("")
+		m.cardForm.date.SetValue("")
+		m.activePage = userPage
+		m.isLoad = false
+		return m, getCardsCmd(m.client, m.accessToken)
 
 	case tea.KeyPressMsg:
 		switch msg.String() {
@@ -219,8 +264,13 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			m.Reset()
 			return m, nil
 		case "esc":
-			if m.authUser != "" &&
-				m.history[len(m.history)-1] == loginPage {
+			if m.activePage == cardFormPage {
+				m.cardForm.number.Blur()
+				m.cardForm.date.Blur()
+			}
+			if m.authUser != "" && len(m.history) > 1 &&
+				m.history[len(m.history)-2] == loginPage ||
+				m.history[len(m.history)-2] == registerPage {
 				m.textError = "to log out, press ctrl+q"
 				return m, clearErrorAfter(m.errorSeq)
 			}
@@ -242,6 +292,8 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return homeUpdate(msg, m)
 		case userPage:
 			return userUpdate(msg, m)
+		case cardFormPage:
+			return cardFormUpdate(msg, m)
 		}
 
 	default:
@@ -251,7 +303,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		)
 		m.spinner, cmd = m.spinner.Update(msg)
 		cmds = append(cmds, cmd)
-
+		// курсор в полях чтобы мигал
 		switch {
 		case m.authForm.email.Focused():
 			m.authForm.email, cmd = m.authForm.email.Update(msg)
@@ -259,11 +311,14 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			m.authForm.pass, cmd = m.authForm.pass.Update(msg)
 		case m.authForm.confirm.Focused():
 			m.authForm.confirm, cmd = m.authForm.confirm.Update(msg)
+		case m.cardForm.number.Focused():
+			m.cardForm.number, cmd = m.cardForm.number.Update(msg)
+		case m.cardForm.date.Focused():
+			m.cardForm.date, cmd = m.cardForm.date.Update(msg)
 		}
 		cmds = append(cmds, cmd)
 		return m, tea.Batch(cmds...)
 	}
-
 	return m, nil
 }
 
@@ -306,6 +361,12 @@ func (m *model) Reset() {
 	m.authForm.email.SetValue("")
 	m.authForm.pass.SetValue("")
 	m.authForm.confirm.SetValue("")
+
+	m.cardForm.number.Focus()
+	m.cardForm.number.Blur()
+	m.cardForm.date.Blur()
+	m.cardForm.number.SetValue("")
+	m.cardForm.date.SetValue("")
 }
 
 type clearErrorMsg struct {
@@ -313,7 +374,7 @@ type clearErrorMsg struct {
 }
 
 func clearErrorAfter(seq int) tea.Cmd {
-	return tea.Tick(3*time.Second, func(t time.Time) tea.Msg {
+	return tea.Tick(4*time.Second, func(t time.Time) tea.Msg {
 		return clearErrorMsg{seq: seq}
 	})
 }
@@ -337,7 +398,17 @@ func main() {
 	defer conn.Close()
 	c := pb.NewGoKeeperServiceClient(conn)
 
-	p := tea.NewProgram(NewModel(c))
+	fs, err := NewFileStorage()
+	if err != nil {
+		panic(err)
+	}
+
+	model, err := NewModel(c, fs)
+	if err != nil {
+		panic(err)
+	}
+
+	p := tea.NewProgram(model)
 	if _, err := p.Run(); err != nil {
 		fmt.Printf("Alas, there's been an error: %v", err)
 		os.Exit(1)

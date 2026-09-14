@@ -13,7 +13,7 @@ type Repository interface {
 	GetUserByID(ctx context.Context, uuid string) (models.Profile, error)
 	UpdateUser(ctx context.Context, p models.UpdateUserParams) error
 	GetCards(ctx context.Context, uuid string) ([]models.Card, error)
-	CreateCard(ctx context.Context, number string, expiry time.Time) error
+	CreateCard(ctx context.Context, uuid string, number string, expiry time.Time) error
 }
 
 func NewRepository(connString string) (Repository, error) {

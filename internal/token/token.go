@@ -19,7 +19,8 @@ func CreateAccessToken(userID string, secretKey string) (string, error) {
 
 	t.Claims = &MyCustomClaims{
 		jwt.RegisteredClaims{
-			ExpiresAt: jwt.NewNumericDate(time.Now().Add(24 * time.Hour)),
+			// TODO 2 минуты для тестирования клиента для вызова RefreshToken
+			ExpiresAt: jwt.NewNumericDate(time.Now().Add(2 * time.Minute)),
 		},
 		userID,
 	}

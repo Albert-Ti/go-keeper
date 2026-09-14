@@ -14,7 +14,6 @@ func (g *GrpcServer) GetCards(ctx context.Context, in *pb.CardsRequest) (*pb.Car
 	uuid, err := interceptor.GetAuthUserID(ctx)
 	if err != nil {
 		return nil, status.Error(codes.Unauthenticated, "failed to get user")
-
 	}
 	cards, err := g.Svc.GetCards(ctx, uuid)
 	if err != nil {
@@ -25,7 +24,7 @@ func (g *GrpcServer) GetCards(ctx context.Context, in *pb.CardsRequest) (*pb.Car
 	for _, v := range cards {
 		list = append(list, pb.CardData_builder{
 			Active:     v.Active,
-			CardNumber: v.CardNumber,
+			CardNumber: string(v.CardNumber[12:]),
 			ExpiryDate: timestamppb.New(v.ExpiryDate),
 		}.Build())
 	}

@@ -27,13 +27,17 @@ type loginResultMsg struct {
 }
 
 type profileResultMsg struct {
-	err  error
-	user map[string]string
+	err     error
+	profile map[string]string
 }
 
 type cardsResultMsg struct {
 	err   error
 	cards []*pb.CardData
+}
+
+type createCardResultMsg struct {
+	err error
 }
 
 func registerCmd(client pb.GoKeeperServiceClient, email, pass string) tea.Cmd {
@@ -100,7 +104,7 @@ func getProfileCmd(client pb.GoKeeperServiceClient, token string) tea.Cmd {
 		if err != nil {
 			return profileResultMsg{err: err}
 		}
-		return profileResultMsg{err: err, user: map[string]string{
+		return profileResultMsg{err: err, profile: map[string]string{
 			"email":       resp.GetEmail(),
 			"password":    "*******",
 			"create_date": resp.GetCreatedAt().AsTime().Format("02 Jan 2006, 15:04"),
@@ -119,5 +123,20 @@ func getCardsCmd(client pb.GoKeeperServiceClient, token string) tea.Cmd {
 			return cardsResultMsg{err: err}
 		}
 		return cardsResultMsg{err: err, cards: resp.GetCards()}
+	}
+}
+
+func createCardCmd(client pb.GoKeeperServiceClient, token, number, expiry string) tea.Cmd {
+	return func() tea.Msg {
+		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+		defer cancel()
+		ctx = metadata.AppendToOutgoingContext(ctx, "authorization", token)
+
+		_, err := client.CreateCard(ctx, pb.CreateCardRequest_builder{
+			CardNumber: number,
+			ExpiryDate: expiry,
+		}.Build())
+
+		return createCardResultMsg{err: err}
 	}
 }

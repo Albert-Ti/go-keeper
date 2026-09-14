@@ -50,7 +50,7 @@ func Auth(secretKey string) grpc.UnaryServerInterceptor {
 				)
 
 				if err != nil || !token.Valid || claims.UserID == "" {
-					return nil, status.Error(codes.Unauthenticated, "token no valid")
+					return nil, status.Error(codes.Unauthenticated, err.Error())
 				}
 				authorizedUserID = claims.UserID
 

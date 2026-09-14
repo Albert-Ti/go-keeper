@@ -24,7 +24,7 @@ type Profile struct {
 }
 
 type Card struct {
-	CardNumber string
-	Active     bool
+	CardNumber []byte
 	ExpiryDate time.Time
+	Active     bool
 }

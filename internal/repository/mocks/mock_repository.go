@@ -57,17 +57,17 @@ func (mr *MockRepositoryMockRecorder) AddUser(ctx, email, code, password any) *g
 }
 
 // CreateCard mocks base method.
-func (m *MockRepository) CreateCard(ctx context.Context, number string, date time.Time) error {
+func (m *MockRepository) CreateCard(ctx context.Context, uuid, number string, expiry time.Time) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CreateCard", ctx, number, date)
+	ret := m.ctrl.Call(m, "CreateCard", ctx, uuid, number, expiry)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // CreateCard indicates an expected call of CreateCard.
-func (mr *MockRepositoryMockRecorder) CreateCard(ctx, number, date any) *gomock.Call {
+func (mr *MockRepositoryMockRecorder) CreateCard(ctx, uuid, number, expiry any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateCard", reflect.TypeOf((*MockRepository)(nil).CreateCard), ctx, number, date)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateCard", reflect.TypeOf((*MockRepository)(nil).CreateCard), ctx, uuid, number, expiry)
 }
 
 // GetCards mocks base method.

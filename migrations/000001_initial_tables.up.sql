@@ -21,7 +21,7 @@ CREATE TABLE
   IF NOT EXISTS bank_cards (
     id BIGSERIAL PRIMARY KEY,
     user_uuid UUID NOT NULL,
-    card_number BYTEA NOT NULL,
+    card_number BYTEA UNIQUE NOT NULL,
     expiry_date DATE NOT NULL,
     active BOOLEAN,
     created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
