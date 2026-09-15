@@ -12,6 +12,7 @@ service GoKeeperService {
   rpc Register(RegisterRequest) returns (RegisterResponse);
   rpc Login(LoginRequest) returns (LoginResponse);
   rpc ConfirmEmail(ConfirmEmailRequest) returns (ConfirmEmailResponse);
+  rpc RefreshToken(TokenRequest) returns (TokenResponse);
 
   rpc GetProfile(ProfileRequest) returns (ProfileResponse);
   rpc UpdatePassword(PasswordRequest) returns (PasswordResponse);

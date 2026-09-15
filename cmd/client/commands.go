@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"time"
 
 	tea "charm.land/bubbletea/v2"
 	pb "github.com/Albert-Ti/go-keeper/pkg/proto"
@@ -22,6 +21,12 @@ type confirmResultMsg struct {
 type loginResultMsg struct {
 	err          error
 	emailCode    string
+	accessToken  string
+	refreshToken string
+}
+
+type refreshTokenResultMsg struct {
+	err          error
 	accessToken  string
 	refreshToken string
 }
@@ -94,13 +99,27 @@ func loginCmd(client pb.GoKeeperServiceClient, email, pass string) tea.Cmd {
 	}
 }
 
-func getProfileCmd(client pb.GoKeeperServiceClient, token string) tea.Cmd {
-	return func() tea.Msg {
-		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-		defer cancel()
-		ctx = metadata.AppendToOutgoingContext(ctx, "authorization", token)
+// func refreshTokenCmd(client pb.GoKeeperServiceClient) tea.Cmd {
+// 	return func() tea.Msg {
+// 		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+// 		defer cancel()
 
-		resp, err := client.GetProfile(ctx, &pb.ProfileRequest{})
+// 		resp, err := client.RefreshToken(ctx, pb.TokenRequest_builder{
+// 			RefreshToken: token,
+// 		}.Build())
+// 		if err != nil {
+// 			return refreshTokenResultMsg{err: err}
+// 		}
+// 		return refreshTokenResultMsg{
+// 			accessToken:  resp.GetAccessToken(),
+// 			refreshToken: resp.GetRefreshToken(),
+// 		}
+// 	}
+// }
+
+func getProfileCmd(client pb.GoKeeperServiceClient) tea.Cmd {
+	return func() tea.Msg {
+		resp, err := client.GetProfile(context.Background(), &pb.ProfileRequest{})
 		if err != nil {
 			return profileResultMsg{err: err}
 		}
@@ -112,13 +131,10 @@ func getProfileCmd(client pb.GoKeeperServiceClient, token string) tea.Cmd {
 	}
 }
 
-func getCardsCmd(client pb.GoKeeperServiceClient, token string) tea.Cmd {
+func getCardsCmd(client pb.GoKeeperServiceClient) tea.Cmd {
 	return func() tea.Msg {
-		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-		defer cancel()
-		ctx = metadata.AppendToOutgoingContext(ctx, "authorization", token)
 
-		resp, err := client.GetCards(ctx, &pb.CardsRequest{})
+		resp, err := client.GetCards(context.Background(), &pb.CardsRequest{})
 		if err != nil {
 			return cardsResultMsg{err: err}
 		}
@@ -126,13 +142,10 @@ func getCardsCmd(client pb.GoKeeperServiceClient, token string) tea.Cmd {
 	}
 }
 
-func createCardCmd(client pb.GoKeeperServiceClient, token, number, expiry string) tea.Cmd {
+func createCardCmd(client pb.GoKeeperServiceClient, number, expiry string) tea.Cmd {
 	return func() tea.Msg {
-		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-		defer cancel()
-		ctx = metadata.AppendToOutgoingContext(ctx, "authorization", token)
 
-		_, err := client.CreateCard(ctx, pb.CreateCardRequest_builder{
+		_, err := client.CreateCard(context.Background(), pb.CreateCardRequest_builder{
 			CardNumber: number,
 			ExpiryDate: expiry,
 		}.Build())

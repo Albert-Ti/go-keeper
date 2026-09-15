@@ -1,7 +1,6 @@
 package main
 
 import (
-	"context"
 	"fmt"
 	"log/slog"
 	"os"
@@ -15,7 +14,6 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/credentials/insecure"
-	"google.golang.org/grpc/metadata"
 	"google.golang.org/grpc/status"
 
 	pb "github.com/Albert-Ti/go-keeper/pkg/proto"
@@ -110,7 +108,7 @@ type model struct {
 
 func NewModel(client pb.GoKeeperServiceClient, localStorage *FileStorage) (*model, error) {
 	email := newStyledInput("email@example.com", false)
-	email.SetValue(localStorage.Get("email"))
+	email.SetValue(localStorage.creds.Email)
 	email.Focus()
 
 	pass := newStyledInput("password", true)
@@ -123,27 +121,8 @@ func NewModel(client pb.GoKeeperServiceClient, localStorage *FileStorage) (*mode
 	number := newStyledInput("card number", false)
 	date := newStyledInput("09/26", false)
 
-	initPage := homePage
-	initProfile := map[string]string{}
-	token := localStorage.Get("access_token")
-	if token != "" {
-		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-		defer cancel()
-		ctx = metadata.AppendToOutgoingContext(ctx, "authorization", localStorage.Get("access_token"))
-
-		resp, err := client.GetProfile(ctx, &pb.ProfileRequest{})
-		if err == nil {
-			initPage = userPage
-		}
-
-		initProfile = map[string]string{
-			"email":       resp.GetEmail(),
-			"password":    "*******",
-			"create_date": resp.GetCreatedAt().AsTime().Format("02 Jan 2006, 15:04")}
-	}
-
 	return &model{
-		activePage:        initPage,
+		activePage:        homePage,
 		activeTab:         tabProfile,
 		history:           []pageType{homePage},
 		choices:           []pageType{loginPage, registerPage},
@@ -163,10 +142,9 @@ func NewModel(client pb.GoKeeperServiceClient, localStorage *FileStorage) (*mode
 		client:  client,
 
 		localStorage: localStorage,
-		authUser:     localStorage.Get("email"),
-		accessToken:  localStorage.Get("access_token"),
-		refreshToken: localStorage.Get("refresh_token"),
-		profile:      initProfile,
+		authUser:     localStorage.creds.Email,
+		accessToken:  localStorage.creds.AccessToken,
+		refreshToken: localStorage.creds.RefreshToken,
 	}, nil
 }
 
@@ -191,7 +169,6 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 		return m, nil
 
-	// обработка ответа API
 	case registerResultMsg:
 		if msg.err != nil {
 			return m, m.handleError(msg.err)
@@ -216,12 +193,14 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.refreshToken = msg.refreshToken
 		m.authUser = m.authForm.email.Value()
 
-		msg.err = m.localStorage.Set("email", m.authUser)
-		msg.err = m.localStorage.Set("access_token", m.accessToken)
-		msg.err = m.localStorage.Set("refresh_token", m.refreshToken)
+		msg.err = m.localStorage.SaveCredentials(Credentials{
+			Email:        m.authUser,
+			AccessToken:  m.accessToken,
+			RefreshToken: m.refreshToken,
+		})
 
 		m = m.navigateTo(userPage)
-		return m, getProfileCmd(m.client, m.accessToken)
+		return m, getProfileCmd(m.client)
 
 	case confirmResultMsg:
 		if msg.err != nil {
@@ -254,7 +233,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.cardForm.date.SetValue("")
 		m.activePage = userPage
 		m.isLoad = false
-		return m, getCardsCmd(m.client, m.accessToken)
+		return m, getCardsCmd(m.client)
 
 	case tea.KeyPressMsg:
 		switch msg.String() {
@@ -268,9 +247,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				m.cardForm.number.Blur()
 				m.cardForm.date.Blur()
 			}
-			if m.authUser != "" && len(m.history) > 1 &&
-				m.history[len(m.history)-2] == loginPage ||
-				m.history[len(m.history)-2] == registerPage {
+			if m.authUser != "" {
 				m.textError = "to log out, press ctrl+q"
 				return m, clearErrorAfter(m.errorSeq)
 			}
@@ -387,9 +364,18 @@ func (m model) navigateTo(activePage pageType) model {
 }
 
 func main() {
+	localStorage, err := NewFileStorage()
+	if err != nil {
+		panic(err)
+	}
+
+	auth := AuthInterceptor{
+		localStorage: localStorage,
+	}
 	conn, err := grpc.NewClient(
 		"127.0.0.1:8080",
 		grpc.WithTransportCredentials(insecure.NewCredentials()),
+		grpc.WithChainUnaryInterceptor(auth.UnaryInterceptor),
 	)
 	if err != nil {
 		slog.Error("ошибка при установлении соединения с сервером", "error", err)
@@ -398,12 +384,7 @@ func main() {
 	defer conn.Close()
 	c := pb.NewGoKeeperServiceClient(conn)
 
-	fs, err := NewFileStorage()
-	if err != nil {
-		panic(err)
-	}
-
-	model, err := NewModel(c, fs)
+	model, err := NewModel(c, localStorage)
 	if err != nil {
 		panic(err)
 	}

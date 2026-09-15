@@ -91,9 +91,9 @@ func loginUpdate(msg tea.KeyPressMsg, m model) (model, tea.Cmd) {
 func loadActiveTab(activeTab tabType, m model) tea.Cmd {
 	switch activeTab {
 	case tabProfile:
-		return getProfileCmd(m.client, m.accessToken)
+		return getProfileCmd(m.client)
 	case tabCards:
-		return getCardsCmd(m.client, m.accessToken)
+		return getCardsCmd(m.client)
 	case tabData:
 	}
 	return nil
@@ -166,8 +166,7 @@ func cardFormUpdate(msg tea.KeyPressMsg, m model) (model, tea.Cmd) {
 	case "enter":
 		m.isLoad = true
 		cmd := createCardCmd(m.client, m.accessToken,
-			m.cardForm.number.Value(),
-			m.cardForm.date.Value())
+			m.cardForm.number.Value())
 		return m, cmd
 	}
 

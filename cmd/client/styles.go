@@ -41,6 +41,8 @@ var (
 	tabInactiveStyle = lipgloss.NewStyle().
 				Foreground(colorMuted).
 				Padding(0, 2)
+
+	buttonEnter = lipgloss.NewStyle().Foreground(colorPrimary).Render("[ enter ]")
 )
 
 func newStyledInput(placeholder string, isPassword bool) textinput.Model {
