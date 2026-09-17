@@ -8,7 +8,7 @@ import (
 const cardWidth = 80
 
 // Устанавливаем минимальную высоту для контента
-const minHeight = 15
+const minHeight = 16
 
 // Color
 var (
@@ -45,12 +45,12 @@ var (
 	buttonEnter = lipgloss.NewStyle().Foreground(colorPrimary).Render("[ enter ]")
 )
 
-func newStyledInput(placeholder string, isPassword bool) textinput.Model {
+func newStyledInput(placeholder string, isPass bool) textinput.Model {
 	t := textinput.New()
 	t.Placeholder = placeholder
 	t.SetWidth(25)
 
-	if isPassword {
+	if isPass {
 		t.EchoMode = textinput.EchoPassword
 		t.EchoCharacter = '•'
 	}

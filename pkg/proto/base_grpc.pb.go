@@ -19,14 +19,14 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	GoKeeperService_Register_FullMethodName       = "/gokeeper.GoKeeperService/Register"
-	GoKeeperService_Login_FullMethodName          = "/gokeeper.GoKeeperService/Login"
-	GoKeeperService_ConfirmEmail_FullMethodName   = "/gokeeper.GoKeeperService/ConfirmEmail"
-	GoKeeperService_RefreshToken_FullMethodName   = "/gokeeper.GoKeeperService/RefreshToken"
-	GoKeeperService_GetProfile_FullMethodName     = "/gokeeper.GoKeeperService/GetProfile"
-	GoKeeperService_UpdatePassword_FullMethodName = "/gokeeper.GoKeeperService/UpdatePassword"
-	GoKeeperService_GetCards_FullMethodName       = "/gokeeper.GoKeeperService/GetCards"
-	GoKeeperService_CreateCard_FullMethodName     = "/gokeeper.GoKeeperService/CreateCard"
+	GoKeeperService_Register_FullMethodName     = "/gokeeper.GoKeeperService/Register"
+	GoKeeperService_Login_FullMethodName        = "/gokeeper.GoKeeperService/Login"
+	GoKeeperService_ConfirmEmail_FullMethodName = "/gokeeper.GoKeeperService/ConfirmEmail"
+	GoKeeperService_RefreshToken_FullMethodName = "/gokeeper.GoKeeperService/RefreshToken"
+	GoKeeperService_GetProfile_FullMethodName   = "/gokeeper.GoKeeperService/GetProfile"
+	GoKeeperService_ChangePass_FullMethodName   = "/gokeeper.GoKeeperService/ChangePass"
+	GoKeeperService_GetCards_FullMethodName     = "/gokeeper.GoKeeperService/GetCards"
+	GoKeeperService_CreateCard_FullMethodName   = "/gokeeper.GoKeeperService/CreateCard"
 )
 
 // GoKeeperServiceClient is the client API for GoKeeperService service.
@@ -38,7 +38,7 @@ type GoKeeperServiceClient interface {
 	ConfirmEmail(ctx context.Context, in *ConfirmEmailRequest, opts ...grpc.CallOption) (*ConfirmEmailResponse, error)
 	RefreshToken(ctx context.Context, in *TokenRequest, opts ...grpc.CallOption) (*TokenResponse, error)
 	GetProfile(ctx context.Context, in *ProfileRequest, opts ...grpc.CallOption) (*ProfileResponse, error)
-	UpdatePassword(ctx context.Context, in *PasswordRequest, opts ...grpc.CallOption) (*PasswordResponse, error)
+	ChangePass(ctx context.Context, in *PassRequest, opts ...grpc.CallOption) (*PassResponse, error)
 	GetCards(ctx context.Context, in *CardsRequest, opts ...grpc.CallOption) (*CardsResponse, error)
 	CreateCard(ctx context.Context, in *CreateCardRequest, opts ...grpc.CallOption) (*CreateCardResponse, error)
 }
@@ -101,10 +101,10 @@ func (c *goKeeperServiceClient) GetProfile(ctx context.Context, in *ProfileReque
 	return out, nil
 }
 
-func (c *goKeeperServiceClient) UpdatePassword(ctx context.Context, in *PasswordRequest, opts ...grpc.CallOption) (*PasswordResponse, error) {
+func (c *goKeeperServiceClient) ChangePass(ctx context.Context, in *PassRequest, opts ...grpc.CallOption) (*PassResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(PasswordResponse)
-	err := c.cc.Invoke(ctx, GoKeeperService_UpdatePassword_FullMethodName, in, out, cOpts...)
+	out := new(PassResponse)
+	err := c.cc.Invoke(ctx, GoKeeperService_ChangePass_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -140,7 +140,7 @@ type GoKeeperServiceServer interface {
 	ConfirmEmail(context.Context, *ConfirmEmailRequest) (*ConfirmEmailResponse, error)
 	RefreshToken(context.Context, *TokenRequest) (*TokenResponse, error)
 	GetProfile(context.Context, *ProfileRequest) (*ProfileResponse, error)
-	UpdatePassword(context.Context, *PasswordRequest) (*PasswordResponse, error)
+	ChangePass(context.Context, *PassRequest) (*PassResponse, error)
 	GetCards(context.Context, *CardsRequest) (*CardsResponse, error)
 	CreateCard(context.Context, *CreateCardRequest) (*CreateCardResponse, error)
 	mustEmbedUnimplementedGoKeeperServiceServer()
@@ -168,8 +168,8 @@ func (UnimplementedGoKeeperServiceServer) RefreshToken(context.Context, *TokenRe
 func (UnimplementedGoKeeperServiceServer) GetProfile(context.Context, *ProfileRequest) (*ProfileResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method GetProfile not implemented")
 }
-func (UnimplementedGoKeeperServiceServer) UpdatePassword(context.Context, *PasswordRequest) (*PasswordResponse, error) {
-	return nil, status.Error(codes.Unimplemented, "method UpdatePassword not implemented")
+func (UnimplementedGoKeeperServiceServer) ChangePass(context.Context, *PassRequest) (*PassResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method ChangePass not implemented")
 }
 func (UnimplementedGoKeeperServiceServer) GetCards(context.Context, *CardsRequest) (*CardsResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method GetCards not implemented")
@@ -288,20 +288,20 @@ func _GoKeeperService_GetProfile_Handler(srv interface{}, ctx context.Context, d
 	return interceptor(ctx, in, info, handler)
 }
 
-func _GoKeeperService_UpdatePassword_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(PasswordRequest)
+func _GoKeeperService_ChangePass_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(PassRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(GoKeeperServiceServer).UpdatePassword(ctx, in)
+		return srv.(GoKeeperServiceServer).ChangePass(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: GoKeeperService_UpdatePassword_FullMethodName,
+		FullMethod: GoKeeperService_ChangePass_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(GoKeeperServiceServer).UpdatePassword(ctx, req.(*PasswordRequest))
+		return srv.(GoKeeperServiceServer).ChangePass(ctx, req.(*PassRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -370,8 +370,8 @@ var GoKeeperService_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _GoKeeperService_GetProfile_Handler,
 		},
 		{
-			MethodName: "UpdatePassword",
-			Handler:    _GoKeeperService_UpdatePassword_Handler,
+			MethodName: "ChangePass",
+			Handler:    _GoKeeperService_ChangePass_Handler,
 		},
 		{
 			MethodName: "GetCards",

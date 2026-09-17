@@ -55,7 +55,7 @@ func TestRegister(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			tt.setupMock(mockRepo)
 
-			req := pb.RegisterRequest_builder{Email: "example@mail.com", Password: "12345"}.Build()
+			req := pb.RegisterRequest_builder{Email: "example@mail.com", Pass: "12345"}.Build()
 			_, err := client.Register(context.Background(), req)
 
 			st, ok := status.FromError(err)

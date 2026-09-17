@@ -43,17 +43,17 @@ func (m *MockRepository) EXPECT() *MockRepositoryMockRecorder {
 }
 
 // AddUser mocks base method.
-func (m *MockRepository) AddUser(ctx context.Context, email, code, password string) error {
+func (m *MockRepository) AddUser(ctx context.Context, email, code, pass string) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "AddUser", ctx, email, code, password)
+	ret := m.ctrl.Call(m, "AddUser", ctx, email, code, pass)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // AddUser indicates an expected call of AddUser.
-func (mr *MockRepositoryMockRecorder) AddUser(ctx, email, code, password any) *gomock.Call {
+func (mr *MockRepositoryMockRecorder) AddUser(ctx, email, code, pass any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddUser", reflect.TypeOf((*MockRepository)(nil).AddUser), ctx, email, code, password)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddUser", reflect.TypeOf((*MockRepository)(nil).AddUser), ctx, email, code, pass)
 }
 
 // CreateCard mocks base method.

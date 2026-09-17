@@ -23,7 +23,6 @@ func (g *GrpcServer) GetProfile(ctx context.Context, in *pb.ProfileRequest) (*pb
 
 	response := pb.ProfileResponse_builder{
 		Email:     profile.Email,
-		Password:  profile.Password,
 		CreatedAt: timestamppb.New(profile.CreatedAt),
 	}.Build()
 

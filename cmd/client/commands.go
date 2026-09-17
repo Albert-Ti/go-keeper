@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"time"
 
 	tea "charm.land/bubbletea/v2"
 	pb "github.com/Albert-Ti/go-keeper/pkg/proto"
@@ -31,6 +32,10 @@ type refreshTokenResultMsg struct {
 	refreshToken string
 }
 
+type changePassResultMsg struct {
+	err error
+}
+
 type profileResultMsg struct {
 	err     error
 	profile map[string]string
@@ -51,7 +56,7 @@ func registerCmd(client pb.GoKeeperServiceClient, email, pass string) tea.Cmd {
 
 		_, err := client.Register(
 			context.Background(),
-			pb.RegisterRequest_builder{Email: email, Password: pass}.Build(),
+			pb.RegisterRequest_builder{Email: email, Pass: pass}.Build(),
 			grpc.Header(&header),
 		)
 		if err != nil {
@@ -82,7 +87,7 @@ func loginCmd(client pb.GoKeeperServiceClient, email, pass string) tea.Cmd {
 
 		resp, err := client.Login(
 			context.Background(),
-			pb.LoginRequest_builder{Email: email, Password: pass}.Build(),
+			pb.LoginRequest_builder{Email: email, Pass: pass}.Build(),
 			grpc.Header(&header),
 		)
 		if err != nil {
@@ -99,23 +104,33 @@ func loginCmd(client pb.GoKeeperServiceClient, email, pass string) tea.Cmd {
 	}
 }
 
-// func refreshTokenCmd(client pb.GoKeeperServiceClient) tea.Cmd {
-// 	return func() tea.Msg {
-// 		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-// 		defer cancel()
+func refreshTokenCmd(client pb.GoKeeperServiceClient, token string) tea.Cmd {
+	return func() tea.Msg {
+		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+		defer cancel()
 
-// 		resp, err := client.RefreshToken(ctx, pb.TokenRequest_builder{
-// 			RefreshToken: token,
-// 		}.Build())
-// 		if err != nil {
-// 			return refreshTokenResultMsg{err: err}
-// 		}
-// 		return refreshTokenResultMsg{
-// 			accessToken:  resp.GetAccessToken(),
-// 			refreshToken: resp.GetRefreshToken(),
-// 		}
-// 	}
-// }
+		resp, err := client.RefreshToken(ctx, pb.TokenRequest_builder{
+			RefreshToken: token,
+		}.Build())
+		if err != nil {
+			return refreshTokenResultMsg{err: err}
+		}
+		return refreshTokenResultMsg{
+			accessToken:  resp.GetAccessToken(),
+			refreshToken: resp.GetRefreshToken(),
+		}
+	}
+}
+
+func changePassCmd(client pb.GoKeeperServiceClient, passOld, passNew string) tea.Cmd {
+	return func() tea.Msg {
+		_, err := client.ChangePass(context.Background(), pb.PassRequest_builder{
+			PassOld: passOld,
+			PassNew: passNew,
+		}.Build())
+		return changePassResultMsg{err: err}
+	}
+}
 
 func getProfileCmd(client pb.GoKeeperServiceClient) tea.Cmd {
 	return func() tea.Msg {
@@ -125,7 +140,7 @@ func getProfileCmd(client pb.GoKeeperServiceClient) tea.Cmd {
 		}
 		return profileResultMsg{err: err, profile: map[string]string{
 			"email":       resp.GetEmail(),
-			"password":    "*******",
+			"pass":        "*******",
 			"create_date": resp.GetCreatedAt().AsTime().Format("02 Jan 2006, 15:04"),
 		}}
 	}
@@ -133,7 +148,6 @@ func getProfileCmd(client pb.GoKeeperServiceClient) tea.Cmd {
 
 func getCardsCmd(client pb.GoKeeperServiceClient) tea.Cmd {
 	return func() tea.Msg {
-
 		resp, err := client.GetCards(context.Background(), &pb.CardsRequest{})
 		if err != nil {
 			return cardsResultMsg{err: err}
@@ -144,7 +158,6 @@ func getCardsCmd(client pb.GoKeeperServiceClient) tea.Cmd {
 
 func createCardCmd(client pb.GoKeeperServiceClient, number, expiry string) tea.Cmd {
 	return func() tea.Msg {
-
 		_, err := client.CreateCard(context.Background(), pb.CreateCardRequest_builder{
 			CardNumber: number,
 			ExpiryDate: expiry,

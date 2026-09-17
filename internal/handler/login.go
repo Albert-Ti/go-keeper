@@ -12,13 +12,13 @@ import (
 )
 
 func (g *GrpcServer) Login(ctx context.Context, in *pb.LoginRequest) (*pb.LoginResponse, error) {
-	user, err := g.Svc.Login(ctx, in.GetEmail(), in.GetPassword())
+	user, err := g.Svc.Login(ctx, in.GetEmail(), in.GetPass())
 	if err != nil {
 		if errors.Is(err, service.ErrNoRows) {
 			return nil, status.Errorf(codes.NotFound, "user: %v, not found", in.GetEmail())
 		}
-		if errors.Is(err, service.ErrUnauthorized) {
-			return nil, status.Errorf(codes.Unauthenticated, "email: %v, invalid email or password", in.GetEmail())
+		if errors.Is(err, service.ErrInvalidPassword) {
+			return nil, status.Errorf(codes.Unauthenticated, "email: %v, invalid email or pass", in.GetEmail())
 		}
 		if errors.Is(err, service.ErrEmailNotConfirmed) {
 			return nil, status.Errorf(codes.PermissionDenied, "email: %v, has not been confirmed", in.GetEmail())

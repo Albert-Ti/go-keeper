@@ -9,12 +9,12 @@ type Sender struct {
 	from   string
 }
 
-func NewSender(host string, port int, username, password, from string) (*Sender, error) {
+func NewSender(host string, port int, username, pass, from string) (*Sender, error) {
 	client, err := mail.NewClient(host,
 		mail.WithPort(port),
 		mail.WithSMTPAuth(mail.SMTPAuthPlain),
 		mail.WithUsername(username),
-		mail.WithPassword(password),
+		mail.WithPassword(pass),
 		mail.WithSSL(),
 	)
 	if err != nil {

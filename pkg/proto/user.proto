@@ -11,10 +11,12 @@ message ProfileRequest {}
 
 message ProfileResponse {
   string email = 1;
-  string password = 2;
   google.protobuf.Timestamp created_at = 3;
 }
 
-message PasswordRequest {}
+message PassRequest {
+  string pass_old = 1;
+  string pass_new = 2;
+}
 
-message PasswordResponse {}
+message PassResponse {}

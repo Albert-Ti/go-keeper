@@ -32,7 +32,7 @@ func main() {
 			opts.SMTPOpt.Host,
 			opts.SMTPOpt.Port,
 			opts.SMTPOpt.Username,
-			opts.SMTPOpt.Password,
+			opts.SMTPOpt.Pass,
 			opts.SMTPOpt.Username,
 		)
 		if err != nil {

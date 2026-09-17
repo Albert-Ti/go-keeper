@@ -31,7 +31,7 @@ type smtpFileOptions struct {
 	Port     int    `json:"port"`
 	Host     string `json:"host"`
 	Username string `json:"username"`
-	Password string `json:"password"`
+	Pass     string `json:"pass"`
 }
 
 // NewOptions создаёт Options со значениями по умолчанию и применяет

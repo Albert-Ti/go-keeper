@@ -12,11 +12,11 @@ import (
 )
 
 func (g *GrpcServer) Register(ctx context.Context, in *pb.RegisterRequest) (*pb.RegisterResponse, error) {
-	if len(in.GetPassword()) < 3 {
-		return nil, status.Errorf(codes.InvalidArgument, "password: %v, is too short", in.GetPassword())
+	if len(in.GetPass()) < 3 {
+		return nil, status.Errorf(codes.InvalidArgument, "pass: %v, is too short", in.GetPass())
 	}
 
-	err := g.Svc.Register(ctx, in.GetEmail(), in.GetPassword())
+	err := g.Svc.Register(ctx, in.GetEmail(), in.GetPass())
 	if err != nil {
 		if errors.Is(err, service.ErrAlreadyExists) {
 			return nil, status.Errorf(codes.AlreadyExists, "user: %s, is already registered", in.GetEmail())

@@ -67,7 +67,6 @@ func (b0 ProfileRequest_builder) Build() *ProfileRequest {
 type ProfileResponse struct {
 	state                protoimpl.MessageState `protogen:"opaque.v1"`
 	xxx_hidden_Email     string                 `protobuf:"bytes,1,opt,name=email,proto3"`
-	xxx_hidden_Password  string                 `protobuf:"bytes,2,opt,name=password,proto3"`
 	xxx_hidden_CreatedAt *timestamppb.Timestamp `protobuf:"bytes,3,opt,name=created_at,json=createdAt,proto3"`
 	unknownFields        protoimpl.UnknownFields
 	sizeCache            protoimpl.SizeCache
@@ -105,13 +104,6 @@ func (x *ProfileResponse) GetEmail() string {
 	return ""
 }
 
-func (x *ProfileResponse) GetPassword() string {
-	if x != nil {
-		return x.xxx_hidden_Password
-	}
-	return ""
-}
-
 func (x *ProfileResponse) GetCreatedAt() *timestamppb.Timestamp {
 	if x != nil {
 		return x.xxx_hidden_CreatedAt
@@ -121,10 +113,6 @@ func (x *ProfileResponse) GetCreatedAt() *timestamppb.Timestamp {
 
 func (x *ProfileResponse) SetEmail(v string) {
 	x.xxx_hidden_Email = v
-}
-
-func (x *ProfileResponse) SetPassword(v string) {
-	x.xxx_hidden_Password = v
 }
 
 func (x *ProfileResponse) SetCreatedAt(v *timestamppb.Timestamp) {
@@ -146,7 +134,6 @@ type ProfileResponse_builder struct {
 	_ [0]func() // Prevents comparability and use of unkeyed literals for the builder.
 
 	Email     string
-	Password  string
 	CreatedAt *timestamppb.Timestamp
 }
 
@@ -155,31 +142,32 @@ func (b0 ProfileResponse_builder) Build() *ProfileResponse {
 	b, x := &b0, m0
 	_, _ = b, x
 	x.xxx_hidden_Email = b.Email
-	x.xxx_hidden_Password = b.Password
 	x.xxx_hidden_CreatedAt = b.CreatedAt
 	return m0
 }
 
-type PasswordRequest struct {
-	state         protoimpl.MessageState `protogen:"opaque.v1"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
+type PassRequest struct {
+	state              protoimpl.MessageState `protogen:"opaque.v1"`
+	xxx_hidden_PassOld string                 `protobuf:"bytes,1,opt,name=pass_old,json=passOld,proto3"`
+	xxx_hidden_PassNew string                 `protobuf:"bytes,2,opt,name=pass_new,json=passNew,proto3"`
+	unknownFields      protoimpl.UnknownFields
+	sizeCache          protoimpl.SizeCache
 }
 
-func (x *PasswordRequest) Reset() {
-	*x = PasswordRequest{}
+func (x *PassRequest) Reset() {
+	*x = PassRequest{}
 	mi := &file_user_proto_msgTypes[2]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
 
-func (x *PasswordRequest) String() string {
+func (x *PassRequest) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*PasswordRequest) ProtoMessage() {}
+func (*PassRequest) ProtoMessage() {}
 
-func (x *PasswordRequest) ProtoReflect() protoreflect.Message {
+func (x *PassRequest) ProtoReflect() protoreflect.Message {
 	mi := &file_user_proto_msgTypes[2]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -191,38 +179,64 @@ func (x *PasswordRequest) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-type PasswordRequest_builder struct {
-	_ [0]func() // Prevents comparability and use of unkeyed literals for the builder.
-
+func (x *PassRequest) GetPassOld() string {
+	if x != nil {
+		return x.xxx_hidden_PassOld
+	}
+	return ""
 }
 
-func (b0 PasswordRequest_builder) Build() *PasswordRequest {
-	m0 := &PasswordRequest{}
+func (x *PassRequest) GetPassNew() string {
+	if x != nil {
+		return x.xxx_hidden_PassNew
+	}
+	return ""
+}
+
+func (x *PassRequest) SetPassOld(v string) {
+	x.xxx_hidden_PassOld = v
+}
+
+func (x *PassRequest) SetPassNew(v string) {
+	x.xxx_hidden_PassNew = v
+}
+
+type PassRequest_builder struct {
+	_ [0]func() // Prevents comparability and use of unkeyed literals for the builder.
+
+	PassOld string
+	PassNew string
+}
+
+func (b0 PassRequest_builder) Build() *PassRequest {
+	m0 := &PassRequest{}
 	b, x := &b0, m0
 	_, _ = b, x
+	x.xxx_hidden_PassOld = b.PassOld
+	x.xxx_hidden_PassNew = b.PassNew
 	return m0
 }
 
-type PasswordResponse struct {
+type PassResponse struct {
 	state         protoimpl.MessageState `protogen:"opaque.v1"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
-func (x *PasswordResponse) Reset() {
-	*x = PasswordResponse{}
+func (x *PassResponse) Reset() {
+	*x = PassResponse{}
 	mi := &file_user_proto_msgTypes[3]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
 
-func (x *PasswordResponse) String() string {
+func (x *PassResponse) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*PasswordResponse) ProtoMessage() {}
+func (*PassResponse) ProtoMessage() {}
 
-func (x *PasswordResponse) ProtoReflect() protoreflect.Message {
+func (x *PassResponse) ProtoReflect() protoreflect.Message {
 	mi := &file_user_proto_msgTypes[3]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -234,13 +248,13 @@ func (x *PasswordResponse) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-type PasswordResponse_builder struct {
+type PassResponse_builder struct {
 	_ [0]func() // Prevents comparability and use of unkeyed literals for the builder.
 
 }
 
-func (b0 PasswordResponse_builder) Build() *PasswordResponse {
-	m0 := &PasswordResponse{}
+func (b0 PassResponse_builder) Build() *PassResponse {
+	m0 := &PassResponse{}
 	b, x := &b0, m0
 	_, _ = b, x
 	return m0
@@ -252,21 +266,22 @@ const file_user_proto_rawDesc = "" +
 	"\n" +
 	"\n" +
 	"user.proto\x12\bgokeeper\x1a\x1fgoogle/protobuf/timestamp.proto\"\x10\n" +
-	"\x0eProfileRequest\"~\n" +
+	"\x0eProfileRequest\"b\n" +
 	"\x0fProfileResponse\x12\x14\n" +
-	"\x05email\x18\x01 \x01(\tR\x05email\x12\x1a\n" +
-	"\bpassword\x18\x02 \x01(\tR\bpassword\x129\n" +
+	"\x05email\x18\x01 \x01(\tR\x05email\x129\n" +
 	"\n" +
-	"created_at\x18\x03 \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedAt\"\x11\n" +
-	"\x0fPasswordRequest\"\x12\n" +
-	"\x10PasswordResponseB*Z(github.com/Albert-Ti/go-keeper/pkg/protob\x06proto3"
+	"created_at\x18\x03 \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedAt\"C\n" +
+	"\vPassRequest\x12\x19\n" +
+	"\bpass_old\x18\x01 \x01(\tR\apassOld\x12\x19\n" +
+	"\bpass_new\x18\x02 \x01(\tR\apassNew\"\x0e\n" +
+	"\fPassResponseB*Z(github.com/Albert-Ti/go-keeper/pkg/protob\x06proto3"
 
 var file_user_proto_msgTypes = make([]protoimpl.MessageInfo, 4)
 var file_user_proto_goTypes = []any{
 	(*ProfileRequest)(nil),        // 0: gokeeper.ProfileRequest
 	(*ProfileResponse)(nil),       // 1: gokeeper.ProfileResponse
-	(*PasswordRequest)(nil),       // 2: gokeeper.PasswordRequest
-	(*PasswordResponse)(nil),      // 3: gokeeper.PasswordResponse
+	(*PassRequest)(nil),           // 2: gokeeper.PassRequest
+	(*PassResponse)(nil),          // 3: gokeeper.PassResponse
 	(*timestamppb.Timestamp)(nil), // 4: google.protobuf.Timestamp
 }
 var file_user_proto_depIdxs = []int32{

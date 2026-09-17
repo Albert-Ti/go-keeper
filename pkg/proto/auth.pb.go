@@ -21,11 +21,11 @@ const (
 )
 
 type RegisterRequest struct {
-	state               protoimpl.MessageState `protogen:"opaque.v1"`
-	xxx_hidden_Email    string                 `protobuf:"bytes,1,opt,name=email,proto3"`
-	xxx_hidden_Password string                 `protobuf:"bytes,2,opt,name=password,proto3"`
-	unknownFields       protoimpl.UnknownFields
-	sizeCache           protoimpl.SizeCache
+	state            protoimpl.MessageState `protogen:"opaque.v1"`
+	xxx_hidden_Email string                 `protobuf:"bytes,1,opt,name=email,proto3"`
+	xxx_hidden_Pass  string                 `protobuf:"bytes,2,opt,name=pass,proto3"`
+	unknownFields    protoimpl.UnknownFields
+	sizeCache        protoimpl.SizeCache
 }
 
 func (x *RegisterRequest) Reset() {
@@ -60,9 +60,9 @@ func (x *RegisterRequest) GetEmail() string {
 	return ""
 }
 
-func (x *RegisterRequest) GetPassword() string {
+func (x *RegisterRequest) GetPass() string {
 	if x != nil {
-		return x.xxx_hidden_Password
+		return x.xxx_hidden_Pass
 	}
 	return ""
 }
@@ -71,15 +71,15 @@ func (x *RegisterRequest) SetEmail(v string) {
 	x.xxx_hidden_Email = v
 }
 
-func (x *RegisterRequest) SetPassword(v string) {
-	x.xxx_hidden_Password = v
+func (x *RegisterRequest) SetPass(v string) {
+	x.xxx_hidden_Pass = v
 }
 
 type RegisterRequest_builder struct {
 	_ [0]func() // Prevents comparability and use of unkeyed literals for the builder.
 
-	Email    string
-	Password string
+	Email string
+	Pass  string
 }
 
 func (b0 RegisterRequest_builder) Build() *RegisterRequest {
@@ -87,7 +87,7 @@ func (b0 RegisterRequest_builder) Build() *RegisterRequest {
 	b, x := &b0, m0
 	_, _ = b, x
 	x.xxx_hidden_Email = b.Email
-	x.xxx_hidden_Password = b.Password
+	x.xxx_hidden_Pass = b.Pass
 	return m0
 }
 
@@ -135,11 +135,11 @@ func (b0 RegisterResponse_builder) Build() *RegisterResponse {
 }
 
 type LoginRequest struct {
-	state               protoimpl.MessageState `protogen:"opaque.v1"`
-	xxx_hidden_Email    string                 `protobuf:"bytes,1,opt,name=email,proto3"`
-	xxx_hidden_Password string                 `protobuf:"bytes,2,opt,name=password,proto3"`
-	unknownFields       protoimpl.UnknownFields
-	sizeCache           protoimpl.SizeCache
+	state            protoimpl.MessageState `protogen:"opaque.v1"`
+	xxx_hidden_Email string                 `protobuf:"bytes,1,opt,name=email,proto3"`
+	xxx_hidden_Pass  string                 `protobuf:"bytes,2,opt,name=pass,proto3"`
+	unknownFields    protoimpl.UnknownFields
+	sizeCache        protoimpl.SizeCache
 }
 
 func (x *LoginRequest) Reset() {
@@ -174,9 +174,9 @@ func (x *LoginRequest) GetEmail() string {
 	return ""
 }
 
-func (x *LoginRequest) GetPassword() string {
+func (x *LoginRequest) GetPass() string {
 	if x != nil {
-		return x.xxx_hidden_Password
+		return x.xxx_hidden_Pass
 	}
 	return ""
 }
@@ -185,15 +185,15 @@ func (x *LoginRequest) SetEmail(v string) {
 	x.xxx_hidden_Email = v
 }
 
-func (x *LoginRequest) SetPassword(v string) {
-	x.xxx_hidden_Password = v
+func (x *LoginRequest) SetPass(v string) {
+	x.xxx_hidden_Pass = v
 }
 
 type LoginRequest_builder struct {
 	_ [0]func() // Prevents comparability and use of unkeyed literals for the builder.
 
-	Email    string
-	Password string
+	Email string
+	Pass  string
 }
 
 func (b0 LoginRequest_builder) Build() *LoginRequest {
@@ -201,7 +201,7 @@ func (b0 LoginRequest_builder) Build() *LoginRequest {
 	b, x := &b0, m0
 	_, _ = b, x
 	x.xxx_hidden_Email = b.Email
-	x.xxx_hidden_Password = b.Password
+	x.xxx_hidden_Pass = b.Pass
 	return m0
 }
 
@@ -523,14 +523,14 @@ var File_auth_proto protoreflect.FileDescriptor
 const file_auth_proto_rawDesc = "" +
 	"\n" +
 	"\n" +
-	"auth.proto\x12\bgokeeper\"C\n" +
+	"auth.proto\x12\bgokeeper\";\n" +
 	"\x0fRegisterRequest\x12\x14\n" +
-	"\x05email\x18\x01 \x01(\tR\x05email\x12\x1a\n" +
-	"\bpassword\x18\x02 \x01(\tR\bpassword\"\x12\n" +
-	"\x10RegisterResponse\"@\n" +
+	"\x05email\x18\x01 \x01(\tR\x05email\x12\x12\n" +
+	"\x04pass\x18\x02 \x01(\tR\x04pass\"\x12\n" +
+	"\x10RegisterResponse\"8\n" +
 	"\fLoginRequest\x12\x14\n" +
-	"\x05email\x18\x01 \x01(\tR\x05email\x12\x1a\n" +
-	"\bpassword\x18\x02 \x01(\tR\bpassword\"W\n" +
+	"\x05email\x18\x01 \x01(\tR\x05email\x12\x12\n" +
+	"\x04pass\x18\x02 \x01(\tR\x04pass\"W\n" +
 	"\rLoginResponse\x12!\n" +
 	"\faccess_token\x18\x01 \x01(\tR\vaccessToken\x12#\n" +
 	"\rrefresh_token\x18\x02 \x01(\tR\frefreshToken\"3\n" +

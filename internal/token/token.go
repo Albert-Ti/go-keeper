@@ -19,8 +19,8 @@ func CreateAccessToken(userID string, secretKey string) (string, error) {
 
 	t.Claims = &MyCustomClaims{
 		jwt.RegisteredClaims{
-			// TODO 2 минуты для тестирования клиента для вызова RefreshToken
-			ExpiresAt: jwt.NewNumericDate(time.Now().Add(2 * time.Minute)),
+			// TODO 1 минуты для тестирования клиента
+			ExpiresAt: jwt.NewNumericDate(time.Now().Add(1 * time.Minute)),
 		},
 		userID,
 	}
@@ -33,20 +33,8 @@ func CreateRefreshToken(userID string, secretKey string) (string, error) {
 
 	t.Claims = &MyCustomClaims{
 		jwt.RegisteredClaims{
-			ExpiresAt: jwt.NewNumericDate(time.Now().Add(30 * 24 * time.Hour)),
-		},
-		userID,
-	}
-
-	return t.SignedString([]byte(secretKey))
-}
-
-func CreateConfirmEmailToken(userID string, secretKey string) (string, error) {
-	t := jwt.New(jwt.SigningMethodHS256)
-
-	t.Claims = &MyCustomClaims{
-		jwt.RegisteredClaims{
-			ExpiresAt: jwt.NewNumericDate(time.Now().Add(30 * 24 * time.Hour)),
+			// TODO 5 минуты для тестирования клиента
+			ExpiresAt: jwt.NewNumericDate(time.Now().Add(5 * time.Minute)),
 		},
 		userID,
 	}

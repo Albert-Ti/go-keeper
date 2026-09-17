@@ -51,7 +51,7 @@ func Auth(secretKey string) grpc.UnaryServerInterceptor {
 
 				if err != nil || !token.Valid || claims.UserID == "" {
 					if errors.Is(err, jwt.ErrTokenExpired) {
-						return nil, status.Error(codes.Unauthenticated, "token is expired")
+						return nil, status.Error(codes.Unauthenticated, "access token is expired")
 					}
 					return nil, status.Error(codes.Unauthenticated, err.Error())
 				}

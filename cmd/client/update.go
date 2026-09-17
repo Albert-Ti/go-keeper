@@ -128,6 +128,9 @@ func userUpdate(msg tea.KeyPressMsg, m model) (model, tea.Cmd) {
 			if m.cursor < len(m.contentTabProfile)-1 {
 				m.cursor++
 			}
+		case "enter":
+			m.profileForm.passOld.Focus()
+			return m.navigateTo(profileFormPage), nil
 		}
 
 	case tabCards:
@@ -141,9 +144,11 @@ func userUpdate(msg tea.KeyPressMsg, m model) (model, tea.Cmd) {
 				m.cursor++
 			}
 		case "enter":
-			m = m.navigateTo(cardFormPage)
-			cmd := m.cardForm.number.Focus()
-			return m, cmd
+			m.cardForm.number.Focus()
+			// Для теста
+			m.cardForm.number.SetValue("5555640328235487")
+			m.cardForm.date.SetValue("01/27")
+			return m.navigateTo(cardFormPage), nil
 		}
 
 	case tabData:
@@ -151,7 +156,36 @@ func userUpdate(msg tea.KeyPressMsg, m model) (model, tea.Cmd) {
 	return m, nil
 }
 
+func profileFormUpdate(msg tea.KeyPressMsg, m model) (model, tea.Cmd) {
+	switch msg.String() {
+	case "tab":
+		var cmd tea.Cmd
+		if m.profileForm.passOld.Focused() {
+			m.profileForm.passOld.Blur()
+			cmd = m.profileForm.passNew.Focus()
+		} else {
+			m.profileForm.passNew.Blur()
+			cmd = m.profileForm.passOld.Focus()
+		}
+		return m, cmd
+	case "enter":
+		m.isLoad = true
+		return m, changePassCmd(m.client, m.profileForm.passOld.Value(), m.profileForm.passNew.Value())
+
+	}
+
+	var cmd tea.Cmd
+	switch {
+	case m.profileForm.passOld.Focused():
+		m.profileForm.passOld, cmd = m.profileForm.passOld.Update(msg)
+	case m.profileForm.passNew.Focused():
+		m.profileForm.passNew, cmd = m.profileForm.passNew.Update(msg)
+	}
+	return m, cmd
+}
+
 func cardFormUpdate(msg tea.KeyPressMsg, m model) (model, tea.Cmd) {
+
 	switch msg.String() {
 	case "tab":
 		var cmd tea.Cmd
@@ -165,9 +199,7 @@ func cardFormUpdate(msg tea.KeyPressMsg, m model) (model, tea.Cmd) {
 		return m, cmd
 	case "enter":
 		m.isLoad = true
-		cmd := createCardCmd(m.client, m.accessToken,
-			m.cardForm.number.Value())
-		return m, cmd
+		return m, createCardCmd(m.client, m.cardForm.number.Value(), m.cardForm.date.Value())
 	}
 
 	var cmd tea.Cmd

@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log/slog"
 	"os"
+	"strings"
 	"time"
 
 	"charm.land/bubbles/v2/spinner"
@@ -48,6 +49,7 @@ const (
 	loginPage
 	confirmPage
 	userPage
+	profileFormPage
 	cardFormPage
 )
 
@@ -63,6 +65,10 @@ func (p pageType) String() string {
 		return "confirm"
 	case userPage:
 		return "user"
+	case profileFormPage:
+		return "profile/update"
+	case cardFormPage:
+		return "cards/create"
 	default:
 		return ""
 	}
@@ -79,6 +85,11 @@ type cardForm struct {
 	date   textinput.Model
 }
 
+type profileForm struct {
+	passOld textinput.Model
+	passNew textinput.Model
+}
+
 type model struct {
 	cursor            int
 	activePage        pageType
@@ -87,31 +98,36 @@ type model struct {
 	choices           []pageType
 	allTabs           []tabType
 	contentTabProfile []string
-	authForm          authForm
-	cardForm          cardForm
-	width             int
-	height            int
-	textError         string
-	errorSeq          int
-	authUser          string
-	codeEmail         string
-	accessToken       string
-	refreshToken      string
-	profile           map[string]string
-	cards             []*pb.CardData
-	isLoad            bool
-	spinner           spinner.Model
-	localStorage      *FileStorage
+
+	authForm    authForm
+	cardForm    cardForm
+	profileForm profileForm
+
+	width        int
+	height       int
+	textError    string
+	errorSeq     int
+	codeEmail    string
+	authUser     string
+	accessToken  string
+	refreshToken string
+	profile      map[string]string
+	cards        []*pb.CardData
+	isLoad       bool
+	spinner      spinner.Model
+	localStorage *FileStorage
 
 	client pb.GoKeeperServiceClient
 }
 
 func NewModel(client pb.GoKeeperServiceClient, localStorage *FileStorage) (*model, error) {
 	email := newStyledInput("email@example.com", false)
-	email.SetValue(localStorage.creds.Email)
+	email.SetValue(localStorage.Get(emailKey))
 	email.Focus()
 
 	pass := newStyledInput("password", true)
+	passOld := newStyledInput("old password", true)
+	passNew := newStyledInput("new password", true)
 	confirm := newStyledInput("confirmation code", false)
 
 	s := spinner.New()
@@ -121,13 +137,20 @@ func NewModel(client pb.GoKeeperServiceClient, localStorage *FileStorage) (*mode
 	number := newStyledInput("card number", false)
 	date := newStyledInput("09/26", false)
 
+	initPage := homePage
+	initHistory := []pageType{homePage}
+	if localStorage.Get(accessTokenKey) != "" {
+		initPage = userPage
+		initHistory = []pageType{userPage}
+	}
+
 	return &model{
-		activePage:        homePage,
+		activePage:        initPage,
 		activeTab:         tabProfile,
-		history:           []pageType{homePage},
+		history:           initHistory,
 		choices:           []pageType{loginPage, registerPage},
 		allTabs:           []tabType{tabProfile, tabCards, tabData},
-		contentTabProfile: []string{"email", "password", "create_date"},
+		contentTabProfile: []string{"email", "create_date"},
 		authForm: authForm{
 			email:   email,
 			pass:    pass,
@@ -137,21 +160,34 @@ func NewModel(client pb.GoKeeperServiceClient, localStorage *FileStorage) (*mode
 			number: number,
 			date:   date,
 		},
+		profileForm: profileForm{
+			passOld: passOld,
+			passNew: passNew,
+		},
 		spinner: s,
 		cards:   []*pb.CardData{},
 		client:  client,
 
 		localStorage: localStorage,
-		authUser:     localStorage.creds.Email,
-		accessToken:  localStorage.creds.AccessToken,
-		refreshToken: localStorage.creds.RefreshToken,
+		authUser:     localStorage.Get(emailKey),
+		accessToken:  localStorage.Get(accessTokenKey),
+		refreshToken: localStorage.Get(refreshTokenKey),
 	}, nil
 }
 
 func (m model) Init() tea.Cmd {
+	if m.accessToken == "" {
+		return tea.Batch(
+			textinput.Blink,
+			m.spinner.Tick,
+		)
+	}
+
 	return tea.Batch(
 		textinput.Blink,
 		m.spinner.Tick,
+		// Минуем авторизацию если есть токен
+		getProfileCmd(m.client),
 	)
 }
 
@@ -169,6 +205,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 		return m, nil
 
+		// API result public
 	case registerResultMsg:
 		if msg.err != nil {
 			return m, m.handleError(msg.err)
@@ -192,25 +229,44 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.accessToken = msg.accessToken
 		m.refreshToken = msg.refreshToken
 		m.authUser = m.authForm.email.Value()
-
-		msg.err = m.localStorage.SaveCredentials(Credentials{
-			Email:        m.authUser,
-			AccessToken:  m.accessToken,
-			RefreshToken: m.refreshToken,
-		})
-
-		m = m.navigateTo(userPage)
-		return m, getProfileCmd(m.client)
+		if err := m.localStorage.Set(emailKey, m.authForm.email.Value()); err != nil {
+			return m, m.handleError(err)
+		}
+		if err := m.localStorage.Set(accessTokenKey, msg.accessToken); err != nil {
+			return m, m.handleError(err)
+		}
+		if err := m.localStorage.Set(refreshTokenKey, msg.refreshToken); err != nil {
+			return m, m.handleError(err)
+		}
+		return m.navigateTo(userPage), getProfileCmd(m.client)
 
 	case confirmResultMsg:
 		if msg.err != nil {
 			return m, m.handleError(msg.err)
 		}
-		m.isLoad = true
 		return m, loginCmd(m.client, m.authForm.email.Value(), m.authForm.pass.Value())
 
+	case refreshTokenResultMsg:
+		if msg.err != nil {
+			m.Reset()
+			return m, m.handleError(msg.err)
+		}
+		m.accessToken = msg.accessToken
+		m.refreshToken = msg.refreshToken
+		if err := m.localStorage.Set(accessTokenKey, msg.accessToken); err != nil {
+			return m, m.handleError(err)
+		}
+		if err := m.localStorage.Set(refreshTokenKey, msg.refreshToken); err != nil {
+			return m, m.handleError(err)
+		}
+		return m, getProfileCmd(m.client)
+
+		// API result private
 	case profileResultMsg:
 		if msg.err != nil {
+			if strings.Contains(msg.err.Error(), "access token is expired") {
+				return m, refreshTokenCmd(m.client, m.localStorage.Get(refreshTokenKey))
+			}
 			m.Reset()
 			return m, m.handleError(msg.err)
 		}
@@ -219,6 +275,9 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 	case cardsResultMsg:
 		if msg.err != nil {
+			if strings.Contains(msg.err.Error(), "access token is expired") {
+				return m, refreshTokenCmd(m.client, m.localStorage.Get(refreshTokenKey))
+			}
 			m.Reset()
 			return m, m.handleError(msg.err)
 		}
@@ -227,14 +286,28 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 	case createCardResultMsg:
 		if msg.err != nil {
+			if strings.Contains(msg.err.Error(), "access token is expired") {
+				return m, refreshTokenCmd(m.client, m.localStorage.Get(refreshTokenKey))
+			}
 			return m, m.handleError(msg.err)
 		}
+
 		m.cardForm.number.SetValue("")
 		m.cardForm.date.SetValue("")
-		m.activePage = userPage
-		m.isLoad = false
-		return m, getCardsCmd(m.client)
+		// вызов getCardsCmd для получения нового списка после добавления
+		return m.navigateTo(userPage), getCardsCmd(m.client)
 
+	case changePassResultMsg:
+		if msg.err != nil {
+			if strings.Contains(msg.err.Error(), "access token is expired") {
+				return m, refreshTokenCmd(m.client, m.localStorage.Get(refreshTokenKey))
+			}
+			return m, m.handleError(msg.err)
+		}
+
+		return m.navigateTo(userPage), getProfileCmd(m.client)
+
+		// Обработка нажатия клавиш
 	case tea.KeyPressMsg:
 		switch msg.String() {
 		case "ctrl+c":
@@ -247,7 +320,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				m.cardForm.number.Blur()
 				m.cardForm.date.Blur()
 			}
-			if m.authUser != "" {
+			if len(m.history) <= 1 {
 				m.textError = "to log out, press ctrl+q"
 				return m, clearErrorAfter(m.errorSeq)
 			}
@@ -271,6 +344,8 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return userUpdate(msg, m)
 		case cardFormPage:
 			return cardFormUpdate(msg, m)
+		case profileFormPage:
+			return profileFormUpdate(msg, m)
 		}
 
 	default:
@@ -288,11 +363,18 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			m.authForm.pass, cmd = m.authForm.pass.Update(msg)
 		case m.authForm.confirm.Focused():
 			m.authForm.confirm, cmd = m.authForm.confirm.Update(msg)
+
 		case m.cardForm.number.Focused():
 			m.cardForm.number, cmd = m.cardForm.number.Update(msg)
 		case m.cardForm.date.Focused():
 			m.cardForm.date, cmd = m.cardForm.date.Update(msg)
+
+		case m.profileForm.passOld.Focused():
+			m.profileForm.passOld, cmd = m.profileForm.passOld.Update(msg)
+		case m.profileForm.passNew.Focused():
+			m.profileForm.passNew, cmd = m.profileForm.passNew.Update(msg)
 		}
+
 		cmds = append(cmds, cmd)
 		return m, tea.Batch(cmds...)
 	}
@@ -324,18 +406,18 @@ func (m *model) handleError(err error) tea.Cmd {
 
 func (m *model) Reset() {
 	m.activePage = homePage
+	m.activeTab = tabProfile
 	m.history = []pageType{homePage}
 
 	m.authUser = ""
 	m.accessToken = ""
 	m.refreshToken = ""
 	m.codeEmail = ""
-	m.cards = []*pb.CardData{}
 
 	m.authForm.email.Focus()
 	m.authForm.pass.Blur()
 	m.authForm.confirm.Blur()
-	m.authForm.email.SetValue("")
+	m.authForm.email.SetValue(m.localStorage.Get(emailKey))
 	m.authForm.pass.SetValue("")
 	m.authForm.confirm.SetValue("")
 
@@ -357,13 +439,26 @@ func clearErrorAfter(seq int) tea.Cmd {
 }
 
 func (m model) navigateTo(activePage pageType) model {
+	if activePage == homePage || activePage == userPage {
+		m.history = m.history[:0]
+	}
 	m.activePage = activePage
 	m.history = append(m.history, activePage)
 
+	slog.Info("DEBUG", slog.Any("history", m.history))
 	return m
 }
 
 func main() {
+	logger, closeLog, err := setupLogger("client.log")
+	if err != nil {
+		fmt.Println("setup logger fatal:", err)
+		os.Exit(1)
+	}
+	defer closeLog()
+
+	slog.SetDefault(logger) // slog.Info/Error/Debug пишут в файл везде
+
 	localStorage, err := NewFileStorage()
 	if err != nil {
 		panic(err)

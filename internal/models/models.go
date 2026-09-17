@@ -7,19 +7,20 @@ type User struct {
 	Email          string
 	EmailCode      string
 	IsConfirmEmail bool
-	Password       string
+	Pass           string
 }
 
 type UpdateUserParams struct {
+	UUID           string
 	Email          string
 	EmailCode      *string
 	IsConfirmEmail *bool
-	Password       *string
+	Pass           *string
 }
 
 type Profile struct {
 	Email     string
-	Password  string
+	Pass      string
 	CreatedAt time.Time
 }
 

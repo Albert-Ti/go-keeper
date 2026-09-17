@@ -21,7 +21,7 @@ import (
 
 var (
 	ErrAlreadyExists     = errors.New("user already exist")
-	ErrUnauthorized      = errors.New("incorrect email or password")
+	ErrInvalidPassword   = errors.New("incorrect password")
 	ErrInvalidCodeEmail  = errors.New("invalid confirmation code")
 	ErrEmailNotConfirmed = errors.New("email has not been confirmed")
 	ErrNoRows            = errors.New("no rows")
@@ -37,7 +37,7 @@ func NewService(repo repository.Repository, opts *config.Options, sender *email.
 	return &Service{repo, opts, sender}
 }
 
-func (s *Service) Register(ctx context.Context, email, password string) error {
+func (s *Service) Register(ctx context.Context, email, pass string) error {
 	salt, err := utils.RandomHash(8)
 
 	var pgErr *pgconn.PgError
@@ -45,7 +45,7 @@ func (s *Service) Register(ctx context.Context, email, password string) error {
 		return err
 	}
 
-	hash := utils.HashPassword(salt, password)
+	hash := utils.HashPass(salt, pass)
 	code := utils.GenerateCodeEmail()
 
 	if err := s.repo.AddUser(ctx, email, code, hash); err != nil {
@@ -61,7 +61,7 @@ func (s *Service) Register(ctx context.Context, email, password string) error {
 	return nil
 }
 
-func (s *Service) Login(ctx context.Context, email string, password string) (models.User, error) {
+func (s *Service) Login(ctx context.Context, email string, pass string) (models.User, error) {
 	user, err := s.repo.GetUserByEmail(ctx, email)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
@@ -78,11 +78,11 @@ func (s *Service) Login(ctx context.Context, email string, password string) (mod
 		return models.User{}, ErrEmailNotConfirmed
 	}
 
-	salt := strings.Split(user.Password, ".")[0]
-	hashPass := utils.HashPassword(salt, password)
+	salt := strings.Split(user.Pass, ".")[0]
+	hashPass := utils.HashPass(salt, pass)
 
-	if hashPass != user.Password {
-		return models.User{}, ErrUnauthorized
+	if hashPass != user.Pass {
+		return models.User{}, ErrInvalidPassword
 	}
 
 	return user, nil
@@ -115,8 +115,23 @@ func (s *Service) GetProfile(ctx context.Context, uuid string) (models.Profile, 
 	return user, nil
 }
 
-func (s *Service) UpdatePassword(ctx context.Context, uuid string) error {
-	return nil
+func (s *Service) ChangePass(ctx context.Context, uuid, passOld, passNew string) error {
+	user, err := s.repo.GetUserByID(ctx, uuid)
+	if err != nil {
+		return nil
+	}
+
+	salt := strings.Split(user.Pass, ".")[0]
+	hashPassOld := utils.HashPass(salt, passOld)
+
+	if hashPassOld != user.Pass {
+		return ErrInvalidPassword
+	}
+
+	hashPassNew := utils.HashPass(salt, passNew)
+
+	params := models.UpdateUserParams{UUID: uuid, Pass: &hashPassNew}
+	return s.repo.UpdateUser(ctx, params)
 }
 
 func (s *Service) GetCards(ctx context.Context, uuid string) ([]models.Card, error) {

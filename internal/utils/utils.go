@@ -33,7 +33,7 @@ func RandomHash(length int) (string, error) {
 	return hex.EncodeToString(b), nil
 }
 
-func HashPassword(salt string, pass string) string {
+func HashPass(salt string, pass string) string {
 	sum := sha256.Sum256([]byte(pass + salt))
 	encStr := base64.StdEncoding.EncodeToString(sum[:])
 	return fmt.Sprint(salt, ".", encStr)
@@ -63,4 +63,8 @@ func AlgoLuna(order string) bool {
 	}
 
 	return sum%10 == 0
+}
+
+func ValidatePass(pass string) {
+
 }

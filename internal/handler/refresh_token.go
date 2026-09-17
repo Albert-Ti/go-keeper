@@ -16,13 +16,16 @@ func (g *GrpcServer) RefreshToken(ctx context.Context, in *pb.TokenRequest) (*pb
 		return []byte(g.Opts.JWTSecret), nil
 	})
 	if err != nil || !token.Valid {
-		return nil, status.Error(codes.Unauthenticated, "invalid refresh token")
+		return nil, status.Error(codes.Unauthenticated, "refresh token is expired")
 	}
 
-	accessToken, err := mytoken.CreateAccessToken(claims.ID, g.Opts.JWTSecret)
-	refreshToken, err := mytoken.CreateRefreshToken(claims.ID, g.Opts.JWTSecret)
+	accessToken, err := mytoken.CreateAccessToken(claims.UserID, g.Opts.JWTSecret)
 	if err != nil {
-		return nil, status.Error(codes.Internal, "failed to create token")
+		return nil, status.Error(codes.Internal, "failed to create access token")
+	}
+	refreshToken, err := mytoken.CreateRefreshToken(claims.UserID, g.Opts.JWTSecret)
+	if err != nil {
+		return nil, status.Error(codes.Internal, "failed to create refresh token")
 	}
 
 	response := pb.TokenResponse_builder{

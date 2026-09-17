@@ -20,7 +20,7 @@ func headerView(m model) string {
 	leftRendered := lipgloss.NewStyle().Foreground(colorPrimary).
 		Render("Go Keeper") + " " + spinner
 
-	rightRendered := breadcrumbView(m)
+	rightRendered := m.activePage.String()
 
 	gapWidth := cardWidth - lipgloss.Width(leftRendered) - lipgloss.Width(rightRendered)
 	if gapWidth < 0 {
@@ -39,6 +39,8 @@ func mainView(m model) string {
 			Align(lipgloss.Left). // Прижимаем к левому краю
 			Faint(true).
 			Render("← "+m.history[len(m.history)-2].String()) + "\n\n"
+	} else {
+		s += "\n\n"
 	}
 
 	if m.activePage == homePage {
@@ -57,7 +59,7 @@ func mainView(m model) string {
 
 	if m.activePage == registerPage || m.activePage == loginPage {
 		s += fieldView("Email", m.authForm.email) + "\n\n"
-		s += fieldView("Password", m.authForm.pass) + "\n"
+		s += fieldView("Pass", m.authForm.pass) + "\n"
 	}
 
 	if m.activePage == confirmPage {
@@ -87,8 +89,13 @@ func mainView(m model) string {
 	}
 
 	if m.activePage == cardFormPage {
-		s = "\n\n" + fieldView("Card number", m.cardForm.number) + "\n"
+		s += "\n\n" + fieldView("Card number", m.cardForm.number) + "\n"
 		s += fieldView("Expiry date", m.cardForm.date) + "\n"
+	}
+
+	if m.activePage == profileFormPage {
+		s += "\n\n" + fieldView("Old pass", m.profileForm.passOld) + "\n"
+		s += fieldView("New pass", m.profileForm.passNew) + "\n"
 	}
 
 	if m.textError != "" {
@@ -116,14 +123,6 @@ func footerView() string {
 	}
 	gap := lipgloss.NewStyle().Width(gapWidth).Render("")
 	return lipgloss.JoinHorizontal(lipgloss.Top, leftRendered, gap, rightRendered)
-}
-
-func breadcrumbView(m model) string {
-	text := m.activePage.String()
-	if m.authUser != "" {
-		text += "/" + m.authUser + "/" + m.activeTab.String()
-	}
-	return text
 }
 
 func fieldView(label string, input textinput.Model) string {
@@ -157,7 +156,7 @@ func contentCardsView(m model) string {
 		s = "\n\n" + textInfo + buttonEnter + "\n"
 	} else {
 		for i, card := range m.cards {
-			isActive := lipgloss.NewStyle().Faint(true).Render("no active")
+			isActive := lipgloss.NewStyle().Faint(true).Render("inactive")
 			if card.GetActive() {
 				isActive = "active"
 			}

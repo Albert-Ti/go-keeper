@@ -35,13 +35,13 @@ func NewPGStorage(connString string) (*PGStorage, error) {
 	}, nil
 }
 
-func (pg *PGStorage) AddUser(ctx context.Context, email, code, password string) error {
+func (pg *PGStorage) AddUser(ctx context.Context, email, code, pass string) error {
 	sql := `
-	INSERT INTO users (email, email_code, password) 
+	INSERT INTO users (email, email_code, pass) 
 	VALUES ($1, $2, $3)
 	`
 
-	_, err := pg.pool.Exec(ctx, sql, email, code, password)
+	_, err := pg.pool.Exec(ctx, sql, email, code, pass)
 
 	if err != nil {
 		return err
@@ -52,7 +52,7 @@ func (pg *PGStorage) AddUser(ctx context.Context, email, code, password string) 
 
 func (pg *PGStorage) GetUserByEmail(ctx context.Context, email string) (models.User, error) {
 	sql := `
-	SELECT uuid, email, email_code, is_confirm_email, password 
+	SELECT uuid, email, email_code, is_confirm_email, pass 
 	FROM users 
 	WHERE email = $1
 	`
@@ -63,7 +63,7 @@ func (pg *PGStorage) GetUserByEmail(ctx context.Context, email string) (models.U
 		&user.Email,
 		&user.EmailCode,
 		&user.IsConfirmEmail,
-		&user.Password,
+		&user.Pass,
 	)
 
 	if err != nil {
@@ -75,7 +75,7 @@ func (pg *PGStorage) GetUserByEmail(ctx context.Context, email string) (models.U
 
 func (pg *PGStorage) GetUserByID(ctx context.Context, uuid string) (models.Profile, error) {
 	sql := `
-	SELECT email, password, created_at
+	SELECT email, pass, created_at
 	FROM users 
 	WHERE uuid = $1
 	`
@@ -83,7 +83,7 @@ func (pg *PGStorage) GetUserByID(ctx context.Context, uuid string) (models.Profi
 
 	err := pg.pool.QueryRow(ctx, sql, uuid).Scan(
 		&user.Email,
-		&user.Password,
+		&user.Pass,
 		&user.CreatedAt,
 	)
 
@@ -109,9 +109,9 @@ func (pg *PGStorage) UpdateUser(ctx context.Context, p models.UpdateUserParams) 
 		args = append(args, *p.IsConfirmEmail)
 		argIdx++
 	}
-	if p.Password != nil {
-		setParts = append(setParts, fmt.Sprintf("password = $%d", argIdx))
-		args = append(args, *p.Password)
+	if p.Pass != nil {
+		setParts = append(setParts, fmt.Sprintf("pass = $%d", argIdx))
+		args = append(args, *p.Pass)
 		argIdx++
 	}
 
@@ -119,12 +119,26 @@ func (pg *PGStorage) UpdateUser(ctx context.Context, p models.UpdateUserParams) 
 		return nil
 	}
 
-	args = append(args, p.Email)
-	query := fmt.Sprintf(
-		"UPDATE users SET %s WHERE email = $%d",
-		strings.Join(setParts, ", "),
-		argIdx,
-	)
+	var query string
+
+	if p.Email != "" {
+		args = append(args, p.Email)
+		query = fmt.Sprintf(
+			"UPDATE users SET %s WHERE email = $%d",
+			strings.Join(setParts, ", "),
+			argIdx,
+		)
+	}
+
+	if p.UUID != "" {
+		args = append(args, p.UUID)
+
+		query = fmt.Sprintf(
+			"UPDATE users SET %s WHERE uuid = $%d",
+			strings.Join(setParts, ", "),
+			argIdx,
+		)
+	}
 
 	_, err := pg.pool.Exec(ctx, query, args...)
 	return err

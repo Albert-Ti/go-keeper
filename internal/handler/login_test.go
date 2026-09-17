@@ -45,7 +45,7 @@ func TestLogin(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			tt.setupMock(mockRepo)
 
-			req := pb.LoginRequest_builder{Email: "example@mail.com", Password: "12345"}.Build()
+			req := pb.LoginRequest_builder{Email: "example@mail.com", Pass: "12345"}.Build()
 			_, err := client.Login(context.Background(), req)
 
 			st, ok := status.FromError(err)
