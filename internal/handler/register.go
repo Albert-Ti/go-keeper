@@ -21,7 +21,7 @@ func (g *GrpcServer) Register(ctx context.Context, in *pb.RegisterRequest) (*pb.
 		if errors.Is(err, service.ErrAlreadyExists) {
 			return nil, status.Errorf(codes.AlreadyExists, "user: %s, is already registered", in.GetEmail())
 		}
-		return nil, status.Error(codes.Internal, "internal server")
+		return nil, status.Error(codes.Internal, "failed to register")
 	}
 
 	response := pb.RegisterResponse_builder{}.Build()

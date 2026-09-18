@@ -24,7 +24,6 @@ func (g *GrpcServer) CreateCard(ctx context.Context, in *pb.CreateCardRequest) (
 		return nil, status.Error(codes.InvalidArgument, "invalid expiry date format, expected MM/YY")
 	}
 
-	// последний день месяца истечения срока действия карты
 	expiry := time.Date(t.Year(), t.Month()+1, 0, 0, 0, 0, 0, time.UTC)
 
 	if expiry.Before(time.Now().UTC()) {

@@ -56,6 +56,20 @@ func (mr *MockRepositoryMockRecorder) AddUser(ctx, email, code, pass any) *gomoc
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddUser", reflect.TypeOf((*MockRepository)(nil).AddUser), ctx, email, code, pass)
 }
 
+// ActivateCard mocks base method.
+func (m *MockRepository) ActivateCard(ctx context.Context, uuid string, id int64) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ActivateCard", ctx, uuid, id)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// ActivateCard indicates an expected call of ActivateCard.
+func (mr *MockRepositoryMockRecorder) ActivateCard(ctx, uuid, id any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ActivateCard", reflect.TypeOf((*MockRepository)(nil).ActivateCard), ctx, uuid, id)
+}
+
 // CreateCard mocks base method.
 func (m *MockRepository) CreateCard(ctx context.Context, uuid, number string, expiry time.Time) error {
 	m.ctrl.T.Helper()
@@ -68,6 +82,20 @@ func (m *MockRepository) CreateCard(ctx context.Context, uuid, number string, ex
 func (mr *MockRepositoryMockRecorder) CreateCard(ctx, uuid, number, expiry any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateCard", reflect.TypeOf((*MockRepository)(nil).CreateCard), ctx, uuid, number, expiry)
+}
+
+// DeleteCard mocks base method.
+func (m *MockRepository) DeleteCard(ctx context.Context, id int64) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "DeleteCard", ctx, id)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// DeleteCard indicates an expected call of DeleteCard.
+func (mr *MockRepositoryMockRecorder) DeleteCard(ctx, id any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteCard", reflect.TypeOf((*MockRepository)(nil).DeleteCard), ctx, id)
 }
 
 // GetCards mocks base method.

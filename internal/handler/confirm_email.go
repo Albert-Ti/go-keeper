@@ -20,7 +20,7 @@ func (g *GrpcServer) ConfirmEmail(ctx context.Context, in *pb.ConfirmEmailReques
 		if errors.Is(err, service.ErrInvalidCodeEmail) {
 			return nil, status.Errorf(codes.PermissionDenied, "invalid confirmation code: %v", in.GetEmailCode())
 		}
-		return nil, status.Error(codes.Internal, "internal server")
+		return nil, status.Error(codes.Internal, "failed to confirm email")
 	}
 
 	return &pb.ConfirmEmailResponse{}, nil

@@ -50,6 +50,14 @@ type createCardResultMsg struct {
 	err error
 }
 
+type deleteCardResultMsg struct {
+	err error
+}
+
+type activateCardResultMsg struct {
+	err error
+}
+
 func registerCmd(client pb.GoKeeperServiceClient, email, pass string) tea.Cmd {
 	return func() tea.Msg {
 		var header metadata.MD
@@ -164,5 +172,25 @@ func createCardCmd(client pb.GoKeeperServiceClient, number, expiry string) tea.C
 		}.Build())
 
 		return createCardResultMsg{err: err}
+	}
+}
+
+func deleteCardCmd(client pb.GoKeeperServiceClient, id int64) tea.Cmd {
+	return func() tea.Msg {
+		_, err := client.DeleteCard(context.Background(), pb.DeleteCardRequest_builder{
+			Id: id,
+		}.Build())
+
+		return deleteCardResultMsg{err: err}
+	}
+}
+
+func activateCardCmd(client pb.GoKeeperServiceClient, id int64) tea.Cmd {
+	return func() tea.Msg {
+		_, err := client.ActivateCard(context.Background(), pb.ActiveCardRequest_builder{
+			Id: id,
+		}.Build())
+
+		return activateCardResultMsg{err: err}
 	}
 }

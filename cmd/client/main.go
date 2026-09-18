@@ -20,7 +20,7 @@ import (
 	pb "github.com/Albert-Ti/go-keeper/pkg/proto"
 )
 
-type tabType uint
+type tabType int
 
 const (
 	tabProfile tabType = iota
@@ -41,7 +41,25 @@ func (t tabType) String() string {
 	}
 }
 
-type pageType uint
+type cardActionsType int
+
+const (
+	cardActionsUpdate cardActionsType = iota
+	cardActionsDelete
+)
+
+func (t cardActionsType) String() string {
+	switch t {
+	case cardActionsUpdate:
+		return ""
+	case cardActionsDelete:
+		return ""
+	default:
+		return ""
+	}
+}
+
+type pageType int
 
 const (
 	homePage pageType = iota
@@ -97,25 +115,28 @@ type model struct {
 	history           []pageType
 	choices           []pageType
 	allTabs           []tabType
+	cardsActions      []cardActionsType
 	contentTabProfile []string
 
 	authForm    authForm
 	cardForm    cardForm
 	profileForm profileForm
 
-	width        int
-	height       int
-	textError    string
-	errorSeq     int
-	codeEmail    string
-	authUser     string
-	accessToken  string
-	refreshToken string
-	profile      map[string]string
-	cards        []*pb.CardData
-	isLoad       bool
-	spinner      spinner.Model
-	localStorage *FileStorage
+	width         int
+	height        int
+	textError     string
+	errorSeq      int
+	codeEmail     string
+	authUser      string
+	accessToken   string
+	refreshToken  string
+	profile       map[string]string
+	cards         []*pb.CardData
+	selectedCard  int
+	activeCardBtn cardActionsType
+	isLoad        bool
+	spinner       spinner.Model
+	localStorage  *FileStorage
 
 	client pb.GoKeeperServiceClient
 }
@@ -151,6 +172,7 @@ func NewModel(client pb.GoKeeperServiceClient, localStorage *FileStorage) (*mode
 		choices:           []pageType{loginPage, registerPage},
 		allTabs:           []tabType{tabProfile, tabCards, tabData},
 		contentTabProfile: []string{"email", "create_date"},
+		cardsActions:      []cardActionsType{cardActionsUpdate, cardActionsDelete},
 		authForm: authForm{
 			email:   email,
 			pass:    pass,
@@ -164,10 +186,10 @@ func NewModel(client pb.GoKeeperServiceClient, localStorage *FileStorage) (*mode
 			passOld: passOld,
 			passNew: passNew,
 		},
-		spinner: s,
-		cards:   []*pb.CardData{},
-		client:  client,
-
+		spinner:      s,
+		cards:        []*pb.CardData{},
+		client:       client,
+		selectedCard: -1,
 		localStorage: localStorage,
 		authUser:     localStorage.Get(emailKey),
 		accessToken:  localStorage.Get(accessTokenKey),
@@ -294,6 +316,8 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 		m.cardForm.number.SetValue("")
 		m.cardForm.date.SetValue("")
+		m.cardForm.number.Blur()
+		m.cardForm.date.Blur()
 		// вызов getCardsCmd для получения нового списка после добавления
 		return m.navigateTo(userPage), getCardsCmd(m.client)
 
@@ -304,8 +328,30 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			}
 			return m, m.handleError(msg.err)
 		}
-
+		m.isLoad = false
 		return m.navigateTo(userPage), getProfileCmd(m.client)
+
+	case deleteCardResultMsg:
+		if msg.err != nil {
+			if strings.Contains(msg.err.Error(), "access token is expired") {
+				return m, refreshTokenCmd(m.client, m.localStorage.Get(refreshTokenKey))
+			}
+			return m, m.handleError(msg.err)
+		}
+		m.isLoad = false
+		m.selectedCard = -1
+		return m.navigateTo(userPage), getCardsCmd(m.client)
+
+	case activateCardResultMsg:
+		if msg.err != nil {
+			if strings.Contains(msg.err.Error(), "access token is expired") {
+				return m, refreshTokenCmd(m.client, m.localStorage.Get(refreshTokenKey))
+			}
+			return m, m.handleError(msg.err)
+		}
+		m.isLoad = false
+		m.selectedCard = -1
+		return m.navigateTo(userPage), getCardsCmd(m.client)
 
 		// Обработка нажатия клавиш
 	case tea.KeyPressMsg:
@@ -316,6 +362,10 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			m.Reset()
 			return m, nil
 		case "esc":
+			if m.selectedCard >= 0 {
+				m.selectedCard = -1
+				return m, nil
+			}
 			if m.activePage == cardFormPage {
 				m.cardForm.number.Blur()
 				m.cardForm.date.Blur()
@@ -413,7 +463,7 @@ func (m *model) Reset() {
 	m.accessToken = ""
 	m.refreshToken = ""
 	m.codeEmail = ""
-
+	m.selectedCard = -1
 	m.authForm.email.Focus()
 	m.authForm.pass.Blur()
 	m.authForm.confirm.Blur()
@@ -445,7 +495,6 @@ func (m model) navigateTo(activePage pageType) model {
 	m.activePage = activePage
 	m.history = append(m.history, activePage)
 
-	slog.Info("DEBUG", slog.Any("history", m.history))
 	return m
 }
 

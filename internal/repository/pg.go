@@ -2,6 +2,7 @@ package repository
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"strings"
 	"time"
@@ -9,6 +10,8 @@ import (
 	"github.com/Albert-Ti/go-keeper/internal/models"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
+
+var ErrRowAffected = errors.New("rows affected 0")
 
 type PGStorage struct {
 	pool *pgxpool.Pool
@@ -146,7 +149,7 @@ func (pg *PGStorage) UpdateUser(ctx context.Context, p models.UpdateUserParams) 
 
 func (pg *PGStorage) GetCards(ctx context.Context, uuid string) ([]models.Card, error) {
 	sql := `
-	SELECT card_number, expiry_date, active
+	SELECT id, card_number, expiry_date, active
 	FROM bank_cards 
 	WHERE user_uuid = $1
 	`
@@ -158,13 +161,12 @@ func (pg *PGStorage) GetCards(ctx context.Context, uuid string) ([]models.Card, 
 	var list []models.Card
 	for rows.Next() {
 		var card models.Card
-		err := rows.Scan(&card.CardNumber, &card.ExpiryDate, &card.Active)
+		err := rows.Scan(&card.ID, &card.CardNumber, &card.ExpiryDate, &card.Active)
 		if err != nil {
 			return nil, err
 		}
 		list = append(list, card)
 	}
-
 	return list, nil
 }
 
@@ -189,6 +191,44 @@ func (pg *PGStorage) CreateCard(ctx context.Context, uuid string, number string,
 	)
 	if err != nil {
 		return err
+	}
+
+	return tx.Commit(ctx)
+}
+
+func (pg *PGStorage) DeleteCard(ctx context.Context, id int64) error {
+	sql := `DELETE FROM bank_cards WHERE id = $1 AND active = $2`
+
+	tag, err := pg.pool.Exec(ctx, sql, id, false)
+	if err != nil {
+		return err
+	}
+	if tag.RowsAffected() == 0 {
+		return ErrRowAffected
+	}
+
+	return nil
+}
+
+func (pg *PGStorage) ActivateCard(ctx context.Context, uuid string, id int64) error {
+	tx, err := pg.pool.Begin(ctx)
+	if err != nil {
+		return err
+	}
+	defer tx.Rollback(ctx)
+
+	_, err = tx.Exec(ctx, `UPDATE bank_cards SET active = false WHERE user_uuid = $1 AND active = true`, uuid)
+	if err != nil {
+		return err
+	}
+
+	tag, err := tx.Exec(ctx, `UPDATE bank_cards SET active = NOT active WHERE id = $1 and user_uuid = $2`, id, uuid)
+	if err != nil {
+		return err
+	}
+
+	if tag.RowsAffected() == 0 {
+		return ErrRowAffected // защита от активации чужой карты
 	}
 
 	return tx.Commit(ctx)

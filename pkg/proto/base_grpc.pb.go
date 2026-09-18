@@ -27,6 +27,8 @@ const (
 	GoKeeperService_ChangePass_FullMethodName   = "/gokeeper.GoKeeperService/ChangePass"
 	GoKeeperService_GetCards_FullMethodName     = "/gokeeper.GoKeeperService/GetCards"
 	GoKeeperService_CreateCard_FullMethodName   = "/gokeeper.GoKeeperService/CreateCard"
+	GoKeeperService_DeleteCard_FullMethodName   = "/gokeeper.GoKeeperService/DeleteCard"
+	GoKeeperService_ActivateCard_FullMethodName = "/gokeeper.GoKeeperService/ActivateCard"
 )
 
 // GoKeeperServiceClient is the client API for GoKeeperService service.
@@ -41,6 +43,8 @@ type GoKeeperServiceClient interface {
 	ChangePass(ctx context.Context, in *PassRequest, opts ...grpc.CallOption) (*PassResponse, error)
 	GetCards(ctx context.Context, in *CardsRequest, opts ...grpc.CallOption) (*CardsResponse, error)
 	CreateCard(ctx context.Context, in *CreateCardRequest, opts ...grpc.CallOption) (*CreateCardResponse, error)
+	DeleteCard(ctx context.Context, in *DeleteCardRequest, opts ...grpc.CallOption) (*DeleteCardResponse, error)
+	ActivateCard(ctx context.Context, in *ActiveCardRequest, opts ...grpc.CallOption) (*ActiveCardResponse, error)
 }
 
 type goKeeperServiceClient struct {
@@ -131,6 +135,26 @@ func (c *goKeeperServiceClient) CreateCard(ctx context.Context, in *CreateCardRe
 	return out, nil
 }
 
+func (c *goKeeperServiceClient) DeleteCard(ctx context.Context, in *DeleteCardRequest, opts ...grpc.CallOption) (*DeleteCardResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(DeleteCardResponse)
+	err := c.cc.Invoke(ctx, GoKeeperService_DeleteCard_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *goKeeperServiceClient) ActivateCard(ctx context.Context, in *ActiveCardRequest, opts ...grpc.CallOption) (*ActiveCardResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(ActiveCardResponse)
+	err := c.cc.Invoke(ctx, GoKeeperService_ActivateCard_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // GoKeeperServiceServer is the server API for GoKeeperService service.
 // All implementations must embed UnimplementedGoKeeperServiceServer
 // for forward compatibility.
@@ -143,6 +167,8 @@ type GoKeeperServiceServer interface {
 	ChangePass(context.Context, *PassRequest) (*PassResponse, error)
 	GetCards(context.Context, *CardsRequest) (*CardsResponse, error)
 	CreateCard(context.Context, *CreateCardRequest) (*CreateCardResponse, error)
+	DeleteCard(context.Context, *DeleteCardRequest) (*DeleteCardResponse, error)
+	ActivateCard(context.Context, *ActiveCardRequest) (*ActiveCardResponse, error)
 	mustEmbedUnimplementedGoKeeperServiceServer()
 }
 
@@ -176,6 +202,12 @@ func (UnimplementedGoKeeperServiceServer) GetCards(context.Context, *CardsReques
 }
 func (UnimplementedGoKeeperServiceServer) CreateCard(context.Context, *CreateCardRequest) (*CreateCardResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method CreateCard not implemented")
+}
+func (UnimplementedGoKeeperServiceServer) DeleteCard(context.Context, *DeleteCardRequest) (*DeleteCardResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method DeleteCard not implemented")
+}
+func (UnimplementedGoKeeperServiceServer) ActivateCard(context.Context, *ActiveCardRequest) (*ActiveCardResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method ActivateCard not implemented")
 }
 func (UnimplementedGoKeeperServiceServer) mustEmbedUnimplementedGoKeeperServiceServer() {}
 func (UnimplementedGoKeeperServiceServer) testEmbeddedByValue()                         {}
@@ -342,6 +374,42 @@ func _GoKeeperService_CreateCard_Handler(srv interface{}, ctx context.Context, d
 	return interceptor(ctx, in, info, handler)
 }
 
+func _GoKeeperService_DeleteCard_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(DeleteCardRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(GoKeeperServiceServer).DeleteCard(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: GoKeeperService_DeleteCard_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(GoKeeperServiceServer).DeleteCard(ctx, req.(*DeleteCardRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _GoKeeperService_ActivateCard_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ActiveCardRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(GoKeeperServiceServer).ActivateCard(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: GoKeeperService_ActivateCard_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(GoKeeperServiceServer).ActivateCard(ctx, req.(*ActiveCardRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // GoKeeperService_ServiceDesc is the grpc.ServiceDesc for GoKeeperService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -380,6 +448,14 @@ var GoKeeperService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "CreateCard",
 			Handler:    _GoKeeperService_CreateCard_Handler,
+		},
+		{
+			MethodName: "DeleteCard",
+			Handler:    _GoKeeperService_DeleteCard_Handler,
+		},
+		{
+			MethodName: "ActivateCard",
+			Handler:    _GoKeeperService_ActivateCard_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

@@ -21,7 +21,7 @@ func (g *GrpcServer) ChangePass(ctx context.Context, in *pb.PassRequest) (*pb.Pa
 		if errors.Is(err, service.ErrInvalidPassword) {
 			return nil, status.Error(codes.FailedPrecondition, "old password is incorrect")
 		}
-		return nil, status.Error(codes.Internal, "internal server")
+		return nil, status.Error(codes.Internal, "failed to change password")
 	}
 
 	return &pb.PassResponse{}, nil

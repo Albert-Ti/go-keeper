@@ -17,12 +17,13 @@ func (g *GrpcServer) GetCards(ctx context.Context, in *pb.CardsRequest) (*pb.Car
 	}
 	cards, err := g.Svc.GetCards(ctx, uuid)
 	if err != nil {
-		return nil, status.Error(codes.Internal, "internal server")
+		return nil, status.Error(codes.Internal, "failed to get cards")
 	}
 
 	var list []*pb.CardData
 	for _, v := range cards {
 		list = append(list, pb.CardData_builder{
+			Id:         v.ID,
 			Active:     v.Active,
 			CardNumber: string(v.CardNumber[12:]),
 			ExpiryDate: timestamppb.New(v.ExpiryDate),

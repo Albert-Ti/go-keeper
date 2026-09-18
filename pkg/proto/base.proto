@@ -18,4 +18,6 @@ service GoKeeperService {
   rpc ChangePass(PassRequest) returns (PassResponse);
   rpc GetCards(CardsRequest) returns (CardsResponse);
   rpc CreateCard(CreateCardRequest) returns (CreateCardResponse);
+  rpc DeleteCard(DeleteCardRequest) returns (DeleteCardResponse);
+  rpc ActivateCard(ActiveCardRequest) returns (ActiveCardResponse);
 }

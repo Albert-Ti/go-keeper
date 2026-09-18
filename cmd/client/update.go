@@ -100,20 +100,45 @@ func loadActiveTab(activeTab tabType, m model) tea.Cmd {
 }
 
 func userUpdate(msg tea.KeyPressMsg, m model) (model, tea.Cmd) {
-	switch msg.String() {
-	case "left":
-		if m.activeTab > 0 {
-			m.activeTab--
-			m.cursor = 0
-			m.isLoad = true
-			return m, loadActiveTab(m.activeTab, m)
+	if m.selectedCard >= 0 {
+		switch msg.String() {
+		case "left":
+			if m.activeCardBtn > 0 {
+				m.activeCardBtn--
+				return m, nil
+			}
+		case "right":
+			if int(m.activeCardBtn) < len(m.cardsActions)-1 {
+				m.activeCardBtn++
+				return m, nil
+			}
+		case "enter":
+			if m.activeCardBtn == cardActionsUpdate {
+				m.isLoad = true
+				return m, activateCardCmd(m.client, m.cards[m.selectedCard].GetId())
+			}
+
+			if m.activeCardBtn == cardActionsDelete {
+				m.isLoad = true
+				return m, deleteCardCmd(m.client, m.cards[m.selectedCard].GetId())
+			}
 		}
-	case "right":
-		if int(m.activeTab) < len(m.allTabs)-1 {
-			m.activeTab++
-			m.cursor = 0
-			m.isLoad = true
-			return m, loadActiveTab(m.activeTab, m)
+	} else {
+		switch msg.String() {
+		case "left":
+			if m.activeTab > 0 {
+				m.activeTab--
+				m.cursor = 0
+				m.isLoad = true
+				return m, loadActiveTab(m.activeTab, m)
+			}
+		case "right":
+			if int(m.activeTab) < len(m.allTabs)-1 {
+				m.activeTab++
+				m.cursor = 0
+				m.isLoad = true
+				return m, loadActiveTab(m.activeTab, m)
+			}
 		}
 	}
 
@@ -138,17 +163,22 @@ func userUpdate(msg tea.KeyPressMsg, m model) (model, tea.Cmd) {
 		case "up":
 			if m.cursor > 0 {
 				m.cursor--
+				m.selectedCard = -1
 			}
 		case "down":
 			if m.cursor < len(m.cards)-1 {
 				m.cursor++
+				m.selectedCard = -1
 			}
-		case "enter":
+		case "ctrl+a":
 			m.cardForm.number.Focus()
 			// Для теста
 			m.cardForm.number.SetValue("5555640328235487")
 			m.cardForm.date.SetValue("01/27")
 			return m.navigateTo(cardFormPage), nil
+
+		case "enter":
+			m.selectedCard = m.cursor
 		}
 
 	case tabData:

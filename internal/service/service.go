@@ -25,6 +25,7 @@ var (
 	ErrInvalidCodeEmail  = errors.New("invalid confirmation code")
 	ErrEmailNotConfirmed = errors.New("email has not been confirmed")
 	ErrNoRows            = errors.New("no rows")
+	ErrCardNotFound      = errors.New("card not found or not active")
 )
 
 type Service struct {
@@ -140,6 +141,19 @@ func (s *Service) GetCards(ctx context.Context, uuid string) ([]models.Card, err
 
 func (s *Service) CreateCard(ctx context.Context, uuid string, number string, expiry time.Time) error {
 	return s.repo.CreateCard(ctx, uuid, number, expiry)
+}
+
+func (s *Service) DeleteCard(ctx context.Context, id int64) error {
+	err := s.repo.DeleteCard(ctx, id)
+
+	if err != nil {
+		return ErrCardNotFound
+	}
+	return nil
+}
+
+func (s *Service) ActivateCard(ctx context.Context, uuid string, id int64) error {
+	return s.repo.ActivateCard(ctx, uuid, id)
 }
 
 func (s *Service) sendEmailCode(ctx context.Context, email, code string) error {

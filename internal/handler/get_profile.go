@@ -18,7 +18,7 @@ func (g *GrpcServer) GetProfile(ctx context.Context, in *pb.ProfileRequest) (*pb
 	}
 	profile, err := g.Svc.GetProfile(ctx, uuid)
 	if err != nil {
-		return nil, status.Error(codes.Internal, "internal server")
+		return nil, status.Error(codes.Internal, "failed to get profile")
 	}
 
 	response := pb.ProfileResponse_builder{

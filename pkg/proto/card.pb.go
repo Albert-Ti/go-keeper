@@ -66,9 +66,10 @@ func (b0 CardsRequest_builder) Build() *CardsRequest {
 
 type CardData struct {
 	state                 protoimpl.MessageState `protogen:"opaque.v1"`
-	xxx_hidden_CardNumber string                 `protobuf:"bytes,1,opt,name=card_number,json=cardNumber,proto3"`
-	xxx_hidden_Active     bool                   `protobuf:"varint,2,opt,name=active,proto3"`
-	xxx_hidden_ExpiryDate *timestamppb.Timestamp `protobuf:"bytes,3,opt,name=expiry_date,json=expiryDate,proto3"`
+	xxx_hidden_Id         int64                  `protobuf:"varint,1,opt,name=id,proto3"`
+	xxx_hidden_CardNumber string                 `protobuf:"bytes,2,opt,name=card_number,json=cardNumber,proto3"`
+	xxx_hidden_Active     bool                   `protobuf:"varint,3,opt,name=active,proto3"`
+	xxx_hidden_ExpiryDate *timestamppb.Timestamp `protobuf:"bytes,4,opt,name=expiry_date,json=expiryDate,proto3"`
 	unknownFields         protoimpl.UnknownFields
 	sizeCache             protoimpl.SizeCache
 }
@@ -98,6 +99,13 @@ func (x *CardData) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
+func (x *CardData) GetId() int64 {
+	if x != nil {
+		return x.xxx_hidden_Id
+	}
+	return 0
+}
+
 func (x *CardData) GetCardNumber() string {
 	if x != nil {
 		return x.xxx_hidden_CardNumber
@@ -117,6 +125,10 @@ func (x *CardData) GetExpiryDate() *timestamppb.Timestamp {
 		return x.xxx_hidden_ExpiryDate
 	}
 	return nil
+}
+
+func (x *CardData) SetId(v int64) {
+	x.xxx_hidden_Id = v
 }
 
 func (x *CardData) SetCardNumber(v string) {
@@ -145,6 +157,7 @@ func (x *CardData) ClearExpiryDate() {
 type CardData_builder struct {
 	_ [0]func() // Prevents comparability and use of unkeyed literals for the builder.
 
+	Id         int64
 	CardNumber string
 	Active     bool
 	ExpiryDate *timestamppb.Timestamp
@@ -154,6 +167,7 @@ func (b0 CardData_builder) Build() *CardData {
 	m0 := &CardData{}
 	b, x := &b0, m0
 	_, _ = b, x
+	x.xxx_hidden_Id = b.Id
 	x.xxx_hidden_CardNumber = b.CardNumber
 	x.xxx_hidden_Active = b.Active
 	x.xxx_hidden_ExpiryDate = b.ExpiryDate
@@ -333,18 +347,219 @@ func (b0 CreateCardResponse_builder) Build() *CreateCardResponse {
 	return m0
 }
 
+type DeleteCardRequest struct {
+	state         protoimpl.MessageState `protogen:"opaque.v1"`
+	xxx_hidden_Id int64                  `protobuf:"varint,1,opt,name=id,proto3"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *DeleteCardRequest) Reset() {
+	*x = DeleteCardRequest{}
+	mi := &file_card_proto_msgTypes[5]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *DeleteCardRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*DeleteCardRequest) ProtoMessage() {}
+
+func (x *DeleteCardRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_card_proto_msgTypes[5]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+func (x *DeleteCardRequest) GetId() int64 {
+	if x != nil {
+		return x.xxx_hidden_Id
+	}
+	return 0
+}
+
+func (x *DeleteCardRequest) SetId(v int64) {
+	x.xxx_hidden_Id = v
+}
+
+type DeleteCardRequest_builder struct {
+	_ [0]func() // Prevents comparability and use of unkeyed literals for the builder.
+
+	Id int64
+}
+
+func (b0 DeleteCardRequest_builder) Build() *DeleteCardRequest {
+	m0 := &DeleteCardRequest{}
+	b, x := &b0, m0
+	_, _ = b, x
+	x.xxx_hidden_Id = b.Id
+	return m0
+}
+
+type DeleteCardResponse struct {
+	state         protoimpl.MessageState `protogen:"opaque.v1"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *DeleteCardResponse) Reset() {
+	*x = DeleteCardResponse{}
+	mi := &file_card_proto_msgTypes[6]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *DeleteCardResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*DeleteCardResponse) ProtoMessage() {}
+
+func (x *DeleteCardResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_card_proto_msgTypes[6]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+type DeleteCardResponse_builder struct {
+	_ [0]func() // Prevents comparability and use of unkeyed literals for the builder.
+
+}
+
+func (b0 DeleteCardResponse_builder) Build() *DeleteCardResponse {
+	m0 := &DeleteCardResponse{}
+	b, x := &b0, m0
+	_, _ = b, x
+	return m0
+}
+
+type ActiveCardRequest struct {
+	state         protoimpl.MessageState `protogen:"opaque.v1"`
+	xxx_hidden_Id int64                  `protobuf:"varint,1,opt,name=id,proto3"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ActiveCardRequest) Reset() {
+	*x = ActiveCardRequest{}
+	mi := &file_card_proto_msgTypes[7]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ActiveCardRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ActiveCardRequest) ProtoMessage() {}
+
+func (x *ActiveCardRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_card_proto_msgTypes[7]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+func (x *ActiveCardRequest) GetId() int64 {
+	if x != nil {
+		return x.xxx_hidden_Id
+	}
+	return 0
+}
+
+func (x *ActiveCardRequest) SetId(v int64) {
+	x.xxx_hidden_Id = v
+}
+
+type ActiveCardRequest_builder struct {
+	_ [0]func() // Prevents comparability and use of unkeyed literals for the builder.
+
+	Id int64
+}
+
+func (b0 ActiveCardRequest_builder) Build() *ActiveCardRequest {
+	m0 := &ActiveCardRequest{}
+	b, x := &b0, m0
+	_, _ = b, x
+	x.xxx_hidden_Id = b.Id
+	return m0
+}
+
+type ActiveCardResponse struct {
+	state         protoimpl.MessageState `protogen:"opaque.v1"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ActiveCardResponse) Reset() {
+	*x = ActiveCardResponse{}
+	mi := &file_card_proto_msgTypes[8]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ActiveCardResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ActiveCardResponse) ProtoMessage() {}
+
+func (x *ActiveCardResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_card_proto_msgTypes[8]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+type ActiveCardResponse_builder struct {
+	_ [0]func() // Prevents comparability and use of unkeyed literals for the builder.
+
+}
+
+func (b0 ActiveCardResponse_builder) Build() *ActiveCardResponse {
+	m0 := &ActiveCardResponse{}
+	b, x := &b0, m0
+	_, _ = b, x
+	return m0
+}
+
 var File_card_proto protoreflect.FileDescriptor
 
 const file_card_proto_rawDesc = "" +
 	"\n" +
 	"\n" +
 	"card.proto\x12\bgokeeper\x1a\x1fgoogle/protobuf/timestamp.proto\"\x0e\n" +
-	"\fCardsRequest\"\x80\x01\n" +
-	"\bCardData\x12\x1f\n" +
-	"\vcard_number\x18\x01 \x01(\tR\n" +
+	"\fCardsRequest\"\x90\x01\n" +
+	"\bCardData\x12\x0e\n" +
+	"\x02id\x18\x01 \x01(\x03R\x02id\x12\x1f\n" +
+	"\vcard_number\x18\x02 \x01(\tR\n" +
 	"cardNumber\x12\x16\n" +
-	"\x06active\x18\x02 \x01(\bR\x06active\x12;\n" +
-	"\vexpiry_date\x18\x03 \x01(\v2\x1a.google.protobuf.TimestampR\n" +
+	"\x06active\x18\x03 \x01(\bR\x06active\x12;\n" +
+	"\vexpiry_date\x18\x04 \x01(\v2\x1a.google.protobuf.TimestampR\n" +
 	"expiryDate\"9\n" +
 	"\rCardsResponse\x12(\n" +
 	"\x05cards\x18\x01 \x03(\v2\x12.gokeeper.CardDataR\x05cards\"U\n" +
@@ -353,19 +568,29 @@ const file_card_proto_rawDesc = "" +
 	"cardNumber\x12\x1f\n" +
 	"\vexpiry_date\x18\x02 \x01(\tR\n" +
 	"expiryDate\"\x14\n" +
-	"\x12CreateCardResponseB*Z(github.com/Albert-Ti/go-keeper/pkg/protob\x06proto3"
+	"\x12CreateCardResponse\"#\n" +
+	"\x11DeleteCardRequest\x12\x0e\n" +
+	"\x02id\x18\x01 \x01(\x03R\x02id\"\x14\n" +
+	"\x12DeleteCardResponse\"#\n" +
+	"\x11ActiveCardRequest\x12\x0e\n" +
+	"\x02id\x18\x01 \x01(\x03R\x02id\"\x14\n" +
+	"\x12ActiveCardResponseB*Z(github.com/Albert-Ti/go-keeper/pkg/protob\x06proto3"
 
-var file_card_proto_msgTypes = make([]protoimpl.MessageInfo, 5)
+var file_card_proto_msgTypes = make([]protoimpl.MessageInfo, 9)
 var file_card_proto_goTypes = []any{
 	(*CardsRequest)(nil),          // 0: gokeeper.CardsRequest
 	(*CardData)(nil),              // 1: gokeeper.CardData
 	(*CardsResponse)(nil),         // 2: gokeeper.CardsResponse
 	(*CreateCardRequest)(nil),     // 3: gokeeper.CreateCardRequest
 	(*CreateCardResponse)(nil),    // 4: gokeeper.CreateCardResponse
-	(*timestamppb.Timestamp)(nil), // 5: google.protobuf.Timestamp
+	(*DeleteCardRequest)(nil),     // 5: gokeeper.DeleteCardRequest
+	(*DeleteCardResponse)(nil),    // 6: gokeeper.DeleteCardResponse
+	(*ActiveCardRequest)(nil),     // 7: gokeeper.ActiveCardRequest
+	(*ActiveCardResponse)(nil),    // 8: gokeeper.ActiveCardResponse
+	(*timestamppb.Timestamp)(nil), // 9: google.protobuf.Timestamp
 }
 var file_card_proto_depIdxs = []int32{
-	5, // 0: gokeeper.CardData.expiry_date:type_name -> google.protobuf.Timestamp
+	9, // 0: gokeeper.CardData.expiry_date:type_name -> google.protobuf.Timestamp
 	1, // 1: gokeeper.CardsResponse.cards:type_name -> gokeeper.CardData
 	2, // [2:2] is the sub-list for method output_type
 	2, // [2:2] is the sub-list for method input_type
@@ -385,7 +610,7 @@ func file_card_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_card_proto_rawDesc), len(file_card_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   5,
+			NumMessages:   9,
 			NumExtensions: 0,
 			NumServices:   0,
 		},

@@ -1,6 +1,8 @@
 package main
 
 import (
+	"fmt"
+
 	"charm.land/bubbles/v2/textinput"
 	"charm.land/lipgloss/v2"
 )
@@ -41,8 +43,6 @@ var (
 	tabInactiveStyle = lipgloss.NewStyle().
 				Foreground(colorMuted).
 				Padding(0, 2)
-
-	buttonEnter = lipgloss.NewStyle().Foreground(colorPrimary).Render("[ enter ]")
 )
 
 func newStyledInput(placeholder string, isPass bool) textinput.Model {
@@ -68,4 +68,12 @@ func newStyledInput(placeholder string, isPass bool) textinput.Model {
 	t.Prompt = "» "
 
 	return t
+}
+
+func button(text, description string, disabled bool) string {
+	textInfo := lipgloss.NewStyle().Faint(true).Render(description)
+	if disabled {
+		return lipgloss.NewStyle().Foreground(colorPrimary).Faint(true).Render(fmt.Sprintf("[ %s ]", text)) + " " + textInfo
+	}
+	return lipgloss.NewStyle().Foreground(colorPrimary).Render(fmt.Sprintf("[ %s ]", text)) + " " + textInfo
 }

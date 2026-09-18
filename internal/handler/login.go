@@ -23,7 +23,7 @@ func (g *GrpcServer) Login(ctx context.Context, in *pb.LoginRequest) (*pb.LoginR
 		if errors.Is(err, service.ErrEmailNotConfirmed) {
 			return nil, status.Errorf(codes.PermissionDenied, "email: %v, has not been confirmed", in.GetEmail())
 		}
-		return nil, status.Error(codes.Internal, "internal server")
+		return nil, status.Error(codes.Internal, "failed to login")
 	}
 	accessToken, err := mytoken.CreateAccessToken(user.UUID, g.Opts.JWTSecret)
 	refreshToken, err := mytoken.CreateRefreshToken(user.UUID, g.Opts.JWTSecret)

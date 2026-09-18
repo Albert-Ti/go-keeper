@@ -1,6 +1,7 @@
 package main
 
 import (
+	"strconv"
 	"strings"
 
 	"charm.land/bubbles/v2/textinput"
@@ -135,16 +136,11 @@ func fieldView(label string, input textinput.Model) string {
 
 func contentProfileView(m model) string {
 	s := ""
-	for i, v := range m.contentTabProfile {
-		if i == m.cursor {
-			s += "✎ " + lipgloss.NewStyle().Width(12).Render(v) +
-				": " + m.profile[v] + "\n"
-		} else {
-			s += "  " + lipgloss.NewStyle().Width(12).Render(v) +
-				": " + m.profile[v] + "\n"
-		}
+	for _, v := range m.contentTabProfile {
+		s += "  " + lipgloss.NewStyle().Width(12).Render(v) +
+			": " + m.profile[v] + "\n"
 	}
-	s += "\n" + "  " + buttonEnter + lipgloss.NewStyle().Faint(true).Render(" press to update info") + "\n"
+	s += "\n" + "  " + button("update", "press enter to update info", false) + "\n"
 
 	return lipgloss.NewStyle().MarginTop(1).PaddingLeft(3).Width(cardWidth).Align(lipgloss.Left).Render(s)
 }
@@ -152,22 +148,44 @@ func contentProfileView(m model) string {
 func contentCardsView(m model) string {
 	s := ""
 	if len(m.cards) == 0 {
-		textInfo := lipgloss.NewStyle().Faint(true).Render("You have not added a bank card yet, to add : ")
-		s = "\n\n" + textInfo + buttonEnter + "\n"
+		textInfo := lipgloss.NewStyle().Faint(true).Render("You have not added a bank card yet, press ctrl+a to add : ")
+		s = "\n\n" + textInfo + button("add", "", false) + "\n"
 	} else {
 		for i, card := range m.cards {
 			isActive := lipgloss.NewStyle().Faint(true).Render("inactive")
+
 			if card.GetActive() {
-				isActive = "active"
+				isActive = "active  "
 			}
+
+			cardsBtns := []string{}
 			prefix := "  "
 			if i == m.cursor {
 				prefix = "✎ "
+
+				if m.selectedCard == i {
+					cardsBtns = []string{"[ ]", "[ delete ]"}
+					if card.GetActive() {
+						cardsBtns = []string{"[X]", "[ delete ]"}
+					}
+				}
 			}
-			s += prefix + lipgloss.NewStyle().Faint(true).Render("**** **** **** ") + card.GetCardNumber() + "  " + card.GetExpiryDate().AsTime().Format("02/06") + "  " + isActive + "\n"
+			card := prefix + strconv.Itoa(i+1) + ". " +
+				lipgloss.NewStyle().Faint(true).Render("**** **** **** ") + card.GetCardNumber() + "  " + card.GetExpiryDate().AsTime().Format("01/06") + "  " + isActive
+
+			btns := ""
+			for i, v := range cardsBtns {
+				active := lipgloss.NewStyle().Faint(true).Foreground(colorPrimary).Render(v)
+				if i == int(m.activeCardBtn) {
+					active = lipgloss.NewStyle().Foreground(colorPrimary).Render(v)
+				}
+				btns += active + " "
+			}
+
+			s += lipgloss.NewStyle().MarginRight(5).Render(card) + btns + "\n"
 		}
-		textInfo := lipgloss.NewStyle().Faint(true).Render(" press to add new card.")
-		s += "\n" + "  " + buttonEnter + textInfo + "\n"
+		s += "\n" + "  " + button("add", "ctrl+a", false) + "\n"
+		s += "  " + button("select", "enter", false) + "\n"
 	}
 
 	return lipgloss.NewStyle().MarginTop(1).PaddingLeft(3).Width(cardWidth).Align(lipgloss.Left).Render(s)

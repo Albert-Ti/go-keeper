@@ -14,6 +14,8 @@ type Repository interface {
 	UpdateUser(ctx context.Context, p models.UpdateUserParams) error
 	GetCards(ctx context.Context, uuid string) ([]models.Card, error)
 	CreateCard(ctx context.Context, uuid string, number string, expiry time.Time) error
+	DeleteCard(ctx context.Context, id int64) error
+	ActivateCard(ctx context.Context, uuid string, id int64) error
 }
 
 func NewRepository(connString string) (Repository, error) {
