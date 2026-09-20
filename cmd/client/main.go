@@ -48,17 +48,6 @@ const (
 	cardActionsDelete
 )
 
-func (t cardActionsType) String() string {
-	switch t {
-	case cardActionsUpdate:
-		return ""
-	case cardActionsDelete:
-		return ""
-	default:
-		return ""
-	}
-}
-
 type pageType int
 
 const (
@@ -232,6 +221,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		if msg.err != nil {
 			return m, m.handleError(msg.err)
 		}
+
 		m.codeEmail = msg.emailCode
 		m.activePage = confirmPage
 		m.isLoad = false
@@ -266,7 +256,11 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		if msg.err != nil {
 			return m, m.handleError(msg.err)
 		}
-		return m, loginCmd(m.client, m.authForm.email.Value(), m.authForm.pass.Value())
+		m.isLoad = false
+		m.authForm.email.Focus()
+		m.authForm.pass.Blur()
+		m.authForm.pass.SetValue("")
+		return m.navigateTo(loginPage), nil
 
 	case refreshTokenResultMsg:
 		if msg.err != nil {

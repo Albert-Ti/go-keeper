@@ -15,7 +15,6 @@ type UpdateUserParams struct {
 	Email          string
 	EmailCode      *string
 	IsConfirmEmail *bool
-	Pass           *string
 }
 
 type Profile struct {

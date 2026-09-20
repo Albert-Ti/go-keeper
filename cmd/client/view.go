@@ -21,7 +21,11 @@ func headerView(m model) string {
 	leftRendered := lipgloss.NewStyle().Foreground(colorPrimary).
 		Render("Go Keeper") + " " + spinner
 
-	rightRendered := m.activePage.String()
+	page := m.activePage.String()
+	if m.activePage == userPage {
+		page = m.authUser
+	}
+	rightRendered := page
 
 	gapWidth := cardWidth - lipgloss.Width(leftRendered) - lipgloss.Width(rightRendered)
 	if gapWidth < 0 {

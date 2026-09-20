@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"slices"
 	"time"
 
 	tea "charm.land/bubbletea/v2"
@@ -160,6 +161,19 @@ func getCardsCmd(client pb.GoKeeperServiceClient) tea.Cmd {
 		if err != nil {
 			return cardsResultMsg{err: err}
 		}
+
+		slices.SortFunc(resp.GetCards(), func(a, b *pb.CardData) int {
+			aActive := a.GetActive()
+			bActive := b.GetActive()
+			switch {
+			case aActive && !bActive:
+				return -1
+			case !aActive && bActive:
+				return 1
+			default:
+				return 0
+			}
+		})
 		return cardsResultMsg{err: err, cards: resp.GetCards()}
 	}
 }

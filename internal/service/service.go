@@ -26,6 +26,7 @@ var (
 	ErrEmailNotConfirmed = errors.New("email has not been confirmed")
 	ErrNoRows            = errors.New("no rows")
 	ErrCardNotFound      = errors.New("card not found or not active")
+	ErrPasswordReused    = errors.New("password was used before")
 )
 
 type Service struct {
@@ -119,20 +120,29 @@ func (s *Service) GetProfile(ctx context.Context, uuid string) (models.Profile, 
 func (s *Service) ChangePass(ctx context.Context, uuid, passOld, passNew string) error {
 	user, err := s.repo.GetUserByID(ctx, uuid)
 	if err != nil {
-		return nil
+		return err
 	}
 
-	salt := strings.Split(user.Pass, ".")[0]
-	hashPassOld := utils.HashPass(salt, passOld)
-
-	if hashPassOld != user.Pass {
+	// 1. действующий пароль введён верно
+	if !utils.CheckPass(user.Pass, passOld) {
 		return ErrInvalidPassword
 	}
 
+	// 2. новый пароль не совпадает ни с текущим, ни с прошлыми
+	listHistory, err := s.repo.GetPassList(ctx, uuid)
+	if err != nil {
+		return err
+	}
+	for _, h := range append([]string{user.Pass}, listHistory...) {
+		if utils.CheckPass(h, passNew) {
+			return ErrPasswordReused
+		}
+	}
+
+	salt := strings.Split(user.Pass, ".")[0]
 	hashPassNew := utils.HashPass(salt, passNew)
 
-	params := models.UpdateUserParams{UUID: uuid, Pass: &hashPassNew}
-	return s.repo.UpdateUser(ctx, params)
+	return s.repo.ChangePass(ctx, uuid, user.Pass, hashPassNew)
 }
 
 func (s *Service) GetCards(ctx context.Context, uuid string) ([]models.Card, error) {

@@ -9,11 +9,10 @@ CREATE TABLE
   );
 
 CREATE TABLE
-  IF NOT EXISTS history (
+  IF NOT EXISTS pass_list (
     id BIGSERIAL PRIMARY KEY,
     user_uuid UUID NOT NULL,
     old_pass VARCHAR(255) NOT NULL,
-    life_time INTERVAL,
     FOREIGN KEY (user_uuid) REFERENCES users (uuid)
   );
 

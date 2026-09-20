@@ -97,6 +97,7 @@ func (pg *PGStorage) GetUserByID(ctx context.Context, uuid string) (models.Profi
 	return user, nil
 }
 
+// UpdateUser - Универсальный метод db, который легко масштабируется при увеличении полей у таблицы users.
 func (pg *PGStorage) UpdateUser(ctx context.Context, p models.UpdateUserParams) error {
 	setParts := make([]string, 0, 4)
 	args := make([]any, 0, 5)
@@ -110,11 +111,6 @@ func (pg *PGStorage) UpdateUser(ctx context.Context, p models.UpdateUserParams) 
 	if p.IsConfirmEmail != nil {
 		setParts = append(setParts, fmt.Sprintf("is_confirm_email = $%d", argIdx))
 		args = append(args, *p.IsConfirmEmail)
-		argIdx++
-	}
-	if p.Pass != nil {
-		setParts = append(setParts, fmt.Sprintf("pass = $%d", argIdx))
-		args = append(args, *p.Pass)
 		argIdx++
 	}
 
@@ -145,6 +141,27 @@ func (pg *PGStorage) UpdateUser(ctx context.Context, p models.UpdateUserParams) 
 
 	_, err := pg.pool.Exec(ctx, query, args...)
 	return err
+}
+
+// ChangePass - отдельное обновление пароля с сохранением в истории.
+func (pg *PGStorage) ChangePass(ctx context.Context, uuid, passOld, passNew string) error {
+	tx, err := pg.pool.Begin(ctx)
+	if err != nil {
+		return err
+	}
+	defer tx.Rollback(ctx)
+
+	_, err = tx.Exec(ctx, `UPDATE users SET pass = $1 WHERE uuid = $2`, passNew, uuid)
+	if err != nil {
+		return err
+	}
+
+	_, err = tx.Exec(ctx, `INSERT INTO pass_list (old_pass, user_uuid) VALUES ($1, $2)`, passOld, uuid)
+	if err != nil {
+		return err
+	}
+
+	return tx.Commit(ctx)
 }
 
 func (pg *PGStorage) GetCards(ctx context.Context, uuid string) ([]models.Card, error) {
@@ -197,9 +214,9 @@ func (pg *PGStorage) CreateCard(ctx context.Context, uuid string, number string,
 }
 
 func (pg *PGStorage) DeleteCard(ctx context.Context, id int64) error {
-	sql := `DELETE FROM bank_cards WHERE id = $1 AND active = $2`
+	sql := `DELETE FROM bank_cards WHERE id = $1`
 
-	tag, err := pg.pool.Exec(ctx, sql, id, false)
+	tag, err := pg.pool.Exec(ctx, sql, id)
 	if err != nil {
 		return err
 	}
@@ -232,4 +249,26 @@ func (pg *PGStorage) ActivateCard(ctx context.Context, uuid string, id int64) er
 	}
 
 	return tx.Commit(ctx)
+}
+
+func (pg *PGStorage) GetPassList(ctx context.Context, uuid string) ([]string, error) {
+	rows, err := pg.pool.Query(ctx, `SELECT old_pass FROM pass_list WHERE user_uuid = $1`, uuid)
+
+	if err != nil {
+		return nil, err
+	}
+
+	var list []string
+	if rows.Next() {
+		var pass string
+		err := rows.Scan(&pass)
+
+		if err != nil {
+			return nil, err
+		}
+
+		list = append(list, pass)
+	}
+
+	return list, nil
 }

@@ -3,6 +3,7 @@ package utils
 import (
 	"crypto/rand"
 	"crypto/sha256"
+	"crypto/subtle"
 	"encoding/base64"
 	"encoding/hex"
 	"fmt"
@@ -67,4 +68,10 @@ func AlgoLuna(order string) bool {
 
 func ValidatePass(pass string) {
 
+}
+
+func CheckPass(stored, plain string) bool {
+	salt := strings.Split(stored, ".")[0]
+	h := HashPass(salt, plain)
+	return subtle.ConstantTimeCompare([]byte(h), []byte(stored)) == 1
 }

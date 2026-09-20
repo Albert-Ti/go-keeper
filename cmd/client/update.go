@@ -155,6 +155,9 @@ func userUpdate(msg tea.KeyPressMsg, m model) (model, tea.Cmd) {
 			}
 		case "enter":
 			m.profileForm.passOld.Focus()
+			m.profileForm.passNew.Blur()
+			m.profileForm.passOld.SetValue("")
+			m.profileForm.passNew.SetValue("")
 			return m.navigateTo(profileFormPage), nil
 		}
 
@@ -178,7 +181,9 @@ func userUpdate(msg tea.KeyPressMsg, m model) (model, tea.Cmd) {
 			return m.navigateTo(cardFormPage), nil
 
 		case "enter":
-			m.selectedCard = m.cursor
+			if len(m.cards) > 0 {
+				m.selectedCard = m.cursor
+			}
 		}
 
 	case tabData:
@@ -215,7 +220,6 @@ func profileFormUpdate(msg tea.KeyPressMsg, m model) (model, tea.Cmd) {
 }
 
 func cardFormUpdate(msg tea.KeyPressMsg, m model) (model, tea.Cmd) {
-
 	switch msg.String() {
 	case "tab":
 		var cmd tea.Cmd

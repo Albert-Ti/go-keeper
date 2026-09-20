@@ -28,7 +28,7 @@ migrate-create:
 
 # Применить все миграции
 migrate-up:
-	migrate -database "$(DB_URL)" -path "$(MIGRATIONS_PATH)" up
+	migrate -database "$(DB_URL)" -path "./migrations" up
 
 # Откатить все миграции
 migrate-down:
