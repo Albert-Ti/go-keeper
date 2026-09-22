@@ -14,6 +14,15 @@ services:
     volumes:
       - data:/var/lib/postgresql
 
+  redis:
+    container_name: redis
+    image: redis:latest
+    restart: unless-stopped
+    ports:
+      - 6379:6379
+    volumes:
+      - redis-data:/data
+
   adminer:
     image: adminer
     restart: always
