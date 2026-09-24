@@ -76,7 +76,7 @@ func (pg *PGStorage) GetUserByEmail(ctx context.Context, email string) (models.U
 	return user, nil
 }
 
-func (pg *PGStorage) GetUserByID(ctx context.Context, uuid string) (models.Profile, error) {
+func (pg *PGStorage) GetProfile(ctx context.Context, uuid string) (models.Profile, error) {
 	sql := `
 	SELECT email, pass, created_at
 	FROM users 
@@ -213,10 +213,10 @@ func (pg *PGStorage) CreateCard(ctx context.Context, uuid string, number string,
 	return tx.Commit(ctx)
 }
 
-func (pg *PGStorage) DeleteCard(ctx context.Context, id int64) error {
-	sql := `DELETE FROM bank_cards WHERE id = $1`
+func (pg *PGStorage) DeleteCard(ctx context.Context, uuid string, cardID int64) error {
+	sql := `DELETE FROM bank_cards WHERE user_uuid = $1 AND id = $2`
 
-	tag, err := pg.pool.Exec(ctx, sql, id)
+	tag, err := pg.pool.Exec(ctx, sql, uuid, cardID)
 	if err != nil {
 		return err
 	}
@@ -227,7 +227,7 @@ func (pg *PGStorage) DeleteCard(ctx context.Context, id int64) error {
 	return nil
 }
 
-func (pg *PGStorage) ActivateCard(ctx context.Context, uuid string, id int64) error {
+func (pg *PGStorage) ActivateCard(ctx context.Context, uuid string, cardID int64) error {
 	tx, err := pg.pool.Begin(ctx)
 	if err != nil {
 		return err
@@ -239,7 +239,7 @@ func (pg *PGStorage) ActivateCard(ctx context.Context, uuid string, id int64) er
 		return err
 	}
 
-	tag, err := tx.Exec(ctx, `UPDATE bank_cards SET active = NOT active WHERE id = $1 and user_uuid = $2`, id, uuid)
+	tag, err := tx.Exec(ctx, `UPDATE bank_cards SET active = NOT active WHERE id = $1 and user_uuid = $2`, cardID, uuid)
 	if err != nil {
 		return err
 	}

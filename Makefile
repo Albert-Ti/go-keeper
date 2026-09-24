@@ -13,12 +13,15 @@ RACE_FLAG := -race
 endif
 
 # ---------------------- RUN
-# Запуск сервера с настройками по умолчанию (in-memory хранилище)
+# Запуск сервера с настройками по умолчанию
 run:
 	go run $(RACE_FLAG) $(RUN_PATH) -d="$(DB_URL)"
 
 run-smtp:
 	go run $(RACE_FLAG) $(RUN_PATH) -d="$(DB_URL)" -e="true"
+
+run-client:
+	go run ./cmd/client/...
 
 # ---------------------- MIGRATIONS
 # Создание новой миграции: make migrate-create name=my_migration
@@ -74,6 +77,9 @@ docker-exec:
 docker-volume-rm:
 	docker volume rm shorten_url_data || true 
 
+# Команда для удаления контейнеров, образов, томов и сетей за один раз которые не используются
+docker-prune:
+	docker system prune -a --volumes
 
 # ---------------------- PROTOBUF
 protoc:

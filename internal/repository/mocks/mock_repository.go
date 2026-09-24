@@ -42,6 +42,20 @@ func (m *MockRepository) EXPECT() *MockRepositoryMockRecorder {
 	return m.recorder
 }
 
+// ActivateCard mocks base method.
+func (m *MockRepository) ActivateCard(ctx context.Context, uuid string, cardID int64) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ActivateCard", ctx, uuid, cardID)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// ActivateCard indicates an expected call of ActivateCard.
+func (mr *MockRepositoryMockRecorder) ActivateCard(ctx, uuid, cardID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ActivateCard", reflect.TypeOf((*MockRepository)(nil).ActivateCard), ctx, uuid, cardID)
+}
+
 // AddUser mocks base method.
 func (m *MockRepository) AddUser(ctx context.Context, email, code, pass string) error {
 	m.ctrl.T.Helper()
@@ -56,18 +70,18 @@ func (mr *MockRepositoryMockRecorder) AddUser(ctx, email, code, pass any) *gomoc
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddUser", reflect.TypeOf((*MockRepository)(nil).AddUser), ctx, email, code, pass)
 }
 
-// ActivateCard mocks base method.
-func (m *MockRepository) ActivateCard(ctx context.Context, uuid string, id int64) error {
+// ChangePass mocks base method.
+func (m *MockRepository) ChangePass(ctx context.Context, uuid, passOld, passNew string) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ActivateCard", ctx, uuid, id)
+	ret := m.ctrl.Call(m, "ChangePass", ctx, uuid, passOld, passNew)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// ActivateCard indicates an expected call of ActivateCard.
-func (mr *MockRepositoryMockRecorder) ActivateCard(ctx, uuid, id any) *gomock.Call {
+// ChangePass indicates an expected call of ChangePass.
+func (mr *MockRepositoryMockRecorder) ChangePass(ctx, uuid, passOld, passNew any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ActivateCard", reflect.TypeOf((*MockRepository)(nil).ActivateCard), ctx, uuid, id)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ChangePass", reflect.TypeOf((*MockRepository)(nil).ChangePass), ctx, uuid, passOld, passNew)
 }
 
 // CreateCard mocks base method.
@@ -85,17 +99,17 @@ func (mr *MockRepositoryMockRecorder) CreateCard(ctx, uuid, number, expiry any) 
 }
 
 // DeleteCard mocks base method.
-func (m *MockRepository) DeleteCard(ctx context.Context, id int64) error {
+func (m *MockRepository) DeleteCard(ctx context.Context, uuid string, cardID int64) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "DeleteCard", ctx, id)
+	ret := m.ctrl.Call(m, "DeleteCard", ctx, uuid, cardID)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // DeleteCard indicates an expected call of DeleteCard.
-func (mr *MockRepositoryMockRecorder) DeleteCard(ctx, id any) *gomock.Call {
+func (mr *MockRepositoryMockRecorder) DeleteCard(ctx, uuid, cardID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteCard", reflect.TypeOf((*MockRepository)(nil).DeleteCard), ctx, id)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteCard", reflect.TypeOf((*MockRepository)(nil).DeleteCard), ctx, uuid, cardID)
 }
 
 // GetCards mocks base method.
@@ -113,6 +127,36 @@ func (mr *MockRepositoryMockRecorder) GetCards(ctx, uuid any) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetCards", reflect.TypeOf((*MockRepository)(nil).GetCards), ctx, uuid)
 }
 
+// GetPassList mocks base method.
+func (m *MockRepository) GetPassList(ctx context.Context, uuid string) ([]string, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetPassList", ctx, uuid)
+	ret0, _ := ret[0].([]string)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetPassList indicates an expected call of GetPassList.
+func (mr *MockRepositoryMockRecorder) GetPassList(ctx, uuid any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetPassList", reflect.TypeOf((*MockRepository)(nil).GetPassList), ctx, uuid)
+}
+
+// GetProfile mocks base method.
+func (m *MockRepository) GetProfile(ctx context.Context, uuid string) (models.Profile, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetProfile", ctx, uuid)
+	ret0, _ := ret[0].(models.Profile)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetProfile indicates an expected call of GetProfile.
+func (mr *MockRepositoryMockRecorder) GetProfile(ctx, uuid any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetProfile", reflect.TypeOf((*MockRepository)(nil).GetProfile), ctx, uuid)
+}
+
 // GetUserByEmail mocks base method.
 func (m *MockRepository) GetUserByEmail(ctx context.Context, email string) (models.User, error) {
 	m.ctrl.T.Helper()
@@ -128,21 +172,6 @@ func (mr *MockRepositoryMockRecorder) GetUserByEmail(ctx, email any) *gomock.Cal
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetUserByEmail", reflect.TypeOf((*MockRepository)(nil).GetUserByEmail), ctx, email)
 }
 
-// GetUserByID mocks base method.
-func (m *MockRepository) GetUserByID(ctx context.Context, uuid string) (models.Profile, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetUserByID", ctx, uuid)
-	ret0, _ := ret[0].(models.Profile)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// GetUserByID indicates an expected call of GetUserByID.
-func (mr *MockRepositoryMockRecorder) GetUserByID(ctx, uuid any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetUserByID", reflect.TypeOf((*MockRepository)(nil).GetUserByID), ctx, uuid)
-}
-
 // UpdateUser mocks base method.
 func (m *MockRepository) UpdateUser(ctx context.Context, p models.UpdateUserParams) error {
 	m.ctrl.T.Helper()
@@ -155,4 +184,88 @@ func (m *MockRepository) UpdateUser(ctx context.Context, p models.UpdateUserPara
 func (mr *MockRepositoryMockRecorder) UpdateUser(ctx, p any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateUser", reflect.TypeOf((*MockRepository)(nil).UpdateUser), ctx, p)
+}
+
+// MockCache is a mock of Cache interface.
+type MockCache struct {
+	ctrl     *gomock.Controller
+	recorder *MockCacheMockRecorder
+	isgomock struct{}
+}
+
+// MockCacheMockRecorder is the mock recorder for MockCache.
+type MockCacheMockRecorder struct {
+	mock *MockCache
+}
+
+// NewMockCache creates a new mock instance.
+func NewMockCache(ctrl *gomock.Controller) *MockCache {
+	mock := &MockCache{ctrl: ctrl}
+	mock.recorder = &MockCacheMockRecorder{mock}
+	return mock
+}
+
+// EXPECT returns an object that allows the caller to indicate expected use.
+func (m *MockCache) EXPECT() *MockCacheMockRecorder {
+	return m.recorder
+}
+
+// Delete mocks base method.
+func (m *MockCache) Delete(ctx context.Context, keys ...string) error {
+	m.ctrl.T.Helper()
+	varargs := []any{ctx}
+	for _, a := range keys {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "Delete", varargs...)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// Delete indicates an expected call of Delete.
+func (mr *MockCacheMockRecorder) Delete(ctx any, keys ...any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]any{ctx}, keys...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Delete", reflect.TypeOf((*MockCache)(nil).Delete), varargs...)
+}
+
+// Get mocks base method.
+func (m *MockCache) Get(ctx context.Context, key string) (string, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Get", ctx, key)
+	ret0, _ := ret[0].(string)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// Get indicates an expected call of Get.
+func (mr *MockCacheMockRecorder) Get(ctx, key any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Get", reflect.TypeOf((*MockCache)(nil).Get), ctx, key)
+}
+
+// Ping mocks base method.
+func (m *MockCache) Ping(ctx context.Context) {
+	m.ctrl.T.Helper()
+	m.ctrl.Call(m, "Ping", ctx)
+}
+
+// Ping indicates an expected call of Ping.
+func (mr *MockCacheMockRecorder) Ping(ctx any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Ping", reflect.TypeOf((*MockCache)(nil).Ping), ctx)
+}
+
+// Set mocks base method.
+func (m *MockCache) Set(ctx context.Context, key, value string, expiration time.Duration) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Set", ctx, key, value, expiration)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// Set indicates an expected call of Set.
+func (mr *MockCacheMockRecorder) Set(ctx, key, value, expiration any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Set", reflect.TypeOf((*MockCache)(nil).Set), ctx, key, value, expiration)
 }

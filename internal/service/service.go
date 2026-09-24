@@ -109,7 +109,7 @@ func (s *Service) ConfirmEmail(ctx context.Context, email, code string) error {
 }
 
 func (s *Service) GetProfile(ctx context.Context, uuid string) (models.Profile, error) {
-	user, err := s.repo.GetUserByID(ctx, uuid)
+	user, err := s.repo.GetProfile(ctx, uuid)
 	if err != nil {
 		return models.Profile{}, err
 	}
@@ -118,7 +118,7 @@ func (s *Service) GetProfile(ctx context.Context, uuid string) (models.Profile, 
 }
 
 func (s *Service) ChangePass(ctx context.Context, uuid, passOld, passNew string) error {
-	user, err := s.repo.GetUserByID(ctx, uuid)
+	user, err := s.repo.GetProfile(ctx, uuid)
 	if err != nil {
 		return err
 	}
@@ -153,8 +153,8 @@ func (s *Service) CreateCard(ctx context.Context, uuid string, number string, ex
 	return s.repo.CreateCard(ctx, uuid, number, expiry)
 }
 
-func (s *Service) DeleteCard(ctx context.Context, id int64) error {
-	err := s.repo.DeleteCard(ctx, id)
+func (s *Service) DeleteCard(ctx context.Context, uuid string, cardID int64) error {
+	err := s.repo.DeleteCard(ctx, uuid, cardID)
 
 	if err != nil {
 		return ErrCardNotFound
@@ -162,8 +162,8 @@ func (s *Service) DeleteCard(ctx context.Context, id int64) error {
 	return nil
 }
 
-func (s *Service) ActivateCard(ctx context.Context, uuid string, id int64) error {
-	return s.repo.ActivateCard(ctx, uuid, id)
+func (s *Service) ActivateCard(ctx context.Context, uuid string, cardID int64) error {
+	return s.repo.ActivateCard(ctx, uuid, cardID)
 }
 
 func (s *Service) sendEmailCode(ctx context.Context, email, code string) error {

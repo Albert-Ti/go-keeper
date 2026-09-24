@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"log/slog"
 	"net"
 
@@ -21,10 +22,14 @@ func main() {
 		panic(errCfg)
 	}
 
-	repo, err := repository.NewRepository(opts.DBConnStr)
+	pgRepo, err := repository.NewRepository(opts.DBConnStr)
 	if err != nil {
 		panic(err)
 	}
+	cache := repository.NewCache("localhost:6379", "redis")
+	cache.Ping(context.Background())
+
+	repo := repository.NewCachedRepository(pgRepo, cache)
 
 	var sender *email.Sender
 	if opts.EnableSMTP {
