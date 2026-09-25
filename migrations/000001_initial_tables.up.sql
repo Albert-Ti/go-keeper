@@ -26,3 +26,15 @@ CREATE TABLE
     created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (user_uuid) REFERENCES users (uuid)
   );
+
+CREATE TABLE
+  IF NOT EXISTS arbitrary_data (
+    id BIGSERIAL PRIMARY KEY,
+    user_uuid UUID NOT NULL,
+    name VARCHAR(32),
+    type VARCHAR(32),
+    object_key VARCHAR(255),
+    metadata VARCHAR(255),
+    created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_uuid) REFERENCES users (uuid)
+  );

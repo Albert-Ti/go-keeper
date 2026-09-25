@@ -13,11 +13,11 @@ import (
 
 var ErrRowAffected = errors.New("rows affected 0")
 
-type PGStorage struct {
+type Postgres struct {
 	pool *pgxpool.Pool
 }
 
-func NewPGStorage(connString string) (*PGStorage, error) {
+func NewPostgres(connString string) (*Postgres, error) {
 	poolCfg, err := pgxpool.ParseConfig(connString)
 	if err != nil {
 		return nil, err
@@ -33,12 +33,12 @@ func NewPGStorage(connString string) (*PGStorage, error) {
 		return nil, err
 	}
 
-	return &PGStorage{
+	return &Postgres{
 		pool: pool,
 	}, nil
 }
 
-func (pg *PGStorage) AddUser(ctx context.Context, email, code, pass string) error {
+func (pg *Postgres) AddUser(ctx context.Context, email, code, pass string) error {
 	sql := `
 	INSERT INTO users (email, email_code, pass) 
 	VALUES ($1, $2, $3)
@@ -53,7 +53,7 @@ func (pg *PGStorage) AddUser(ctx context.Context, email, code, pass string) erro
 	return nil
 }
 
-func (pg *PGStorage) GetUserByEmail(ctx context.Context, email string) (models.User, error) {
+func (pg *Postgres) GetUserByEmail(ctx context.Context, email string) (models.User, error) {
 	sql := `
 	SELECT uuid, email, email_code, is_confirm_email, pass 
 	FROM users 
@@ -76,7 +76,7 @@ func (pg *PGStorage) GetUserByEmail(ctx context.Context, email string) (models.U
 	return user, nil
 }
 
-func (pg *PGStorage) GetProfile(ctx context.Context, uuid string) (models.Profile, error) {
+func (pg *Postgres) GetProfile(ctx context.Context, uuid string) (models.Profile, error) {
 	sql := `
 	SELECT email, pass, created_at
 	FROM users 
@@ -98,7 +98,7 @@ func (pg *PGStorage) GetProfile(ctx context.Context, uuid string) (models.Profil
 }
 
 // UpdateUser - Универсальный метод db, который легко масштабируется при увеличении полей у таблицы users.
-func (pg *PGStorage) UpdateUser(ctx context.Context, p models.UpdateUserParams) error {
+func (pg *Postgres) UpdateUser(ctx context.Context, p models.UpdateUserParams) error {
 	setParts := make([]string, 0, 4)
 	args := make([]any, 0, 5)
 	argIdx := 1
@@ -143,8 +143,7 @@ func (pg *PGStorage) UpdateUser(ctx context.Context, p models.UpdateUserParams) 
 	return err
 }
 
-// ChangePass - отдельное обновление пароля с сохранением в истории.
-func (pg *PGStorage) ChangePass(ctx context.Context, uuid, passOld, passNew string) error {
+func (pg *Postgres) ChangePass(ctx context.Context, uuid, passOld, passNew string) error {
 	tx, err := pg.pool.Begin(ctx)
 	if err != nil {
 		return err
@@ -164,7 +163,29 @@ func (pg *PGStorage) ChangePass(ctx context.Context, uuid, passOld, passNew stri
 	return tx.Commit(ctx)
 }
 
-func (pg *PGStorage) GetCards(ctx context.Context, uuid string) ([]models.Card, error) {
+func (pg *Postgres) GetPassList(ctx context.Context, uuid string) ([]string, error) {
+	rows, err := pg.pool.Query(ctx, `SELECT old_pass FROM pass_list WHERE user_uuid = $1`, uuid)
+
+	if err != nil {
+		return nil, err
+	}
+
+	var list []string
+	if rows.Next() {
+		var pass string
+		err := rows.Scan(&pass)
+
+		if err != nil {
+			return nil, err
+		}
+
+		list = append(list, pass)
+	}
+
+	return list, nil
+}
+
+func (pg *Postgres) GetCards(ctx context.Context, uuid string) ([]models.Card, error) {
 	sql := `
 	SELECT id, card_number, expiry_date, active
 	FROM bank_cards 
@@ -187,7 +208,7 @@ func (pg *PGStorage) GetCards(ctx context.Context, uuid string) ([]models.Card, 
 	return list, nil
 }
 
-func (pg *PGStorage) CreateCard(ctx context.Context, uuid string, number string, expiry time.Time) error {
+func (pg *Postgres) CreateCard(ctx context.Context, uuid string, number string, expiry time.Time) error {
 	tx, err := pg.pool.Begin(ctx)
 	if err != nil {
 		return err
@@ -213,9 +234,10 @@ func (pg *PGStorage) CreateCard(ctx context.Context, uuid string, number string,
 	return tx.Commit(ctx)
 }
 
-func (pg *PGStorage) DeleteCard(ctx context.Context, uuid string, cardID int64) error {
-	sql := `DELETE FROM bank_cards WHERE user_uuid = $1 AND id = $2`
+func (pg *Postgres) DeleteCard(ctx context.Context, uuid string, cardID int64) error {
+	sql := `DELETE FROM bank_cards WHERE user_uuid = $1 AND id = $2 AND active = true`
 
+	// нужно будет вернуть исключение где карточка если не последняя не может быть удалена, так как является активной.
 	tag, err := pg.pool.Exec(ctx, sql, uuid, cardID)
 	if err != nil {
 		return err
@@ -227,7 +249,7 @@ func (pg *PGStorage) DeleteCard(ctx context.Context, uuid string, cardID int64) 
 	return nil
 }
 
-func (pg *PGStorage) ActivateCard(ctx context.Context, uuid string, cardID int64) error {
+func (pg *Postgres) ActivateCard(ctx context.Context, uuid string, cardID int64) error {
 	tx, err := pg.pool.Begin(ctx)
 	if err != nil {
 		return err
@@ -251,24 +273,8 @@ func (pg *PGStorage) ActivateCard(ctx context.Context, uuid string, cardID int64
 	return tx.Commit(ctx)
 }
 
-func (pg *PGStorage) GetPassList(ctx context.Context, uuid string) ([]string, error) {
-	rows, err := pg.pool.Query(ctx, `SELECT old_pass FROM pass_list WHERE user_uuid = $1`, uuid)
-
-	if err != nil {
-		return nil, err
-	}
-
-	var list []string
-	if rows.Next() {
-		var pass string
-		err := rows.Scan(&pass)
-
-		if err != nil {
-			return nil, err
-		}
-
-		list = append(list, pass)
-	}
-
-	return list, nil
-}
+func (pg *Postgres) CreateData(ctx context.Context)
+func (pg *Postgres) GetData(ctx context.Context)
+func (pg *Postgres) GetUserData(ctx context.Context)
+func (pg *Postgres) UpdateData(ctx context.Context)
+func (pg *Postgres) DeleteData(ctx context.Context)

@@ -22,14 +22,14 @@ func main() {
 		panic(errCfg)
 	}
 
-	pgRepo, err := repository.NewRepository(opts.DBConnStr)
+	pgRepo, err := repository.NewDatabase(opts.DBConnStr)
 	if err != nil {
 		panic(err)
 	}
 	cache := repository.NewCache("localhost:6379", "redis")
 	cache.Ping(context.Background())
 
-	repo := repository.NewCachedRepository(pgRepo, cache)
+	repo := repository.NewCachedDatabase(pgRepo, cache)
 
 	var sender *email.Sender
 	if opts.EnableSMTP {
@@ -45,7 +45,12 @@ func main() {
 		}
 	}
 
-	svc := service.NewService(repo, opts, sender)
+	objectStorage, err := repository.NewObjectStorage("http://localhost:4566")
+	if err != nil {
+		panic(err)
+	}
+
+	svc := service.NewService(repo, opts, sender, objectStorage)
 
 	lis, err := net.Listen("tcp", "localhost:8080")
 

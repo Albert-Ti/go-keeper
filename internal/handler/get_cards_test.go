@@ -19,23 +19,23 @@ func TestGetCards(t *testing.T) {
 
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
-	mockRepo := mocks.NewMockRepository(ctrl)
+	mockRepo := mocks.NewMockDatabase(ctrl)
 
 	opts := config.NewOptions()
 
-	svc := service.NewService(mockRepo, opts, nil)
+	svc := service.NewService(mockRepo, opts, nil, nil)
 
 	client := NewTestGRPCServer(t, svc, opts)
 
 	tests := []struct {
 		name      string
 		wantCode  codes.Code
-		setupMock func(mock *mocks.MockRepository)
+		setupMock func(mock *mocks.MockDatabase)
 	}{
 		{
 			name:     "Success",
 			wantCode: codes.OK,
-			setupMock: func(mock *mocks.MockRepository) {
+			setupMock: func(mock *mocks.MockDatabase) {
 				mock.EXPECT().GetCards(gomock.Any(), gomock.Any()).
 					Return([]models.Card{}, nil)
 			},

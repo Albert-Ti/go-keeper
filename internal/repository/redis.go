@@ -8,12 +8,12 @@ import (
 	"github.com/redis/go-redis/v9"
 )
 
-type RedisCache struct {
+type Redis struct {
 	client *redis.Client
 }
 
-func NewRedisCache(addr, pass string) *RedisCache {
-	return &RedisCache{
+func NewRedis(addr, pass string) *Redis {
+	return &Redis{
 		redis.NewClient(&redis.Options{
 			Addr:     addr,
 			Password: pass,
@@ -22,7 +22,7 @@ func NewRedisCache(addr, pass string) *RedisCache {
 	}
 }
 
-func (r *RedisCache) Ping(ctx context.Context) {
+func (r *Redis) Ping(ctx context.Context) {
 	pong, err := r.client.Ping(ctx).Result()
 	if err != nil {
 		slog.Error("redis ping", "error", err)
@@ -31,11 +31,11 @@ func (r *RedisCache) Ping(ctx context.Context) {
 	}
 }
 
-func (r *RedisCache) Set(ctx context.Context, key string, value string, expiration time.Duration) error {
+func (r *Redis) Set(ctx context.Context, key string, value string, expiration time.Duration) error {
 	return r.client.Set(ctx, key, value, expiration).Err()
 }
 
-func (r *RedisCache) Get(ctx context.Context, key string) (string, error) {
+func (r *Redis) Get(ctx context.Context, key string) (string, error) {
 	val, err := r.client.Get(ctx, key).Result()
 
 	if err != nil {
@@ -45,7 +45,7 @@ func (r *RedisCache) Get(ctx context.Context, key string) (string, error) {
 	return val, nil
 }
 
-func (r *RedisCache) Delete(ctx context.Context, keys ...string) error {
+func (r *Redis) Delete(ctx context.Context, keys ...string) error {
 	_, err := r.client.Del(ctx, keys...).Result()
 
 	if err != nil {

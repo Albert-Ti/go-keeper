@@ -10,27 +10,27 @@ import (
 )
 
 // pattern Decorator
-type CachedRepository struct {
-	next  Repository
+type CachedDatabase struct {
+	next  Database
 	cache Cache
 }
 
-func NewCachedRepository(next Repository, cache Cache) Repository {
-	return &CachedRepository{
+func NewCachedDatabase(next Database, cache Cache) Database {
+	return &CachedDatabase{
 		next:  next,
 		cache: cache,
 	}
 }
 
-func (c *CachedRepository) AddUser(ctx context.Context, email, code, pass string) error {
+func (c *CachedDatabase) AddUser(ctx context.Context, email, code, pass string) error {
 	return c.next.AddUser(ctx, email, code, pass)
 }
 
-func (c *CachedRepository) GetUserByEmail(ctx context.Context, email string) (models.User, error) {
+func (c *CachedDatabase) GetUserByEmail(ctx context.Context, email string) (models.User, error) {
 	return c.next.GetUserByEmail(ctx, email)
 }
 
-func (c *CachedRepository) GetProfile(ctx context.Context, uuid string) (models.Profile, error) {
+func (c *CachedDatabase) GetProfile(ctx context.Context, uuid string) (models.Profile, error) {
 	key := fmt.Sprintf("user:%s", uuid)
 	cashed, err := c.cache.Get(ctx, key)
 
@@ -41,7 +41,6 @@ func (c *CachedRepository) GetProfile(ctx context.Context, uuid string) (models.
 		}
 	}
 
-	// pg method
 	profile, err := c.next.GetProfile(ctx, uuid)
 	if err != nil {
 		return models.Profile{}, err
@@ -59,15 +58,15 @@ func (c *CachedRepository) GetProfile(ctx context.Context, uuid string) (models.
 	return profile, nil
 }
 
-func (c *CachedRepository) UpdateUser(ctx context.Context, p models.UpdateUserParams) error {
+func (c *CachedDatabase) UpdateUser(ctx context.Context, p models.UpdateUserParams) error {
 	return c.next.UpdateUser(ctx, p)
 }
 
-func (c *CachedRepository) ChangePass(ctx context.Context, uuid, passOld, passNew string) error {
+func (c *CachedDatabase) ChangePass(ctx context.Context, uuid, passOld, passNew string) error {
 	return c.next.ChangePass(ctx, uuid, passOld, passNew)
 }
 
-func (c *CachedRepository) GetCards(ctx context.Context, uuid string) ([]models.Card, error) {
+func (c *CachedDatabase) GetCards(ctx context.Context, uuid string) ([]models.Card, error) {
 	key := fmt.Sprintf("user:%s:%s", uuid, "cards")
 
 	cashed, err := c.cache.Get(ctx, key)
@@ -79,7 +78,6 @@ func (c *CachedRepository) GetCards(ctx context.Context, uuid string) ([]models.
 		}
 	}
 
-	// pg method
 	cards, err := c.next.GetCards(ctx, uuid)
 	if err != nil {
 		return nil, err
@@ -97,7 +95,7 @@ func (c *CachedRepository) GetCards(ctx context.Context, uuid string) ([]models.
 	return cards, nil
 }
 
-func (c *CachedRepository) CreateCard(ctx context.Context, uuid string, number string, expiry time.Time) error {
+func (c *CachedDatabase) CreateCard(ctx context.Context, uuid string, number string, expiry time.Time) error {
 	key := fmt.Sprintf("user:%s:%s", uuid, "cards")
 
 	err := c.cache.Delete(ctx, key)
@@ -108,7 +106,7 @@ func (c *CachedRepository) CreateCard(ctx context.Context, uuid string, number s
 	return nil
 }
 
-func (c *CachedRepository) DeleteCard(ctx context.Context, uuid string, cardID int64) error {
+func (c *CachedDatabase) DeleteCard(ctx context.Context, uuid string, cardID int64) error {
 	key := fmt.Sprintf("user:%s:%s", uuid, "cards")
 
 	err := c.cache.Delete(ctx, key)
@@ -119,7 +117,7 @@ func (c *CachedRepository) DeleteCard(ctx context.Context, uuid string, cardID i
 	return nil
 }
 
-func (c *CachedRepository) ActivateCard(ctx context.Context, uuid string, cardID int64) error {
+func (c *CachedDatabase) ActivateCard(ctx context.Context, uuid string, cardID int64) error {
 	key := fmt.Sprintf("user:%s:%s", uuid, "cards")
 
 	err := c.cache.Delete(ctx, key)
@@ -130,6 +128,12 @@ func (c *CachedRepository) ActivateCard(ctx context.Context, uuid string, cardID
 	return nil
 }
 
-func (c *CachedRepository) GetPassList(ctx context.Context, uuid string) ([]string, error) {
+func (c *CachedDatabase) GetPassList(ctx context.Context, uuid string) ([]string, error) {
 	return c.next.GetPassList(ctx, uuid)
 }
+
+func (c *CachedDatabase) CreateData(ctx context.Context)
+func (c *CachedDatabase) GetData(ctx context.Context)
+func (c *CachedDatabase) GetUserData(ctx context.Context)
+func (c *CachedDatabase) UpdateData(ctx context.Context)
+func (c *CachedDatabase) DeleteData(ctx context.Context)
