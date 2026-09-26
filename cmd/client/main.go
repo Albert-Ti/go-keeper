@@ -7,6 +7,7 @@ import (
 	"strings"
 	"time"
 
+	"charm.land/bubbles/v2/filepicker"
 	"charm.land/bubbles/v2/spinner"
 	"charm.land/bubbles/v2/textinput"
 	tea "charm.land/bubbletea/v2"
@@ -107,10 +108,12 @@ type model struct {
 	cardsActions      []cardActionsType
 	contentTabProfile []string
 
-	authForm    authForm
-	cardForm    cardForm
-	profileForm profileForm
-
+	authForm      authForm
+	cardForm      cardForm
+	profileForm   profileForm
+	spinner       spinner.Model
+	filepicker    filepicker.Model
+	selectedFile  string
 	width         int
 	height        int
 	textError     string
@@ -124,7 +127,6 @@ type model struct {
 	selectedCard  int
 	activeCardBtn cardActionsType
 	isLoad        bool
-	spinner       spinner.Model
 	localStorage  *FileStorage
 
 	client pb.GoKeeperServiceClient
@@ -146,6 +148,10 @@ func NewModel(client pb.GoKeeperServiceClient, localStorage *FileStorage) (*mode
 
 	number := newStyledInput("card number", false)
 	date := newStyledInput("09/26", false)
+
+	fp := filepicker.New()
+	fp.AllowedTypes = []string{".html", ".txt", ".mpeg4", ".jpeg", ".png"}
+	fp.CurrentDirectory, _ = os.UserHomeDir()
 
 	initPage := homePage
 	initHistory := []pageType{homePage}
@@ -175,7 +181,9 @@ func NewModel(client pb.GoKeeperServiceClient, localStorage *FileStorage) (*mode
 			passOld: passOld,
 			passNew: passNew,
 		},
-		spinner:      s,
+		spinner:    s,
+		filepicker: fp,
+
 		cards:        []*pb.CardData{},
 		client:       client,
 		selectedCard: -1,
@@ -438,7 +446,9 @@ func (m model) View() tea.View {
 	content = s
 	centered := lipgloss.Place(m.width, m.height, lipgloss.Center, lipgloss.Center, content)
 
-	return tea.NewView(centered)
+	v := tea.NewView(centered)
+	v.AltScreen = true
+	return v
 }
 
 func (m *model) handleError(err error) tea.Cmd {

@@ -1,6 +1,8 @@
 package main
 
 import (
+	"errors"
+
 	tea "charm.land/bubbletea/v2"
 )
 
@@ -187,6 +189,22 @@ func userUpdate(msg tea.KeyPressMsg, m model) (model, tea.Cmd) {
 		}
 
 	case tabData:
+		var cmd tea.Cmd
+		m.filepicker, cmd = m.filepicker.Update(msg)
+		// Did the user select a file?
+		if didSelect, path := m.filepicker.DidSelectFile(msg); didSelect {
+			// Get the path of the selected file.
+			m.selectedFile = path
+		}
+
+		// Did the user select a disabled file?
+		// This is only necessary to display an error to the user.
+		if didSelect, _ := m.filepicker.DidSelectDisabledFile(msg); didSelect {
+			// Let's clear the selectedFile and display an error.
+			m.selectedFile = ""
+			return m, m.handleError(errors.New(" is not valid."))
+		}
+		return m, cmd
 	}
 	return m, nil
 }

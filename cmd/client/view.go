@@ -89,7 +89,12 @@ func mainView(m model) string {
 		case tabCards:
 			s += contentCardsView(m)
 		case tabData:
-			s += "DATA\n"
+			if m.selectedFile == "" {
+				s += "Pick a file:"
+			} else {
+				s += "Selected file: " + m.filepicker.Styles.Selected.Render(m.selectedFile)
+			}
+			s += "\n\n" + m.filepicker.View() + "\n"
 		}
 	}
 
