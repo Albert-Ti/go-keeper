@@ -273,8 +273,13 @@ func (pg *Postgres) ActivateCard(ctx context.Context, uuid string, cardID int64)
 	return tx.Commit(ctx)
 }
 
-func (pg *Postgres) CreateData(ctx context.Context)
-func (pg *Postgres) GetData(ctx context.Context)
-func (pg *Postgres) GetUserData(ctx context.Context)
-func (pg *Postgres) UpdateData(ctx context.Context)
-func (pg *Postgres) DeleteData(ctx context.Context)
+func (c *Postgres) CreateData(ctx context.Context) {
+}
+func (c *Postgres) GetData(ctx context.Context) {
+}
+func (c *Postgres) GetUserData(ctx context.Context) {
+}
+func (c *Postgres) UpdateData(ctx context.Context) {
+}
+func (c *Postgres) DeleteData(ctx context.Context) {
+}

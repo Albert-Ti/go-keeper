@@ -193,8 +193,13 @@ func (s *Service) sendEmailCode(ctx context.Context, email, code string) error {
 	return nil
 }
 
-func (s *Service) CreateData(ctx context.Context)
-func (s *Service) GetData(ctx context.Context)
-func (s *Service) GetUserData(ctx context.Context)
-func (s *Service) UpdateData(ctx context.Context)
-func (s *Service) DeleteData(ctx context.Context)
+func (c *Service) CreateData(ctx context.Context) {
+}
+func (c *Service) GetData(ctx context.Context) {
+}
+func (c *Service) GetUserData(ctx context.Context) {
+}
+func (c *Service) UpdateData(ctx context.Context) {
+}
+func (c *Service) DeleteData(ctx context.Context) {
+}

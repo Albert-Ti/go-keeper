@@ -48,6 +48,6 @@ type ObjectStorage interface {
 	Delete(ctx context.Context, key string) error
 }
 
-func NewObjectStorage(endpoint string) (ObjectStorage, error) {
-	return NewS3Client(context.Background(), endpoint)
+func NewObjectStorage(endpoint, accessKey, secretKey string) (ObjectStorage, error) {
+	return NewS3Client(context.Background(), endpoint, accessKey, secretKey)
 }

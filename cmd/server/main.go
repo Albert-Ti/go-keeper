@@ -45,7 +45,7 @@ func main() {
 		}
 	}
 
-	objectStorage, err := repository.NewObjectStorage("http://localhost:4566")
+	objectStorage, err := repository.NewObjectStorage("http://localhost:8333", "gokeeper-access", "gokeeper-secret")
 	if err != nil {
 		panic(err)
 	}

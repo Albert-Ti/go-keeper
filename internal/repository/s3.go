@@ -13,11 +13,11 @@ type S3Client struct {
 	client *s3.Client
 }
 
-func NewS3Client(ctx context.Context, endpoint string) (*S3Client, error) {
+func NewS3Client(ctx context.Context, endpoint, accessKey, secretKey string) (*S3Client, error) {
 	cfg, err := config.LoadDefaultConfig(ctx,
 		config.WithRegion("us-east-1"),
 		config.WithCredentialsProvider(
-			credentials.NewStaticCredentialsProvider("test", "test", ""),
+			credentials.NewStaticCredentialsProvider(accessKey, secretKey, ""),
 		),
 	)
 	if err != nil {
@@ -32,6 +32,12 @@ func NewS3Client(ctx context.Context, endpoint string) (*S3Client, error) {
 	return &S3Client{client}, nil
 }
 
-func (s3 *S3Client) Put(ctx context.Context, key string, data []byte) error
-func (s3 *S3Client) Get(ctx context.Context, key string) ([]byte, error)
-func (s3 *S3Client) Delete(ctx context.Context, key string) error
+func (s3 *S3Client) Put(ctx context.Context, key string, data []byte) error {
+	return nil
+}
+func (s3 *S3Client) Get(ctx context.Context, key string) ([]byte, error) {
+	return nil, nil
+}
+func (s3 *S3Client) Delete(ctx context.Context, key string) error {
+	return nil
+}

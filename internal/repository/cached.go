@@ -132,8 +132,13 @@ func (c *CachedDatabase) GetPassList(ctx context.Context, uuid string) ([]string
 	return c.next.GetPassList(ctx, uuid)
 }
 
-func (c *CachedDatabase) CreateData(ctx context.Context)
-func (c *CachedDatabase) GetData(ctx context.Context)
-func (c *CachedDatabase) GetUserData(ctx context.Context)
-func (c *CachedDatabase) UpdateData(ctx context.Context)
-func (c *CachedDatabase) DeleteData(ctx context.Context)
+func (c *CachedDatabase) CreateData(ctx context.Context) {
+}
+func (c *CachedDatabase) GetData(ctx context.Context) {
+}
+func (c *CachedDatabase) GetUserData(ctx context.Context) {
+}
+func (c *CachedDatabase) UpdateData(ctx context.Context) {
+}
+func (c *CachedDatabase) DeleteData(ctx context.Context) {
+}

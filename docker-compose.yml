@@ -12,7 +12,7 @@ services:
       POSTGRES_PASSWORD: postgres
       POSTGRES_DB: db
     volumes:
-      - pg-data:/var/lib/postgresql/data
+      - pg-data:/var/lib/postgresql
 
   redis:
     container_name: redis
@@ -25,19 +25,44 @@ services:
     volumes:
       - redis-data:/data
 
-  localstack:
-    container_name: localstack
-    image: localstack/localstack:latest
+  seaweedfs-s3:
+    container_name: seaweedfs-s3
+    image: chrislusf/seaweedfs:latest
     restart: unless-stopped
     ports:
-      - 4566:4566 # единый edge-порт для всех AWS-сервисов
-    environment:
-      - SERVICES=s3,sqs,dynamodb # какие AWS-сервисы поднимать
-      - DEFAULT_REGION=us-east-1
-      - AWS_ACCESS_KEY_ID=test
-      - AWS_SECRET_ACCESS_KEY=test
+      - 8333:8333 # S3 API
+      - 9333:9333 # master UI
+    entrypoint: /bin/sh -c
+    command: |
+      "echo '{
+        \"identities\": [
+          {
+            \"name\": \"anonymous\",
+            \"actions\": [
+              \"Read\"
+            ]
+          },
+          {
+            \"name\": \"gokeeper\",
+            \"credentials\": [
+              {
+                \"accessKey\": \"gokeeper-access\",
+                \"secretKey\": \"gokeeper-secret\"
+              }
+            ],
+            \"actions\": [
+              \"Admin\",
+              \"Read\",
+              \"List\",
+              \"Tagging\",
+              \"Write\"
+            ]
+          }
+        ]
+      }' > /etc/seaweedfs/config.json && \
+      weed server -s3 -s3.config /etc/seaweedfs/config.json"
     volumes:
-      - localstack-data:/var/lib/localstack
+      - seaweedfs-data:/data
 
   adminer:
     container_name: adminer
@@ -49,4 +74,5 @@ services:
 volumes:
   pg-data: {}
   redis-data: {}
-  localstack-data: {}
+  minio-data: {}
+  seaweedfs-data: {}
