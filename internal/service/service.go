@@ -30,19 +30,19 @@ var (
 )
 
 type Service struct {
-	repo   repository.Database
-	opts   *config.Options
-	sender *email.Sender
-	object repository.ObjectStorage
+	repo       repository.Database
+	opts       *config.Options
+	sender     *email.Sender
+	objStorage repository.ObjStorage
 }
 
 func NewService(
 	repo repository.Database,
 	opts *config.Options,
 	sender *email.Sender,
-	object repository.ObjectStorage,
+	objStorage repository.ObjStorage,
 ) *Service {
-	return &Service{repo, opts, sender, object}
+	return &Service{repo, opts, sender, objStorage}
 }
 
 func (s *Service) Register(ctx context.Context, email, pass string) error {

@@ -42,12 +42,12 @@ func NewCache(addr, pass string) Cache {
 	return NewRedis(addr, pass)
 }
 
-type ObjectStorage interface {
+type ObjStorage interface {
 	Put(ctx context.Context, key string, data []byte) error
 	Get(ctx context.Context, key string) ([]byte, error)
 	Delete(ctx context.Context, key string) error
 }
 
-func NewObjectStorage(endpoint, accessKey, secretKey string) (ObjectStorage, error) {
+func NewObjStorage(endpoint, accessKey, secretKey string) (ObjStorage, error) {
 	return NewS3Client(context.Background(), endpoint, accessKey, secretKey)
 }

@@ -8,10 +8,12 @@ import (
 	"os"
 )
 
+type Mode string
+
 const (
-	ModeDev   = "dev"
-	ModeDebug = "debug"
-	ModeProd  = "prod"
+	ModeDev   Mode = "dev"
+	ModeDebug Mode = "debug"
+	ModeProd  Mode = "prod"
 )
 
 // Options хранит настройки приложения, собранные из флагов(высокий приоритет) командной строки,
@@ -19,12 +21,20 @@ const (
 // и значений по умолчанию.
 // generate:reset
 type Options struct {
-	RunAddr    string
-	DBConnStr  string
-	JWTSecret  string
-	Mode       string
+	RunAddr   string
+	DBConnStr string
+	JWTSecret string
+	Mode      Mode
+
 	EnableSMTP bool
 	SMTPOpt    *smtpFileOptions
+
+	CacheClientRunAddr string
+	CacheClientPass    string
+
+	ObjStorageRunAddr   string
+	ObjStorageAccessKey string
+	ObjStorageSecretKey string
 }
 
 type smtpFileOptions struct {
@@ -35,12 +45,16 @@ type smtpFileOptions struct {
 }
 
 // NewOptions создаёт Options со значениями по умолчанию и применяет
-// переданные опции (pattern Builder / функциональные опции).
 func NewOptions(opts ...func(*Options)) *Options {
 	o := &Options{
-		RunAddr:   "localhost:8080",
-		JWTSecret: "jwt_secret_key",
-		Mode:      ModeDev,
+		RunAddr:             "localhost:8080",
+		JWTSecret:           "jwt_secret_key",
+		Mode:                ModeDev,
+		CacheClientRunAddr:  "localhost:6379",
+		CacheClientPass:     "redis",
+		ObjStorageRunAddr:   "http://localhost:8333",
+		ObjStorageAccessKey: "s3-access",
+		ObjStorageSecretKey: "s3-secret",
 	}
 
 	for _, opt := range opts {
@@ -98,7 +112,7 @@ func WithDBConnStr(v string) func(*Options) { return func(o *Options) { o.DBConn
 func WithJWTSecret(v string) func(*Options) { return func(o *Options) { o.JWTSecret = v } }
 
 // WithMode задаёт режим работы приложения (например, "dev" или "debug").
-func WithMode(v string) func(*Options) { return func(o *Options) { o.Mode = v } }
+func WithMode(v Mode) func(*Options) { return func(o *Options) { o.Mode = v } }
 
 // WithEnableSMTP.
 func WithEnableSMTP(v bool) func(*Options) { return func(o *Options) { o.EnableSMTP = v } }

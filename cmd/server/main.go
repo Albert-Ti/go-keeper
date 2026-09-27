@@ -26,7 +26,7 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	cache := repository.NewCache("localhost:6379", "redis")
+	cache := repository.NewCache(opts.CacheClientRunAddr, opts.CacheClientPass)
 	cache.Ping(context.Background())
 
 	repo := repository.NewCachedDatabase(pgRepo, cache)
@@ -45,14 +45,15 @@ func main() {
 		}
 	}
 
-	objectStorage, err := repository.NewObjectStorage("http://localhost:8333", "gokeeper-access", "gokeeper-secret")
+	objStorage, err := repository.NewObjStorage(
+		opts.ObjStorageRunAddr, opts.ObjStorageAccessKey, opts.ObjStorageSecretKey)
 	if err != nil {
 		panic(err)
 	}
 
-	svc := service.NewService(repo, opts, sender, objectStorage)
+	svc := service.NewService(repo, opts, sender, objStorage)
 
-	lis, err := net.Listen("tcp", "localhost:8080")
+	lis, err := net.Listen("tcp", opts.RunAddr)
 
 	if err != nil {
 		panic(err)

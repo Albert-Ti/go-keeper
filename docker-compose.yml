@@ -46,8 +46,8 @@ services:
             \"name\": \"gokeeper\",
             \"credentials\": [
               {
-                \"accessKey\": \"gokeeper-access\",
-                \"secretKey\": \"gokeeper-secret\"
+                \"accessKey\": \"s3-access\",
+                \"secretKey\": \"s3-secret\"
               }
             ],
             \"actions\": [
