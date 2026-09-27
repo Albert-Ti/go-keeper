@@ -193,13 +193,14 @@ func (s *Service) sendEmailCode(ctx context.Context, email, code string) error {
 	return nil
 }
 
-func (c *Service) CreateData(ctx context.Context) {
+func (c *Service) CreateArbitraryData(ctx context.Context, uuid, filename string) error {
+	return c.repo.CreateArbitraryData(ctx, uuid, filename, filename, "bucket/"+filename)
 }
-func (c *Service) GetData(ctx context.Context) {
+
+func (c *Service) GetArbitraryData(ctx context.Context, uuid string) ([]models.ArbitraryData, error) {
+	return c.repo.GetArbitraryData(ctx, uuid)
 }
-func (c *Service) GetUserData(ctx context.Context) {
-}
-func (c *Service) UpdateData(ctx context.Context) {
-}
-func (c *Service) DeleteData(ctx context.Context) {
+
+func (c *Service) DeleteArbitraryData(ctx context.Context, uuid string, dataID int64) error {
+	return c.repo.DeleteArbitraryData(ctx, uuid, dataID)
 }

@@ -6,7 +6,6 @@ option go_package = "github.com/Albert-Ti/go-keeper/pkg/proto";
 
 import "google/protobuf/timestamp.proto";
 
-message CardsRequest {}
 
 message CardData {
   int64 id = 1;
@@ -14,6 +13,8 @@ message CardData {
   bool active = 3;
   google.protobuf.Timestamp expiry_date = 4;
 }
+
+message CardsRequest {}
 
 message CardsResponse {
   repeated CardData cards = 1;

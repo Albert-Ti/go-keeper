@@ -273,13 +273,50 @@ func (pg *Postgres) ActivateCard(ctx context.Context, uuid string, cardID int64)
 	return tx.Commit(ctx)
 }
 
-func (c *Postgres) CreateData(ctx context.Context) {
+func (pg *Postgres) CreateArbitraryData(ctx context.Context, uuid, name, typ, objectKey string) error {
+	_, err := pg.pool.Exec(ctx,
+		`INSERT INTO arbitrary_data (user_uuid, name, type, object_key) VALUES ($1, $2, $3, $4)`,
+		uuid, name, typ, objectKey,
+	)
+	if err != nil {
+		return err
+	}
+	return nil
 }
-func (c *Postgres) GetData(ctx context.Context) {
+
+func (pg *Postgres) GetArbitraryData(ctx context.Context, uuid string) ([]models.ArbitraryData, error) {
+	sql := `
+	SELECT id, name, type, object_key
+	FROM arbitrary_data 
+	WHERE user_uuid = $1
+	`
+	rows, err := pg.pool.Query(ctx, sql, uuid)
+	if err != nil {
+		return nil, err
+	}
+
+	var list []models.ArbitraryData
+	for rows.Next() {
+		var data models.ArbitraryData
+		err := rows.Scan(&data.ID, &data.Name, &data.Type, &data.ObjectKey)
+		if err != nil {
+			return nil, err
+		}
+		list = append(list, data)
+	}
+	return list, nil
 }
-func (c *Postgres) GetUserData(ctx context.Context) {
-}
-func (c *Postgres) UpdateData(ctx context.Context) {
-}
-func (c *Postgres) DeleteData(ctx context.Context) {
+
+func (pg *Postgres) DeleteArbitraryData(ctx context.Context, uuid string, dataID int64) error {
+	sql := `DELETE FROM arbitrary_data WHERE user_uuid = $1 AND id = $2`
+
+	tag, err := pg.pool.Exec(ctx, sql, uuid, dataID)
+	if err != nil {
+		return err
+	}
+	if tag.RowsAffected() == 0 {
+		return ErrRowAffected
+	}
+
+	return nil
 }

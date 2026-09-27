@@ -19,16 +19,19 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	GoKeeperService_Register_FullMethodName     = "/gokeeper.GoKeeperService/Register"
-	GoKeeperService_Login_FullMethodName        = "/gokeeper.GoKeeperService/Login"
-	GoKeeperService_ConfirmEmail_FullMethodName = "/gokeeper.GoKeeperService/ConfirmEmail"
-	GoKeeperService_RefreshToken_FullMethodName = "/gokeeper.GoKeeperService/RefreshToken"
-	GoKeeperService_GetProfile_FullMethodName   = "/gokeeper.GoKeeperService/GetProfile"
-	GoKeeperService_ChangePass_FullMethodName   = "/gokeeper.GoKeeperService/ChangePass"
-	GoKeeperService_GetCards_FullMethodName     = "/gokeeper.GoKeeperService/GetCards"
-	GoKeeperService_CreateCard_FullMethodName   = "/gokeeper.GoKeeperService/CreateCard"
-	GoKeeperService_DeleteCard_FullMethodName   = "/gokeeper.GoKeeperService/DeleteCard"
-	GoKeeperService_ActivateCard_FullMethodName = "/gokeeper.GoKeeperService/ActivateCard"
+	GoKeeperService_Register_FullMethodName            = "/gokeeper.GoKeeperService/Register"
+	GoKeeperService_Login_FullMethodName               = "/gokeeper.GoKeeperService/Login"
+	GoKeeperService_ConfirmEmail_FullMethodName        = "/gokeeper.GoKeeperService/ConfirmEmail"
+	GoKeeperService_RefreshToken_FullMethodName        = "/gokeeper.GoKeeperService/RefreshToken"
+	GoKeeperService_GetProfile_FullMethodName          = "/gokeeper.GoKeeperService/GetProfile"
+	GoKeeperService_ChangePass_FullMethodName          = "/gokeeper.GoKeeperService/ChangePass"
+	GoKeeperService_GetCards_FullMethodName            = "/gokeeper.GoKeeperService/GetCards"
+	GoKeeperService_CreateCard_FullMethodName          = "/gokeeper.GoKeeperService/CreateCard"
+	GoKeeperService_DeleteCard_FullMethodName          = "/gokeeper.GoKeeperService/DeleteCard"
+	GoKeeperService_ActivateCard_FullMethodName        = "/gokeeper.GoKeeperService/ActivateCard"
+	GoKeeperService_GetArbitraryData_FullMethodName    = "/gokeeper.GoKeeperService/GetArbitraryData"
+	GoKeeperService_CreateArbitraryData_FullMethodName = "/gokeeper.GoKeeperService/CreateArbitraryData"
+	GoKeeperService_DeleteArbitraryData_FullMethodName = "/gokeeper.GoKeeperService/DeleteArbitraryData"
 )
 
 // GoKeeperServiceClient is the client API for GoKeeperService service.
@@ -45,6 +48,9 @@ type GoKeeperServiceClient interface {
 	CreateCard(ctx context.Context, in *CreateCardRequest, opts ...grpc.CallOption) (*CreateCardResponse, error)
 	DeleteCard(ctx context.Context, in *DeleteCardRequest, opts ...grpc.CallOption) (*DeleteCardResponse, error)
 	ActivateCard(ctx context.Context, in *ActiveCardRequest, opts ...grpc.CallOption) (*ActiveCardResponse, error)
+	GetArbitraryData(ctx context.Context, in *ArbitraryDataRequest, opts ...grpc.CallOption) (*ArbitraryDataResponse, error)
+	CreateArbitraryData(ctx context.Context, in *CreateArbitraryDataRequest, opts ...grpc.CallOption) (*CreateArbitraryDataResponse, error)
+	DeleteArbitraryData(ctx context.Context, in *DeleteArbitraryDataRequest, opts ...grpc.CallOption) (*DeleteArbitraryDataResponse, error)
 }
 
 type goKeeperServiceClient struct {
@@ -155,6 +161,36 @@ func (c *goKeeperServiceClient) ActivateCard(ctx context.Context, in *ActiveCard
 	return out, nil
 }
 
+func (c *goKeeperServiceClient) GetArbitraryData(ctx context.Context, in *ArbitraryDataRequest, opts ...grpc.CallOption) (*ArbitraryDataResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(ArbitraryDataResponse)
+	err := c.cc.Invoke(ctx, GoKeeperService_GetArbitraryData_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *goKeeperServiceClient) CreateArbitraryData(ctx context.Context, in *CreateArbitraryDataRequest, opts ...grpc.CallOption) (*CreateArbitraryDataResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(CreateArbitraryDataResponse)
+	err := c.cc.Invoke(ctx, GoKeeperService_CreateArbitraryData_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *goKeeperServiceClient) DeleteArbitraryData(ctx context.Context, in *DeleteArbitraryDataRequest, opts ...grpc.CallOption) (*DeleteArbitraryDataResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(DeleteArbitraryDataResponse)
+	err := c.cc.Invoke(ctx, GoKeeperService_DeleteArbitraryData_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // GoKeeperServiceServer is the server API for GoKeeperService service.
 // All implementations must embed UnimplementedGoKeeperServiceServer
 // for forward compatibility.
@@ -169,6 +205,9 @@ type GoKeeperServiceServer interface {
 	CreateCard(context.Context, *CreateCardRequest) (*CreateCardResponse, error)
 	DeleteCard(context.Context, *DeleteCardRequest) (*DeleteCardResponse, error)
 	ActivateCard(context.Context, *ActiveCardRequest) (*ActiveCardResponse, error)
+	GetArbitraryData(context.Context, *ArbitraryDataRequest) (*ArbitraryDataResponse, error)
+	CreateArbitraryData(context.Context, *CreateArbitraryDataRequest) (*CreateArbitraryDataResponse, error)
+	DeleteArbitraryData(context.Context, *DeleteArbitraryDataRequest) (*DeleteArbitraryDataResponse, error)
 	mustEmbedUnimplementedGoKeeperServiceServer()
 }
 
@@ -208,6 +247,15 @@ func (UnimplementedGoKeeperServiceServer) DeleteCard(context.Context, *DeleteCar
 }
 func (UnimplementedGoKeeperServiceServer) ActivateCard(context.Context, *ActiveCardRequest) (*ActiveCardResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method ActivateCard not implemented")
+}
+func (UnimplementedGoKeeperServiceServer) GetArbitraryData(context.Context, *ArbitraryDataRequest) (*ArbitraryDataResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method GetArbitraryData not implemented")
+}
+func (UnimplementedGoKeeperServiceServer) CreateArbitraryData(context.Context, *CreateArbitraryDataRequest) (*CreateArbitraryDataResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method CreateArbitraryData not implemented")
+}
+func (UnimplementedGoKeeperServiceServer) DeleteArbitraryData(context.Context, *DeleteArbitraryDataRequest) (*DeleteArbitraryDataResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method DeleteArbitraryData not implemented")
 }
 func (UnimplementedGoKeeperServiceServer) mustEmbedUnimplementedGoKeeperServiceServer() {}
 func (UnimplementedGoKeeperServiceServer) testEmbeddedByValue()                         {}
@@ -410,6 +458,60 @@ func _GoKeeperService_ActivateCard_Handler(srv interface{}, ctx context.Context,
 	return interceptor(ctx, in, info, handler)
 }
 
+func _GoKeeperService_GetArbitraryData_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ArbitraryDataRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(GoKeeperServiceServer).GetArbitraryData(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: GoKeeperService_GetArbitraryData_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(GoKeeperServiceServer).GetArbitraryData(ctx, req.(*ArbitraryDataRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _GoKeeperService_CreateArbitraryData_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(CreateArbitraryDataRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(GoKeeperServiceServer).CreateArbitraryData(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: GoKeeperService_CreateArbitraryData_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(GoKeeperServiceServer).CreateArbitraryData(ctx, req.(*CreateArbitraryDataRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _GoKeeperService_DeleteArbitraryData_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(DeleteArbitraryDataRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(GoKeeperServiceServer).DeleteArbitraryData(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: GoKeeperService_DeleteArbitraryData_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(GoKeeperServiceServer).DeleteArbitraryData(ctx, req.(*DeleteArbitraryDataRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // GoKeeperService_ServiceDesc is the grpc.ServiceDesc for GoKeeperService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -456,6 +558,18 @@ var GoKeeperService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "ActivateCard",
 			Handler:    _GoKeeperService_ActivateCard_Handler,
+		},
+		{
+			MethodName: "GetArbitraryData",
+			Handler:    _GoKeeperService_GetArbitraryData_Handler,
+		},
+		{
+			MethodName: "CreateArbitraryData",
+			Handler:    _GoKeeperService_CreateArbitraryData_Handler,
+		},
+		{
+			MethodName: "DeleteArbitraryData",
+			Handler:    _GoKeeperService_DeleteArbitraryData_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

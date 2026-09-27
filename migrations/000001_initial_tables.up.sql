@@ -31,10 +31,9 @@ CREATE TABLE
   IF NOT EXISTS arbitrary_data (
     id BIGSERIAL PRIMARY KEY,
     user_uuid UUID NOT NULL,
-    name VARCHAR(32),
-    type VARCHAR(32),
-    object_key VARCHAR(255),
-    metadata VARCHAR(255),
+    name VARCHAR(32) NOT NULL,
+    type VARCHAR(32) NOT NULL,
+    object_key VARCHAR(255) NOT NULL,
     created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (user_uuid) REFERENCES users (uuid)
   );

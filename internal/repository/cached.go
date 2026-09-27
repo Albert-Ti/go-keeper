@@ -132,13 +132,13 @@ func (c *CachedDatabase) GetPassList(ctx context.Context, uuid string) ([]string
 	return c.next.GetPassList(ctx, uuid)
 }
 
-func (c *CachedDatabase) CreateData(ctx context.Context) {
+func (c *CachedDatabase) CreateArbitraryData(ctx context.Context, uuid, name, typ, objectKey string) error {
+	return c.next.CreateArbitraryData(ctx, uuid, name, typ, objectKey)
 }
-func (c *CachedDatabase) GetData(ctx context.Context) {
+func (c *CachedDatabase) GetArbitraryData(ctx context.Context, uuid string) ([]models.ArbitraryData, error) {
+	return c.next.GetArbitraryData(ctx, uuid)
 }
-func (c *CachedDatabase) GetUserData(ctx context.Context) {
-}
-func (c *CachedDatabase) UpdateData(ctx context.Context) {
-}
-func (c *CachedDatabase) DeleteData(ctx context.Context) {
+
+func (c *CachedDatabase) DeleteArbitraryData(ctx context.Context, uuid string, dataID int64) error {
+	return c.next.DeleteCard(ctx, uuid, dataID)
 }

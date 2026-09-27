@@ -28,7 +28,7 @@ const file_base_proto_rawDesc = "" +
 	"base.proto\x12\bgokeeper\x1a\n" +
 	"auth.proto\x1a\n" +
 	"user.proto\x1a\n" +
-	"card.proto2\xb8\x05\n" +
+	"card.proto\x1a\x14arbitrary_data.proto2\xd5\a\n" +
 	"\x0fGoKeeperService\x12A\n" +
 	"\bRegister\x12\x19.gokeeper.RegisterRequest\x1a\x1a.gokeeper.RegisterResponse\x128\n" +
 	"\x05Login\x12\x16.gokeeper.LoginRequest\x1a\x17.gokeeper.LoginResponse\x12M\n" +
@@ -43,29 +43,38 @@ const file_base_proto_rawDesc = "" +
 	"CreateCard\x12\x1b.gokeeper.CreateCardRequest\x1a\x1c.gokeeper.CreateCardResponse\x12G\n" +
 	"\n" +
 	"DeleteCard\x12\x1b.gokeeper.DeleteCardRequest\x1a\x1c.gokeeper.DeleteCardResponse\x12I\n" +
-	"\fActivateCard\x12\x1b.gokeeper.ActiveCardRequest\x1a\x1c.gokeeper.ActiveCardResponseB*Z(github.com/Albert-Ti/go-keeper/pkg/protob\x06proto3"
+	"\fActivateCard\x12\x1b.gokeeper.ActiveCardRequest\x1a\x1c.gokeeper.ActiveCardResponse\x12S\n" +
+	"\x10GetArbitraryData\x12\x1e.gokeeper.ArbitraryDataRequest\x1a\x1f.gokeeper.ArbitraryDataResponse\x12b\n" +
+	"\x13CreateArbitraryData\x12$.gokeeper.CreateArbitraryDataRequest\x1a%.gokeeper.CreateArbitraryDataResponse\x12b\n" +
+	"\x13DeleteArbitraryData\x12$.gokeeper.DeleteArbitraryDataRequest\x1a%.gokeeper.DeleteArbitraryDataResponseB*Z(github.com/Albert-Ti/go-keeper/pkg/protob\x06proto3"
 
 var file_base_proto_goTypes = []any{
-	(*RegisterRequest)(nil),      // 0: gokeeper.RegisterRequest
-	(*LoginRequest)(nil),         // 1: gokeeper.LoginRequest
-	(*ConfirmEmailRequest)(nil),  // 2: gokeeper.ConfirmEmailRequest
-	(*TokenRequest)(nil),         // 3: gokeeper.TokenRequest
-	(*ProfileRequest)(nil),       // 4: gokeeper.ProfileRequest
-	(*PassRequest)(nil),          // 5: gokeeper.PassRequest
-	(*CardsRequest)(nil),         // 6: gokeeper.CardsRequest
-	(*CreateCardRequest)(nil),    // 7: gokeeper.CreateCardRequest
-	(*DeleteCardRequest)(nil),    // 8: gokeeper.DeleteCardRequest
-	(*ActiveCardRequest)(nil),    // 9: gokeeper.ActiveCardRequest
-	(*RegisterResponse)(nil),     // 10: gokeeper.RegisterResponse
-	(*LoginResponse)(nil),        // 11: gokeeper.LoginResponse
-	(*ConfirmEmailResponse)(nil), // 12: gokeeper.ConfirmEmailResponse
-	(*TokenResponse)(nil),        // 13: gokeeper.TokenResponse
-	(*ProfileResponse)(nil),      // 14: gokeeper.ProfileResponse
-	(*PassResponse)(nil),         // 15: gokeeper.PassResponse
-	(*CardsResponse)(nil),        // 16: gokeeper.CardsResponse
-	(*CreateCardResponse)(nil),   // 17: gokeeper.CreateCardResponse
-	(*DeleteCardResponse)(nil),   // 18: gokeeper.DeleteCardResponse
-	(*ActiveCardResponse)(nil),   // 19: gokeeper.ActiveCardResponse
+	(*RegisterRequest)(nil),             // 0: gokeeper.RegisterRequest
+	(*LoginRequest)(nil),                // 1: gokeeper.LoginRequest
+	(*ConfirmEmailRequest)(nil),         // 2: gokeeper.ConfirmEmailRequest
+	(*TokenRequest)(nil),                // 3: gokeeper.TokenRequest
+	(*ProfileRequest)(nil),              // 4: gokeeper.ProfileRequest
+	(*PassRequest)(nil),                 // 5: gokeeper.PassRequest
+	(*CardsRequest)(nil),                // 6: gokeeper.CardsRequest
+	(*CreateCardRequest)(nil),           // 7: gokeeper.CreateCardRequest
+	(*DeleteCardRequest)(nil),           // 8: gokeeper.DeleteCardRequest
+	(*ActiveCardRequest)(nil),           // 9: gokeeper.ActiveCardRequest
+	(*ArbitraryDataRequest)(nil),        // 10: gokeeper.ArbitraryDataRequest
+	(*CreateArbitraryDataRequest)(nil),  // 11: gokeeper.CreateArbitraryDataRequest
+	(*DeleteArbitraryDataRequest)(nil),  // 12: gokeeper.DeleteArbitraryDataRequest
+	(*RegisterResponse)(nil),            // 13: gokeeper.RegisterResponse
+	(*LoginResponse)(nil),               // 14: gokeeper.LoginResponse
+	(*ConfirmEmailResponse)(nil),        // 15: gokeeper.ConfirmEmailResponse
+	(*TokenResponse)(nil),               // 16: gokeeper.TokenResponse
+	(*ProfileResponse)(nil),             // 17: gokeeper.ProfileResponse
+	(*PassResponse)(nil),                // 18: gokeeper.PassResponse
+	(*CardsResponse)(nil),               // 19: gokeeper.CardsResponse
+	(*CreateCardResponse)(nil),          // 20: gokeeper.CreateCardResponse
+	(*DeleteCardResponse)(nil),          // 21: gokeeper.DeleteCardResponse
+	(*ActiveCardResponse)(nil),          // 22: gokeeper.ActiveCardResponse
+	(*ArbitraryDataResponse)(nil),       // 23: gokeeper.ArbitraryDataResponse
+	(*CreateArbitraryDataResponse)(nil), // 24: gokeeper.CreateArbitraryDataResponse
+	(*DeleteArbitraryDataResponse)(nil), // 25: gokeeper.DeleteArbitraryDataResponse
 }
 var file_base_proto_depIdxs = []int32{
 	0,  // 0: gokeeper.GoKeeperService.Register:input_type -> gokeeper.RegisterRequest
@@ -78,18 +87,24 @@ var file_base_proto_depIdxs = []int32{
 	7,  // 7: gokeeper.GoKeeperService.CreateCard:input_type -> gokeeper.CreateCardRequest
 	8,  // 8: gokeeper.GoKeeperService.DeleteCard:input_type -> gokeeper.DeleteCardRequest
 	9,  // 9: gokeeper.GoKeeperService.ActivateCard:input_type -> gokeeper.ActiveCardRequest
-	10, // 10: gokeeper.GoKeeperService.Register:output_type -> gokeeper.RegisterResponse
-	11, // 11: gokeeper.GoKeeperService.Login:output_type -> gokeeper.LoginResponse
-	12, // 12: gokeeper.GoKeeperService.ConfirmEmail:output_type -> gokeeper.ConfirmEmailResponse
-	13, // 13: gokeeper.GoKeeperService.RefreshToken:output_type -> gokeeper.TokenResponse
-	14, // 14: gokeeper.GoKeeperService.GetProfile:output_type -> gokeeper.ProfileResponse
-	15, // 15: gokeeper.GoKeeperService.ChangePass:output_type -> gokeeper.PassResponse
-	16, // 16: gokeeper.GoKeeperService.GetCards:output_type -> gokeeper.CardsResponse
-	17, // 17: gokeeper.GoKeeperService.CreateCard:output_type -> gokeeper.CreateCardResponse
-	18, // 18: gokeeper.GoKeeperService.DeleteCard:output_type -> gokeeper.DeleteCardResponse
-	19, // 19: gokeeper.GoKeeperService.ActivateCard:output_type -> gokeeper.ActiveCardResponse
-	10, // [10:20] is the sub-list for method output_type
-	0,  // [0:10] is the sub-list for method input_type
+	10, // 10: gokeeper.GoKeeperService.GetArbitraryData:input_type -> gokeeper.ArbitraryDataRequest
+	11, // 11: gokeeper.GoKeeperService.CreateArbitraryData:input_type -> gokeeper.CreateArbitraryDataRequest
+	12, // 12: gokeeper.GoKeeperService.DeleteArbitraryData:input_type -> gokeeper.DeleteArbitraryDataRequest
+	13, // 13: gokeeper.GoKeeperService.Register:output_type -> gokeeper.RegisterResponse
+	14, // 14: gokeeper.GoKeeperService.Login:output_type -> gokeeper.LoginResponse
+	15, // 15: gokeeper.GoKeeperService.ConfirmEmail:output_type -> gokeeper.ConfirmEmailResponse
+	16, // 16: gokeeper.GoKeeperService.RefreshToken:output_type -> gokeeper.TokenResponse
+	17, // 17: gokeeper.GoKeeperService.GetProfile:output_type -> gokeeper.ProfileResponse
+	18, // 18: gokeeper.GoKeeperService.ChangePass:output_type -> gokeeper.PassResponse
+	19, // 19: gokeeper.GoKeeperService.GetCards:output_type -> gokeeper.CardsResponse
+	20, // 20: gokeeper.GoKeeperService.CreateCard:output_type -> gokeeper.CreateCardResponse
+	21, // 21: gokeeper.GoKeeperService.DeleteCard:output_type -> gokeeper.DeleteCardResponse
+	22, // 22: gokeeper.GoKeeperService.ActivateCard:output_type -> gokeeper.ActiveCardResponse
+	23, // 23: gokeeper.GoKeeperService.GetArbitraryData:output_type -> gokeeper.ArbitraryDataResponse
+	24, // 24: gokeeper.GoKeeperService.CreateArbitraryData:output_type -> gokeeper.CreateArbitraryDataResponse
+	25, // 25: gokeeper.GoKeeperService.DeleteArbitraryData:output_type -> gokeeper.DeleteArbitraryDataResponse
+	13, // [13:26] is the sub-list for method output_type
+	0,  // [0:13] is the sub-list for method input_type
 	0,  // [0:0] is the sub-list for extension type_name
 	0,  // [0:0] is the sub-list for extension extendee
 	0,  // [0:0] is the sub-list for field type_name
@@ -103,6 +118,7 @@ func file_base_proto_init() {
 	file_auth_proto_init()
 	file_user_proto_init()
 	file_card_proto_init()
+	file_arbitrary_data_proto_init()
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{

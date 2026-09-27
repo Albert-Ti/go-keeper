@@ -29,3 +29,11 @@ type Card struct {
 	ExpiryDate time.Time
 	Active     bool
 }
+
+type ArbitraryData struct {
+	ID        int64
+	Name      string
+	Type      string
+	ObjectKey string
+	CreatedAt time.Time
+}

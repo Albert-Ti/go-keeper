@@ -98,16 +98,16 @@ func (mr *MockDatabaseMockRecorder) CreateCard(ctx, uuid, number, expiry any) *g
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateCard", reflect.TypeOf((*MockDatabase)(nil).CreateCard), ctx, uuid, number, expiry)
 }
 
-// CreateData mocks base method.
-func (m *MockDatabase) CreateData(ctx context.Context) {
+// CreateArbitraryData mocks base method.
+func (m *MockDatabase) CreateArbitraryData(ctx context.Context) {
 	m.ctrl.T.Helper()
-	m.ctrl.Call(m, "CreateData", ctx)
+	m.ctrl.Call(m, "CreateArbitraryData", ctx)
 }
 
-// CreateData indicates an expected call of CreateData.
-func (mr *MockDatabaseMockRecorder) CreateData(ctx any) *gomock.Call {
+// CreateArbitraryData indicates an expected call of CreateArbitraryData.
+func (mr *MockDatabaseMockRecorder) CreateArbitraryData(ctx any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateData", reflect.TypeOf((*MockDatabase)(nil).CreateData), ctx)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateArbitraryData", reflect.TypeOf((*MockDatabase)(nil).CreateArbitraryData), ctx)
 }
 
 // DeleteCard mocks base method.
@@ -124,16 +124,16 @@ func (mr *MockDatabaseMockRecorder) DeleteCard(ctx, uuid, cardID any) *gomock.Ca
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteCard", reflect.TypeOf((*MockDatabase)(nil).DeleteCard), ctx, uuid, cardID)
 }
 
-// DeleteData mocks base method.
-func (m *MockDatabase) DeleteData(ctx context.Context) {
+// DeleteArbitraryData mocks base method.
+func (m *MockDatabase) DeleteArbitraryData(ctx context.Context) {
 	m.ctrl.T.Helper()
-	m.ctrl.Call(m, "DeleteData", ctx)
+	m.ctrl.Call(m, "DeleteArbitraryData", ctx)
 }
 
-// DeleteData indicates an expected call of DeleteData.
-func (mr *MockDatabaseMockRecorder) DeleteData(ctx any) *gomock.Call {
+// DeleteArbitraryData indicates an expected call of DeleteArbitraryData.
+func (mr *MockDatabaseMockRecorder) DeleteArbitraryData(ctx any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteData", reflect.TypeOf((*MockDatabase)(nil).DeleteData), ctx)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteArbitraryData", reflect.TypeOf((*MockDatabase)(nil).DeleteArbitraryData), ctx)
 }
 
 // GetCards mocks base method.
@@ -151,16 +151,16 @@ func (mr *MockDatabaseMockRecorder) GetCards(ctx, uuid any) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetCards", reflect.TypeOf((*MockDatabase)(nil).GetCards), ctx, uuid)
 }
 
-// GetData mocks base method.
-func (m *MockDatabase) GetData(ctx context.Context) {
+// GetArbitraryData mocks base method.
+func (m *MockDatabase) GetArbitraryData(ctx context.Context) {
 	m.ctrl.T.Helper()
-	m.ctrl.Call(m, "GetData", ctx)
+	m.ctrl.Call(m, "GetArbitraryData", ctx)
 }
 
-// GetData indicates an expected call of GetData.
-func (mr *MockDatabaseMockRecorder) GetData(ctx any) *gomock.Call {
+// GetArbitraryData indicates an expected call of GetArbitraryData.
+func (mr *MockDatabaseMockRecorder) GetArbitraryData(ctx any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetData", reflect.TypeOf((*MockDatabase)(nil).GetData), ctx)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetArbitraryData", reflect.TypeOf((*MockDatabase)(nil).GetArbitraryData), ctx)
 }
 
 // GetPassList mocks base method.
@@ -220,16 +220,16 @@ func (mr *MockDatabaseMockRecorder) GetUserData(ctx any) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetUserData", reflect.TypeOf((*MockDatabase)(nil).GetUserData), ctx)
 }
 
-// UpdateData mocks base method.
-func (m *MockDatabase) UpdateData(ctx context.Context) {
+// UpdateArbitraryData mocks base method.
+func (m *MockDatabase) UpdateArbitraryData(ctx context.Context) {
 	m.ctrl.T.Helper()
-	m.ctrl.Call(m, "UpdateData", ctx)
+	m.ctrl.Call(m, "UpdateArbitraryData", ctx)
 }
 
-// UpdateData indicates an expected call of UpdateData.
-func (mr *MockDatabaseMockRecorder) UpdateData(ctx any) *gomock.Call {
+// UpdateArbitraryData indicates an expected call of UpdateArbitraryData.
+func (mr *MockDatabaseMockRecorder) UpdateArbitraryData(ctx any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateData", reflect.TypeOf((*MockDatabase)(nil).UpdateData), ctx)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateArbitraryData", reflect.TypeOf((*MockDatabase)(nil).UpdateArbitraryData), ctx)
 }
 
 // UpdateUser mocks base method.

@@ -20,11 +20,9 @@ type Database interface {
 	DeleteCard(ctx context.Context, uuid string, cardID int64) error
 	ActivateCard(ctx context.Context, uuid string, cardID int64) error
 
-	CreateData(ctx context.Context)
-	GetData(ctx context.Context)
-	GetUserData(ctx context.Context)
-	UpdateData(ctx context.Context)
-	DeleteData(ctx context.Context)
+	GetArbitraryData(ctx context.Context, uuid string) ([]models.ArbitraryData, error)
+	CreateArbitraryData(ctx context.Context, uuid, name, typ, objectKey string) error
+	DeleteArbitraryData(ctx context.Context, uuid string, dataID int64) error
 }
 
 func NewDatabase(connString string) (Database, error) {
