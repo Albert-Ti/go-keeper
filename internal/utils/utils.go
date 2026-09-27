@@ -2,25 +2,76 @@ package utils
 
 import (
 	"crypto/rand"
+	"crypto/sha256"
+	"crypto/subtle"
 	"encoding/base64"
+	"encoding/hex"
+	"fmt"
+	"math/big"
+	"strconv"
+	"strings"
 )
 
-var GenerateUUID = func() string {
-	key := make([]byte, 9)
-	rand.Read(key)
-	return base64.RawURLEncoding.EncodeToString(key)
+var GenerateCodeEmail = func() string {
+	const letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+	const length = 5
+
+	result := make([]byte, length)
+	for i := range result {
+		n, _ := rand.Int(rand.Reader, big.NewInt(int64(len(letters))))
+		result[i] = letters[n.Int64()]
+	}
+	return string(result)
 }
 
-func GenerateMockUUID() func() {
-	original := GenerateUUID
-	counter := 0
-
-	GenerateUUID = func() string {
-		counter++
-		return "key_" + string(rune('0'+counter))
+func RandomHash(length int) (string, error) {
+	b := make([]byte, length)
+	_, err := rand.Read(b)
+	if err != nil {
+		return "", err
 	}
 
-	return func() {
-		GenerateUUID = original
+	return hex.EncodeToString(b), nil
+}
+
+func HashPass(salt string, pass string) string {
+	sum := sha256.Sum256([]byte(pass + salt))
+	encStr := base64.StdEncoding.EncodeToString(sum[:])
+	return fmt.Sprint(salt, ".", encStr)
+}
+
+func AlgoLuna(order string) bool {
+	order = strings.TrimSpace(order)
+
+	var sum int
+	var isSecond bool
+
+	for i := len(order) - 1; i >= 0; i-- {
+		n, err := strconv.Atoi(string(order[i]))
+		if err != nil {
+			return false
+		}
+
+		if isSecond {
+			n *= 2
+			if n >= 10 {
+				n = n/10 + n%10
+			}
+		}
+
+		sum += n
+		isSecond = !isSecond
 	}
+
+	return sum%10 == 0
+}
+
+func ValidatePass(pass string) {
+
+}
+
+func CheckPass(stored, plain string) bool {
+	salt := strings.Split(stored, ".")[0]
+	h := HashPass(salt, plain)
+	return subtle.ConstantTimeCompare([]byte(h), []byte(stored)) == 1
 }

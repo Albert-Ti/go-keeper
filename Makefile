@@ -1,12 +1,10 @@
 DB_URL = postgres://postgres:postgres@localhost:5432/db?sslmode=disable
 RUN_PATH = cmd/server/main.go
 MIGRATIONS_PATH = ./migrations
-PPROF_FILE_PATH = profiles/base.pprof
-BUILD_DATE = $(shell date +'%Y-%m-%d_%H:%M:%S')
-BUILD_COMMIT = $(shell git rev-parse --short HEAD)
-AUDIT_FILE = audit.json
+PROTO_DIR := pkg/proto
+PROTO_FILES := $(wildcard $(PROTO_DIR)/*.proto)
 
-.PHONY: run ping test migrate-up migrate-down migrate-create
+.PHONY: run ping test migrate-up migrate-down migrate-create protoc
 
 # Использование: make run-pg RACE=1 (Запуск сервера или теста с флагом -race)
 RACE_FLAG :=
@@ -15,11 +13,15 @@ RACE_FLAG := -race
 endif
 
 # ---------------------- RUN
-# Запуск сервера с настройками по умолчанию (in-memory хранилище)
+# Запуск сервера с настройками по умолчанию
 run:
-	go run $(RUN_PATH)
+	go run $(RACE_FLAG) $(RUN_PATH) -d="$(DB_URL)"
 
+run-smtp:
+	go run $(RACE_FLAG) $(RUN_PATH) -d="$(DB_URL)" -e="true"
 
+run-client:
+	go run ./cmd/client/...
 
 # ---------------------- MIGRATIONS
 # Создание новой миграции: make migrate-create name=my_migration
@@ -29,7 +31,7 @@ migrate-create:
 
 # Применить все миграции
 migrate-up:
-	migrate -database "$(DB_URL)" -path "$(MIGRATIONS_PATH)" up
+	migrate -database "$(DB_URL)" -path "./migrations" up
 
 # Откатить все миграции
 migrate-down:
@@ -74,3 +76,23 @@ docker-exec:
 # Удалить том с данными Postgres
 docker-volume-rm:
 	docker volume rm shorten_url_data || true 
+
+# Команда для удаления контейнеров, образов, томов и сетей за один раз которые не используются
+docker-prune:
+	docker system prune -a --volumes
+
+# ---------------------- PROTOBUF
+protoc:
+	protoc \
+		--go_out=$(PROTO_DIR) \
+		--go_opt=paths=source_relative \
+		--go_opt=default_api_level=API_OPAQUE \
+		--go-grpc_out=$(PROTO_DIR) \
+		--go-grpc_opt=paths=source_relative \
+		-I $(PROTO_DIR) \
+		$(PROTO_FILES)
+
+# ---------------------- MOCKGEN
+# Сгенерировать моки репозитория через mockgen
+mockgen:
+	mockgen -source=internal/repository/repository.go -destination=internal/repository/mocks/mock_repository.go -package=mocks 

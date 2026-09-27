@@ -1,0 +1,23 @@
+syntax = "proto3";
+
+package gokeeper;
+
+option go_package = "github.com/Albert-Ti/go-keeper/pkg/proto";
+
+import "auth.proto";
+import "user.proto";
+import "card.proto";
+
+service GoKeeperService {
+  rpc Register(RegisterRequest) returns (RegisterResponse);
+  rpc Login(LoginRequest) returns (LoginResponse);
+  rpc ConfirmEmail(ConfirmEmailRequest) returns (ConfirmEmailResponse);
+  rpc RefreshToken(TokenRequest) returns (TokenResponse);
+
+  rpc GetProfile(ProfileRequest) returns (ProfileResponse);
+  rpc ChangePass(PassRequest) returns (PassResponse);
+  rpc GetCards(CardsRequest) returns (CardsResponse);
+  rpc CreateCard(CreateCardRequest) returns (CreateCardResponse);
+  rpc DeleteCard(DeleteCardRequest) returns (DeleteCardResponse);
+  rpc ActivateCard(ActiveCardRequest) returns (ActiveCardResponse);
+}

@@ -2,7 +2,7 @@ name: go-keeper
 
 services:
   postgres:
-    container_name: go-keeper
+    container_name: postgres
     image: postgres:latest
     restart: always
     ports:
@@ -12,13 +12,67 @@ services:
       POSTGRES_PASSWORD: postgres
       POSTGRES_DB: db
     volumes:
-      - data:/var/lib/postgresql
+      - pg-data:/var/lib/postgresql
+
+  redis:
+    container_name: redis
+    image: redis:latest
+    restart: always
+    ports:
+      - 6379:6379
+    environment:
+      - REDIS_PASSWORD=redis
+    volumes:
+      - redis-data:/data
+
+  seaweedfs-s3:
+    container_name: seaweedfs-s3
+    image: chrislusf/seaweedfs:latest
+    restart: unless-stopped
+    ports:
+      - 8333:8333 # S3 API
+      - 9333:9333 # master UI
+    entrypoint: /bin/sh -c
+    command: |
+      "echo '{
+        \"identities\": [
+          {
+            \"name\": \"anonymous\",
+            \"actions\": [
+              \"Read\"
+            ]
+          },
+          {
+            \"name\": \"gokeeper\",
+            \"credentials\": [
+              {
+                \"accessKey\": \"s3-access\",
+                \"secretKey\": \"s3-secret\"
+              }
+            ],
+            \"actions\": [
+              \"Admin\",
+              \"Read\",
+              \"List\",
+              \"Tagging\",
+              \"Write\"
+            ]
+          }
+        ]
+      }' > /etc/seaweedfs/config.json && \
+      weed server -s3 -s3.config /etc/seaweedfs/config.json"
+    volumes:
+      - seaweedfs-data:/data
 
   adminer:
+    container_name: adminer
     image: adminer
     restart: always
     ports:
       - 5050:8080
 
 volumes:
-  data: {}
+  pg-data: {}
+  redis-data: {}
+  minio-data: {}
+  seaweedfs-data: {}

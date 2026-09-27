@@ -1,3 +1,5 @@
+DROP TABLE IF EXISTS arbitrary_data;
+
 DROP TABLE IF EXISTS bank_cards;
 
 DROP TABLE IF EXISTS history;
