@@ -189,22 +189,10 @@ func userUpdate(msg tea.KeyPressMsg, m model) (model, tea.Cmd) {
 		}
 
 	case tabData:
-		var cmd tea.Cmd
-		m.filepicker, cmd = m.filepicker.Update(msg)
-		// Did the user select a file?
-		if didSelect, path := m.filepicker.DidSelectFile(msg); didSelect {
-			// Get the path of the selected file.
-			m.selectedFile = path
+		switch msg.String() {
+		case "enter":
+			return m.navigateTo(homeDirPage), nil
 		}
-
-		// Did the user select a disabled file?
-		// This is only necessary to display an error to the user.
-		if didSelect, _ := m.filepicker.DidSelectDisabledFile(msg); didSelect {
-			// Let's clear the selectedFile and display an error.
-			m.selectedFile = ""
-			return m, m.handleError(errors.New(" is not valid."))
-		}
-		return m, cmd
 	}
 	return m, nil
 }
@@ -261,5 +249,32 @@ func cardFormUpdate(msg tea.KeyPressMsg, m model) (model, tea.Cmd) {
 	case m.cardForm.date.Focused():
 		m.cardForm.date, cmd = m.cardForm.date.Update(msg)
 	}
+	return m, cmd
+}
+
+func homeDirUpdate(msg tea.KeyPressMsg, m model) (model, tea.Cmd) {
+	var cmd tea.Cmd
+	m.filepicker, cmd = m.filepicker.Update(msg)
+
+	// Did the user select a file?
+	if didSelect, path := m.filepicker.DidSelectFile(msg); didSelect {
+		m.selectedFile = path
+	}
+
+	// Did the user select a disabled file?
+	if didSelect, _ := m.filepicker.DidSelectDisabledFile(msg); didSelect {
+		m.selectedFile = ""
+		return m, m.handleError(errors.New("is not valid"))
+	}
+
+	switch msg.String() {
+	case "ctrl+s":
+		if m.selectedFile == "" {
+			return m, m.handleError(errors.New("file is not selected"))
+		}
+		m.isLoad = false
+		return m.navigateTo(userPage), nil
+	}
+
 	return m, cmd
 }

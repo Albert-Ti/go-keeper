@@ -59,6 +59,7 @@ const (
 	userPage
 	profileFormPage
 	cardFormPage
+	homeDirPage
 )
 
 func (p pageType) String() string {
@@ -150,8 +151,14 @@ func NewModel(client pb.GoKeeperServiceClient, localStorage *FileStorage) (*mode
 	date := newStyledInput("09/26", false)
 
 	fp := filepicker.New()
-	fp.AllowedTypes = []string{".html", ".txt", ".mpeg4", ".jpeg", ".png"}
-	fp.CurrentDirectory, _ = os.UserHomeDir()
+	fp.AllowedTypes = []string{".html", ".txt", ".jpg", ".png", ".mp4", ".mkv"}
+	var err error
+	fp.CurrentDirectory, err = os.UserHomeDir()
+	if err != nil {
+		return nil, err
+	}
+	fp.AutoHeight = false
+	fp.SetHeight(6)
 
 	initPage := homePage
 	initHistory := []pageType{homePage}
@@ -203,6 +210,7 @@ func (m model) Init() tea.Cmd {
 	}
 
 	return tea.Batch(
+		m.filepicker.Init(),
 		textinput.Blink,
 		m.spinner.Tick,
 		// Минуем авторизацию если есть токен
@@ -215,7 +223,9 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case tea.WindowSizeMsg:
 		m.width = msg.Width
 		m.height = msg.Height
-		return m, nil
+		var cmd tea.Cmd
+		m.filepicker, cmd = m.filepicker.Update(msg)
+		return m, cmd
 
 		// очистка сообщения об ошибки
 	case clearErrorMsg:
@@ -232,6 +242,10 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 		m.codeEmail = msg.emailCode
 		m.activePage = confirmPage
+
+		m.authForm.email.Blur()
+		m.authForm.pass.Blur()
+		m.authForm.confirm.Focus()
 		m.isLoad = false
 
 	case loginResultMsg:
@@ -240,6 +254,9 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			if st.Code() == codes.PermissionDenied {
 				m.codeEmail = msg.emailCode
 				m.activePage = confirmPage
+				m.authForm.email.Blur()
+				m.authForm.pass.Blur()
+				m.authForm.confirm.Focus()
 			} else {
 				m.textError = msg.err.Error()
 			}
@@ -258,6 +275,9 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		if err := m.localStorage.Set(refreshTokenKey, msg.refreshToken); err != nil {
 			return m, m.handleError(err)
 		}
+		m.authForm.email.Blur()
+		m.authForm.pass.Blur()
+		m.authForm.confirm.Blur()
 		return m.navigateTo(userPage), getProfileCmd(m.client)
 
 	case confirmResultMsg:
@@ -398,6 +418,8 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return cardFormUpdate(msg, m)
 		case profileFormPage:
 			return profileFormUpdate(msg, m)
+		case homeDirPage:
+			return homeDirUpdate(msg, m)
 		}
 
 	default:
@@ -407,6 +429,10 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		)
 		m.spinner, cmd = m.spinner.Update(msg)
 		cmds = append(cmds, cmd)
+
+		m.filepicker, cmd = m.filepicker.Update(msg)
+		cmds = append(cmds, cmd)
+
 		// курсор в полях чтобы мигал
 		switch {
 		case m.authForm.email.Focused():

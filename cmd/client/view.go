@@ -8,10 +8,6 @@ import (
 	"charm.land/lipgloss/v2"
 )
 
-func dividerView() string {
-	return lipgloss.NewStyle().Faint(true).Render(strings.Repeat("─", cardWidth))
-}
-
 func headerView(m model) string {
 	spinner := ""
 	if m.isLoad {
@@ -22,7 +18,7 @@ func headerView(m model) string {
 		Render("Go Keeper") + " " + spinner
 
 	page := m.activePage.String()
-	if m.activePage == userPage {
+	if m.activePage >= userPage {
 		page = m.authUser
 	}
 	rightRendered := page
@@ -89,12 +85,7 @@ func mainView(m model) string {
 		case tabCards:
 			s += contentCardsView(m)
 		case tabData:
-			if m.selectedFile == "" {
-				s += "Pick a file:"
-			} else {
-				s += "Selected file: " + m.filepicker.Styles.Selected.Render(m.selectedFile)
-			}
-			s += "\n\n" + m.filepicker.View() + "\n"
+			s += contentDataView(m)
 		}
 	}
 
@@ -106,6 +97,21 @@ func mainView(m model) string {
 	if m.activePage == profileFormPage {
 		s += "\n\n" + fieldView("Old pass", m.profileForm.passOld) + "\n"
 		s += fieldView("New pass", m.profileForm.passNew) + "\n"
+	}
+
+	if m.activePage == homeDirPage {
+		if m.selectedFile == "" {
+			s += "Pick a file:"
+		} else {
+			s += "Selected file: " + m.filepicker.Styles.Selected.Render(m.selectedFile)
+		}
+		s += "\n\n" + m.filepicker.View() + "\n"
+		disabled := m.selectedFile == ""
+		textBtn := ""
+		if !disabled {
+			textBtn = "ctrl+s submit to server"
+		}
+		s += "\n" + button("submit", textBtn, disabled) + "\n\n"
 	}
 
 	if m.textError != "" {
@@ -135,6 +141,10 @@ func footerView() string {
 	return lipgloss.JoinHorizontal(lipgloss.Top, leftRendered, gap, rightRendered)
 }
 
+func dividerView() string {
+	return lipgloss.NewStyle().Faint(true).Render(strings.Repeat("─", cardWidth))
+}
+
 func fieldView(label string, input textinput.Model) string {
 	box := inputBoxBlurred
 	if input.Focused() {
@@ -157,8 +167,10 @@ func contentProfileView(m model) string {
 func contentCardsView(m model) string {
 	s := ""
 	if len(m.cards) == 0 {
-		textInfo := lipgloss.NewStyle().Faint(true).Render("You have not added a bank card yet, press ctrl+a to add : ")
+		textInfo := lipgloss.NewStyle().Faint(true).Render("You have not added a bank card yet, press ctrl+a to ")
 		s = "\n\n" + textInfo + button("add", "", false) + "\n"
+
+		return lipgloss.NewStyle().Width(cardWidth).Align(lipgloss.Center).Render(s)
 	} else {
 		for i, card := range m.cards {
 			isActive := lipgloss.NewStyle().Faint(true).Render("inactive")
@@ -198,4 +210,11 @@ func contentCardsView(m model) string {
 	}
 
 	return lipgloss.NewStyle().MarginTop(1).PaddingLeft(3).Width(cardWidth).Align(lipgloss.Left).Render(s)
+}
+
+func contentDataView(m model) string {
+	s := ""
+	textInfo := lipgloss.NewStyle().Faint(true).Render("You have not added a files yet, press enter to ")
+	s = "\n\n" + textInfo + button("add", "", false) + "\n"
+	return lipgloss.NewStyle().Width(cardWidth).Align(lipgloss.Center).Render(s)
 }

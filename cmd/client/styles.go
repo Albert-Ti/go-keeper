@@ -10,7 +10,7 @@ import (
 const cardWidth = 80
 
 // Устанавливаем минимальную высоту для контента
-const minHeight = 16
+const minHeight = 18
 
 // Color
 var (
