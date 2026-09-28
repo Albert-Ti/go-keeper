@@ -2,6 +2,7 @@ package main
 
 import (
 	"errors"
+	"log/slog"
 
 	tea "charm.land/bubbletea/v2"
 )
@@ -191,7 +192,7 @@ func userUpdate(msg tea.KeyPressMsg, m model) (model, tea.Cmd) {
 	case tabData:
 		switch msg.String() {
 		case "enter":
-			return m.navigateTo(homeDirPage), nil
+			return m.navigateTo(filePickerPage), nil
 		}
 	}
 	return m, nil
@@ -252,7 +253,7 @@ func cardFormUpdate(msg tea.KeyPressMsg, m model) (model, tea.Cmd) {
 	return m, cmd
 }
 
-func homeDirUpdate(msg tea.KeyPressMsg, m model) (model, tea.Cmd) {
+func filePickerUpdate(msg tea.KeyPressMsg, m model) (model, tea.Cmd) {
 	var cmd tea.Cmd
 	m.filepicker, cmd = m.filepicker.Update(msg)
 
@@ -273,6 +274,7 @@ func homeDirUpdate(msg tea.KeyPressMsg, m model) (model, tea.Cmd) {
 			return m, m.handleError(errors.New("file is not selected"))
 		}
 		m.isLoad = false
+		slog.Info("SUbmit", "select", m.filepicker.FileSelected, "path", m.filepicker.Path, "size", m.filepicker.ShowSize)
 		return m.navigateTo(userPage), nil
 	}
 

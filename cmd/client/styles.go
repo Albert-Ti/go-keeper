@@ -14,7 +14,7 @@ const minHeight = 18
 
 // Color
 var (
-	colorPrimary     = lipgloss.Color("212") // розовый — акцент на активном поле
+	colorPrimary     = lipgloss.Color("140") // розовый — акцент на активном поле
 	colorMuted       = lipgloss.Color("240") // серый — неактивные элементы
 	colorPlaceholder = lipgloss.Color("244")
 	colorError       = lipgloss.Color("203")

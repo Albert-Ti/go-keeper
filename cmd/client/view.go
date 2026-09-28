@@ -99,7 +99,7 @@ func mainView(m model) string {
 		s += fieldView("New pass", m.profileForm.passNew) + "\n"
 	}
 
-	if m.activePage == homeDirPage {
+	if m.activePage == filePickerPage {
 		if m.selectedFile == "" {
 			s += "Pick a file:"
 		} else {

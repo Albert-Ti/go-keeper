@@ -23,7 +23,8 @@ service GoKeeperService {
   rpc DeleteCard(DeleteCardRequest) returns (DeleteCardResponse);
   rpc ActivateCard(ActiveCardRequest) returns (ActiveCardResponse);
 
-  rpc GetArbitraryData(ArbitraryDataRequest) returns (ArbitraryDataResponse);
-  rpc CreateArbitraryData(CreateArbitraryDataRequest) returns (CreateArbitraryDataResponse);
+  rpc GetArbitraryData(ListArbitraryDataRequest) returns (ListArbitraryDataResponse);
+  rpc DownloadArbitraryData(DownloadArbitraryDataRequest) returns (stream DownloadArbitraryDataResponse);
+  rpc CreateArbitraryData(stream CreateArbitraryDataRequest) returns (CreateArbitraryDataResponse);
   rpc DeleteArbitraryData(DeleteArbitraryDataRequest) returns (DeleteArbitraryDataResponse);
 }

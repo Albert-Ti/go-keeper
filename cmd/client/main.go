@@ -59,7 +59,7 @@ const (
 	userPage
 	profileFormPage
 	cardFormPage
-	homeDirPage
+	filePickerPage
 )
 
 func (p pageType) String() string {
@@ -151,7 +151,7 @@ func NewModel(client pb.GoKeeperServiceClient, localStorage *FileStorage) (*mode
 	date := newStyledInput("09/26", false)
 
 	fp := filepicker.New()
-	fp.AllowedTypes = []string{".html", ".txt", ".jpg", ".png", ".mp4", ".mkv"}
+	fp.AllowedTypes = []string{".html", ".txt", ".jpg", ".png", ".mp4", ".mkv", ".mov"}
 	var err error
 	fp.CurrentDirectory, err = os.UserHomeDir()
 	if err != nil {
@@ -418,8 +418,8 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return cardFormUpdate(msg, m)
 		case profileFormPage:
 			return profileFormUpdate(msg, m)
-		case homeDirPage:
-			return homeDirUpdate(msg, m)
+		case filePickerPage:
+			return filePickerUpdate(msg, m)
 		}
 
 	default:

@@ -14,15 +14,30 @@ message ArbitraryData {
   google.protobuf.Timestamp created_at = 5;
 }
 
-message ArbitraryDataRequest {}
+message ListArbitraryDataRequest {}
 
-message ArbitraryDataResponse {
+message ListArbitraryDataResponse {
   repeated ArbitraryData arbitrary_data = 1;
 }
 
-message CreateArbitraryDataRequest {
+message DownloadArbitraryDataRequest {
+  int64 id = 1;
+}
+
+message DownloadArbitraryDataResponse {
+  bytes chunk = 1;
+}
+
+message FileMetadata {
   string filename = 1;
-  bytes payload = 2;
+  string type = 2;
+}
+
+message CreateArbitraryDataRequest {
+  oneof data {
+    FileMetadata metadata = 1;
+    bytes chunk = 2;
+  }
 }
 
 message CreateArbitraryDataResponse {}

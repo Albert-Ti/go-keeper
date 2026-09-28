@@ -34,6 +34,7 @@ CREATE TABLE
     name VARCHAR(32) NOT NULL,
     type VARCHAR(32) NOT NULL,
     object_key VARCHAR(255) NOT NULL,
+    size BIGINT NOT NULL DEFAULT 0,
     created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (user_uuid) REFERENCES users (uuid)
   );

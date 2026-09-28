@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"os"
 	"slices"
 	"time"
 
@@ -206,5 +207,13 @@ func activateCardCmd(client pb.GoKeeperServiceClient, id int64) tea.Cmd {
 		}.Build())
 
 		return activateCardResultMsg{err: err}
+	}
+}
+
+func createArbitraryDataCmd(client pb.GoKeeperServiceClient, file os.File) tea.Cmd {
+	return func() tea.Msg {
+		_, err := client.CreateArbitraryData(context.Background(), &pb.CreateArbitraryDataRequest_builder{}.Build())
+
+		return createCardResultMsg{err: err}
 	}
 }
