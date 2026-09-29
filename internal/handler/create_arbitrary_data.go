@@ -1,23 +1,37 @@
 package handler
 
 import (
-	"context"
+	"fmt"
+	"io"
 
-	"github.com/Albert-Ti/go-keeper/internal/interceptor"
 	pb "github.com/Albert-Ti/go-keeper/pkg/proto"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
 )
 
-func (g *GrpcServer) CreateArbitraryData(ctx context.Context, in *pb.CreateArbitraryDataRequest) (*pb.CreateArbitraryDataResponse, error) {
-	uuid, err := interceptor.GetAuthUserID(ctx)
-	if err != nil {
-		return nil, status.Error(codes.Unauthenticated, "failed to get user")
-	}
+func (g *GrpcServer) CreateArbitraryData(stream pb.GoKeeperService_CreateArbitraryDataServer) error {
 
-	if err := g.Svc.CreateArbitraryData(ctx, uuid, in.GetFilename()); err != nil {
-		return nil, status.Error(codes.Internal, "failed to create arbitrary data")
-	}
+	var metadata *pb.FileMetadata
+	var chunks []byte
 
-	return &pb.CreateArbitraryDataResponse{}, nil
+	for {
+		req, err := stream.Recv()
+		if err == io.EOF {
+			break
+		}
+		if err != nil {
+			return fmt.Errorf("ошибка при чтении стрима от сервера: %v", err)
+		}
+
+		if req.GetMetadata() != nil {
+			metadata = req.GetMetadata()
+			fmt.Println("metadata:", metadata)
+		}
+
+		if req.GetChunk() != nil {
+			chunks = append(chunks, req.GetChunk()...)
+			fmt.Println("chunk:", len(req.GetChunk()))
+		}
+	}
+	fmt.Println("stream off")
+
+	return nil
 }

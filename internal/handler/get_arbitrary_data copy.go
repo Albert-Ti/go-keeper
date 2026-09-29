@@ -10,7 +10,7 @@ import (
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
-func (g *GrpcServer) GetArbitraryData(ctx context.Context, in *pb.ArbitraryDataRequest) (*pb.ArbitraryDataResponse, error) {
+func (g *GrpcServer) GetArbitraryData(ctx context.Context, in *pb.ListArbitraryDataRequest) (*pb.ListArbitraryDataResponse, error) {
 	uuid, err := interceptor.GetAuthUserID(ctx)
 	if err != nil {
 		return nil, status.Error(codes.Unauthenticated, "failed to get user")
@@ -31,7 +31,7 @@ func (g *GrpcServer) GetArbitraryData(ctx context.Context, in *pb.ArbitraryDataR
 		}.Build())
 	}
 
-	response := pb.ArbitraryDataResponse_builder{
+	response := pb.ListArbitraryDataResponse_builder{
 		ArbitraryData: list,
 	}.Build()
 

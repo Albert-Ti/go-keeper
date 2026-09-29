@@ -145,26 +145,26 @@ func (b0 ArbitraryData_builder) Build() *ArbitraryData {
 	return m0
 }
 
-type ArbitraryDataRequest struct {
+type ListArbitraryDataRequest struct {
 	state         protoimpl.MessageState `protogen:"opaque.v1"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
-func (x *ArbitraryDataRequest) Reset() {
-	*x = ArbitraryDataRequest{}
+func (x *ListArbitraryDataRequest) Reset() {
+	*x = ListArbitraryDataRequest{}
 	mi := &file_arbitrary_data_proto_msgTypes[1]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
 
-func (x *ArbitraryDataRequest) String() string {
+func (x *ListArbitraryDataRequest) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*ArbitraryDataRequest) ProtoMessage() {}
+func (*ListArbitraryDataRequest) ProtoMessage() {}
 
-func (x *ArbitraryDataRequest) ProtoReflect() protoreflect.Message {
+func (x *ListArbitraryDataRequest) ProtoReflect() protoreflect.Message {
 	mi := &file_arbitrary_data_proto_msgTypes[1]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -176,39 +176,39 @@ func (x *ArbitraryDataRequest) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-type ArbitraryDataRequest_builder struct {
+type ListArbitraryDataRequest_builder struct {
 	_ [0]func() // Prevents comparability and use of unkeyed literals for the builder.
 
 }
 
-func (b0 ArbitraryDataRequest_builder) Build() *ArbitraryDataRequest {
-	m0 := &ArbitraryDataRequest{}
+func (b0 ListArbitraryDataRequest_builder) Build() *ListArbitraryDataRequest {
+	m0 := &ListArbitraryDataRequest{}
 	b, x := &b0, m0
 	_, _ = b, x
 	return m0
 }
 
-type ArbitraryDataResponse struct {
+type ListArbitraryDataResponse struct {
 	state                    protoimpl.MessageState `protogen:"opaque.v1"`
 	xxx_hidden_ArbitraryData *[]*ArbitraryData      `protobuf:"bytes,1,rep,name=arbitrary_data,json=arbitraryData,proto3"`
 	unknownFields            protoimpl.UnknownFields
 	sizeCache                protoimpl.SizeCache
 }
 
-func (x *ArbitraryDataResponse) Reset() {
-	*x = ArbitraryDataResponse{}
+func (x *ListArbitraryDataResponse) Reset() {
+	*x = ListArbitraryDataResponse{}
 	mi := &file_arbitrary_data_proto_msgTypes[2]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
 
-func (x *ArbitraryDataResponse) String() string {
+func (x *ListArbitraryDataResponse) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*ArbitraryDataResponse) ProtoMessage() {}
+func (*ListArbitraryDataResponse) ProtoMessage() {}
 
-func (x *ArbitraryDataResponse) ProtoReflect() protoreflect.Message {
+func (x *ListArbitraryDataResponse) ProtoReflect() protoreflect.Message {
 	mi := &file_arbitrary_data_proto_msgTypes[2]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -220,7 +220,7 @@ func (x *ArbitraryDataResponse) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-func (x *ArbitraryDataResponse) GetArbitraryData() []*ArbitraryData {
+func (x *ListArbitraryDataResponse) GetArbitraryData() []*ArbitraryData {
 	if x != nil {
 		if x.xxx_hidden_ArbitraryData != nil {
 			return *x.xxx_hidden_ArbitraryData
@@ -229,35 +229,222 @@ func (x *ArbitraryDataResponse) GetArbitraryData() []*ArbitraryData {
 	return nil
 }
 
-func (x *ArbitraryDataResponse) SetArbitraryData(v []*ArbitraryData) {
+func (x *ListArbitraryDataResponse) SetArbitraryData(v []*ArbitraryData) {
 	x.xxx_hidden_ArbitraryData = &v
 }
 
-type ArbitraryDataResponse_builder struct {
+type ListArbitraryDataResponse_builder struct {
 	_ [0]func() // Prevents comparability and use of unkeyed literals for the builder.
 
 	ArbitraryData []*ArbitraryData
 }
 
-func (b0 ArbitraryDataResponse_builder) Build() *ArbitraryDataResponse {
-	m0 := &ArbitraryDataResponse{}
+func (b0 ListArbitraryDataResponse_builder) Build() *ListArbitraryDataResponse {
+	m0 := &ListArbitraryDataResponse{}
 	b, x := &b0, m0
 	_, _ = b, x
 	x.xxx_hidden_ArbitraryData = &b.ArbitraryData
 	return m0
 }
 
-type CreateArbitraryDataRequest struct {
+type DownloadArbitraryDataRequest struct {
+	state         protoimpl.MessageState `protogen:"opaque.v1"`
+	xxx_hidden_Id int64                  `protobuf:"varint,1,opt,name=id,proto3"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *DownloadArbitraryDataRequest) Reset() {
+	*x = DownloadArbitraryDataRequest{}
+	mi := &file_arbitrary_data_proto_msgTypes[3]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *DownloadArbitraryDataRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*DownloadArbitraryDataRequest) ProtoMessage() {}
+
+func (x *DownloadArbitraryDataRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_arbitrary_data_proto_msgTypes[3]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+func (x *DownloadArbitraryDataRequest) GetId() int64 {
+	if x != nil {
+		return x.xxx_hidden_Id
+	}
+	return 0
+}
+
+func (x *DownloadArbitraryDataRequest) SetId(v int64) {
+	x.xxx_hidden_Id = v
+}
+
+type DownloadArbitraryDataRequest_builder struct {
+	_ [0]func() // Prevents comparability and use of unkeyed literals for the builder.
+
+	Id int64
+}
+
+func (b0 DownloadArbitraryDataRequest_builder) Build() *DownloadArbitraryDataRequest {
+	m0 := &DownloadArbitraryDataRequest{}
+	b, x := &b0, m0
+	_, _ = b, x
+	x.xxx_hidden_Id = b.Id
+	return m0
+}
+
+type DownloadArbitraryDataResponse struct {
+	state            protoimpl.MessageState `protogen:"opaque.v1"`
+	xxx_hidden_Chunk []byte                 `protobuf:"bytes,1,opt,name=chunk,proto3"`
+	unknownFields    protoimpl.UnknownFields
+	sizeCache        protoimpl.SizeCache
+}
+
+func (x *DownloadArbitraryDataResponse) Reset() {
+	*x = DownloadArbitraryDataResponse{}
+	mi := &file_arbitrary_data_proto_msgTypes[4]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *DownloadArbitraryDataResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*DownloadArbitraryDataResponse) ProtoMessage() {}
+
+func (x *DownloadArbitraryDataResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_arbitrary_data_proto_msgTypes[4]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+func (x *DownloadArbitraryDataResponse) GetChunk() []byte {
+	if x != nil {
+		return x.xxx_hidden_Chunk
+	}
+	return nil
+}
+
+func (x *DownloadArbitraryDataResponse) SetChunk(v []byte) {
+	if v == nil {
+		v = []byte{}
+	}
+	x.xxx_hidden_Chunk = v
+}
+
+type DownloadArbitraryDataResponse_builder struct {
+	_ [0]func() // Prevents comparability and use of unkeyed literals for the builder.
+
+	Chunk []byte
+}
+
+func (b0 DownloadArbitraryDataResponse_builder) Build() *DownloadArbitraryDataResponse {
+	m0 := &DownloadArbitraryDataResponse{}
+	b, x := &b0, m0
+	_, _ = b, x
+	x.xxx_hidden_Chunk = b.Chunk
+	return m0
+}
+
+type FileMetadata struct {
 	state               protoimpl.MessageState `protogen:"opaque.v1"`
 	xxx_hidden_Filename string                 `protobuf:"bytes,1,opt,name=filename,proto3"`
-	xxx_hidden_Payload  []byte                 `protobuf:"bytes,2,opt,name=payload,proto3"`
+	xxx_hidden_Type     string                 `protobuf:"bytes,2,opt,name=type,proto3"`
 	unknownFields       protoimpl.UnknownFields
 	sizeCache           protoimpl.SizeCache
 }
 
+func (x *FileMetadata) Reset() {
+	*x = FileMetadata{}
+	mi := &file_arbitrary_data_proto_msgTypes[5]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *FileMetadata) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*FileMetadata) ProtoMessage() {}
+
+func (x *FileMetadata) ProtoReflect() protoreflect.Message {
+	mi := &file_arbitrary_data_proto_msgTypes[5]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+func (x *FileMetadata) GetFilename() string {
+	if x != nil {
+		return x.xxx_hidden_Filename
+	}
+	return ""
+}
+
+func (x *FileMetadata) GetType() string {
+	if x != nil {
+		return x.xxx_hidden_Type
+	}
+	return ""
+}
+
+func (x *FileMetadata) SetFilename(v string) {
+	x.xxx_hidden_Filename = v
+}
+
+func (x *FileMetadata) SetType(v string) {
+	x.xxx_hidden_Type = v
+}
+
+type FileMetadata_builder struct {
+	_ [0]func() // Prevents comparability and use of unkeyed literals for the builder.
+
+	Filename string
+	Type     string
+}
+
+func (b0 FileMetadata_builder) Build() *FileMetadata {
+	m0 := &FileMetadata{}
+	b, x := &b0, m0
+	_, _ = b, x
+	x.xxx_hidden_Filename = b.Filename
+	x.xxx_hidden_Type = b.Type
+	return m0
+}
+
+type CreateArbitraryDataRequest struct {
+	state           protoimpl.MessageState            `protogen:"opaque.v1"`
+	xxx_hidden_Data isCreateArbitraryDataRequest_Data `protobuf_oneof:"data"`
+	unknownFields   protoimpl.UnknownFields
+	sizeCache       protoimpl.SizeCache
+}
+
 func (x *CreateArbitraryDataRequest) Reset() {
 	*x = CreateArbitraryDataRequest{}
-	mi := &file_arbitrary_data_proto_msgTypes[3]
+	mi := &file_arbitrary_data_proto_msgTypes[6]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -269,7 +456,7 @@ func (x *CreateArbitraryDataRequest) String() string {
 func (*CreateArbitraryDataRequest) ProtoMessage() {}
 
 func (x *CreateArbitraryDataRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_arbitrary_data_proto_msgTypes[3]
+	mi := &file_arbitrary_data_proto_msgTypes[6]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -280,46 +467,143 @@ func (x *CreateArbitraryDataRequest) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-func (x *CreateArbitraryDataRequest) GetFilename() string {
+func (x *CreateArbitraryDataRequest) GetMetadata() *FileMetadata {
 	if x != nil {
-		return x.xxx_hidden_Filename
-	}
-	return ""
-}
-
-func (x *CreateArbitraryDataRequest) GetPayload() []byte {
-	if x != nil {
-		return x.xxx_hidden_Payload
+		if x, ok := x.xxx_hidden_Data.(*createArbitraryDataRequest_Metadata); ok {
+			return x.Metadata
+		}
 	}
 	return nil
 }
 
-func (x *CreateArbitraryDataRequest) SetFilename(v string) {
-	x.xxx_hidden_Filename = v
+func (x *CreateArbitraryDataRequest) GetChunk() []byte {
+	if x != nil {
+		if x, ok := x.xxx_hidden_Data.(*createArbitraryDataRequest_Chunk); ok {
+			return x.Chunk
+		}
+	}
+	return nil
 }
 
-func (x *CreateArbitraryDataRequest) SetPayload(v []byte) {
+func (x *CreateArbitraryDataRequest) SetMetadata(v *FileMetadata) {
+	if v == nil {
+		x.xxx_hidden_Data = nil
+		return
+	}
+	x.xxx_hidden_Data = &createArbitraryDataRequest_Metadata{v}
+}
+
+func (x *CreateArbitraryDataRequest) SetChunk(v []byte) {
 	if v == nil {
 		v = []byte{}
 	}
-	x.xxx_hidden_Payload = v
+	x.xxx_hidden_Data = &createArbitraryDataRequest_Chunk{v}
+}
+
+func (x *CreateArbitraryDataRequest) HasData() bool {
+	if x == nil {
+		return false
+	}
+	return x.xxx_hidden_Data != nil
+}
+
+func (x *CreateArbitraryDataRequest) HasMetadata() bool {
+	if x == nil {
+		return false
+	}
+	_, ok := x.xxx_hidden_Data.(*createArbitraryDataRequest_Metadata)
+	return ok
+}
+
+func (x *CreateArbitraryDataRequest) HasChunk() bool {
+	if x == nil {
+		return false
+	}
+	_, ok := x.xxx_hidden_Data.(*createArbitraryDataRequest_Chunk)
+	return ok
+}
+
+func (x *CreateArbitraryDataRequest) ClearData() {
+	x.xxx_hidden_Data = nil
+}
+
+func (x *CreateArbitraryDataRequest) ClearMetadata() {
+	if _, ok := x.xxx_hidden_Data.(*createArbitraryDataRequest_Metadata); ok {
+		x.xxx_hidden_Data = nil
+	}
+}
+
+func (x *CreateArbitraryDataRequest) ClearChunk() {
+	if _, ok := x.xxx_hidden_Data.(*createArbitraryDataRequest_Chunk); ok {
+		x.xxx_hidden_Data = nil
+	}
+}
+
+const CreateArbitraryDataRequest_Data_not_set_case case_CreateArbitraryDataRequest_Data = 0
+const CreateArbitraryDataRequest_Metadata_case case_CreateArbitraryDataRequest_Data = 1
+const CreateArbitraryDataRequest_Chunk_case case_CreateArbitraryDataRequest_Data = 2
+
+func (x *CreateArbitraryDataRequest) WhichData() case_CreateArbitraryDataRequest_Data {
+	if x == nil {
+		return CreateArbitraryDataRequest_Data_not_set_case
+	}
+	switch x.xxx_hidden_Data.(type) {
+	case *createArbitraryDataRequest_Metadata:
+		return CreateArbitraryDataRequest_Metadata_case
+	case *createArbitraryDataRequest_Chunk:
+		return CreateArbitraryDataRequest_Chunk_case
+	default:
+		return CreateArbitraryDataRequest_Data_not_set_case
+	}
 }
 
 type CreateArbitraryDataRequest_builder struct {
 	_ [0]func() // Prevents comparability and use of unkeyed literals for the builder.
 
-	Filename string
-	Payload  []byte
+	// Fields of oneof xxx_hidden_Data:
+	Metadata *FileMetadata
+	Chunk    []byte
+	// -- end of xxx_hidden_Data
 }
 
 func (b0 CreateArbitraryDataRequest_builder) Build() *CreateArbitraryDataRequest {
 	m0 := &CreateArbitraryDataRequest{}
 	b, x := &b0, m0
 	_, _ = b, x
-	x.xxx_hidden_Filename = b.Filename
-	x.xxx_hidden_Payload = b.Payload
+	if b.Metadata != nil {
+		x.xxx_hidden_Data = &createArbitraryDataRequest_Metadata{b.Metadata}
+	}
+	if b.Chunk != nil {
+		x.xxx_hidden_Data = &createArbitraryDataRequest_Chunk{b.Chunk}
+	}
 	return m0
 }
+
+type case_CreateArbitraryDataRequest_Data protoreflect.FieldNumber
+
+func (x case_CreateArbitraryDataRequest_Data) String() string {
+	md := file_arbitrary_data_proto_msgTypes[6].Descriptor()
+	if x == 0 {
+		return "not set"
+	}
+	return protoimpl.X.MessageFieldStringOf(md, protoreflect.FieldNumber(x))
+}
+
+type isCreateArbitraryDataRequest_Data interface {
+	isCreateArbitraryDataRequest_Data()
+}
+
+type createArbitraryDataRequest_Metadata struct {
+	Metadata *FileMetadata `protobuf:"bytes,1,opt,name=metadata,proto3,oneof"`
+}
+
+type createArbitraryDataRequest_Chunk struct {
+	Chunk []byte `protobuf:"bytes,2,opt,name=chunk,proto3,oneof"`
+}
+
+func (*createArbitraryDataRequest_Metadata) isCreateArbitraryDataRequest_Data() {}
+
+func (*createArbitraryDataRequest_Chunk) isCreateArbitraryDataRequest_Data() {}
 
 type CreateArbitraryDataResponse struct {
 	state         protoimpl.MessageState `protogen:"opaque.v1"`
@@ -329,7 +613,7 @@ type CreateArbitraryDataResponse struct {
 
 func (x *CreateArbitraryDataResponse) Reset() {
 	*x = CreateArbitraryDataResponse{}
-	mi := &file_arbitrary_data_proto_msgTypes[4]
+	mi := &file_arbitrary_data_proto_msgTypes[7]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -341,7 +625,7 @@ func (x *CreateArbitraryDataResponse) String() string {
 func (*CreateArbitraryDataResponse) ProtoMessage() {}
 
 func (x *CreateArbitraryDataResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_arbitrary_data_proto_msgTypes[4]
+	mi := &file_arbitrary_data_proto_msgTypes[7]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -373,7 +657,7 @@ type DeleteArbitraryDataRequest struct {
 
 func (x *DeleteArbitraryDataRequest) Reset() {
 	*x = DeleteArbitraryDataRequest{}
-	mi := &file_arbitrary_data_proto_msgTypes[5]
+	mi := &file_arbitrary_data_proto_msgTypes[8]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -385,7 +669,7 @@ func (x *DeleteArbitraryDataRequest) String() string {
 func (*DeleteArbitraryDataRequest) ProtoMessage() {}
 
 func (x *DeleteArbitraryDataRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_arbitrary_data_proto_msgTypes[5]
+	mi := &file_arbitrary_data_proto_msgTypes[8]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -429,7 +713,7 @@ type DeleteArbitraryDataResponse struct {
 
 func (x *DeleteArbitraryDataResponse) Reset() {
 	*x = DeleteArbitraryDataResponse{}
-	mi := &file_arbitrary_data_proto_msgTypes[6]
+	mi := &file_arbitrary_data_proto_msgTypes[9]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -441,7 +725,7 @@ func (x *DeleteArbitraryDataResponse) String() string {
 func (*DeleteArbitraryDataResponse) ProtoMessage() {}
 
 func (x *DeleteArbitraryDataResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_arbitrary_data_proto_msgTypes[6]
+	mi := &file_arbitrary_data_proto_msgTypes[9]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -476,37 +760,49 @@ const file_arbitrary_data_proto_rawDesc = "" +
 	"\n" +
 	"object_key\x18\x04 \x01(\tR\tobjectKey\x129\n" +
 	"\n" +
-	"created_at\x18\x05 \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedAt\"\x16\n" +
-	"\x14ArbitraryDataRequest\"W\n" +
-	"\x15ArbitraryDataResponse\x12>\n" +
-	"\x0earbitrary_data\x18\x01 \x03(\v2\x17.gokeeper.ArbitraryDataR\rarbitraryData\"R\n" +
-	"\x1aCreateArbitraryDataRequest\x12\x1a\n" +
-	"\bfilename\x18\x01 \x01(\tR\bfilename\x12\x18\n" +
-	"\apayload\x18\x02 \x01(\fR\apayload\"\x1d\n" +
+	"created_at\x18\x05 \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedAt\"\x1a\n" +
+	"\x18ListArbitraryDataRequest\"[\n" +
+	"\x19ListArbitraryDataResponse\x12>\n" +
+	"\x0earbitrary_data\x18\x01 \x03(\v2\x17.gokeeper.ArbitraryDataR\rarbitraryData\".\n" +
+	"\x1cDownloadArbitraryDataRequest\x12\x0e\n" +
+	"\x02id\x18\x01 \x01(\x03R\x02id\"5\n" +
+	"\x1dDownloadArbitraryDataResponse\x12\x14\n" +
+	"\x05chunk\x18\x01 \x01(\fR\x05chunk\">\n" +
+	"\fFileMetadata\x12\x1a\n" +
+	"\bfilename\x18\x01 \x01(\tR\bfilename\x12\x12\n" +
+	"\x04type\x18\x02 \x01(\tR\x04type\"r\n" +
+	"\x1aCreateArbitraryDataRequest\x124\n" +
+	"\bmetadata\x18\x01 \x01(\v2\x16.gokeeper.FileMetadataH\x00R\bmetadata\x12\x16\n" +
+	"\x05chunk\x18\x02 \x01(\fH\x00R\x05chunkB\x06\n" +
+	"\x04data\"\x1d\n" +
 	"\x1bCreateArbitraryDataResponse\",\n" +
 	"\x1aDeleteArbitraryDataRequest\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\x03R\x02id\"\x1d\n" +
 	"\x1bDeleteArbitraryDataResponseB*Z(github.com/Albert-Ti/go-keeper/pkg/protob\x06proto3"
 
-var file_arbitrary_data_proto_msgTypes = make([]protoimpl.MessageInfo, 7)
+var file_arbitrary_data_proto_msgTypes = make([]protoimpl.MessageInfo, 10)
 var file_arbitrary_data_proto_goTypes = []any{
-	(*ArbitraryData)(nil),               // 0: gokeeper.ArbitraryData
-	(*ArbitraryDataRequest)(nil),        // 1: gokeeper.ArbitraryDataRequest
-	(*ArbitraryDataResponse)(nil),       // 2: gokeeper.ArbitraryDataResponse
-	(*CreateArbitraryDataRequest)(nil),  // 3: gokeeper.CreateArbitraryDataRequest
-	(*CreateArbitraryDataResponse)(nil), // 4: gokeeper.CreateArbitraryDataResponse
-	(*DeleteArbitraryDataRequest)(nil),  // 5: gokeeper.DeleteArbitraryDataRequest
-	(*DeleteArbitraryDataResponse)(nil), // 6: gokeeper.DeleteArbitraryDataResponse
-	(*timestamppb.Timestamp)(nil),       // 7: google.protobuf.Timestamp
+	(*ArbitraryData)(nil),                 // 0: gokeeper.ArbitraryData
+	(*ListArbitraryDataRequest)(nil),      // 1: gokeeper.ListArbitraryDataRequest
+	(*ListArbitraryDataResponse)(nil),     // 2: gokeeper.ListArbitraryDataResponse
+	(*DownloadArbitraryDataRequest)(nil),  // 3: gokeeper.DownloadArbitraryDataRequest
+	(*DownloadArbitraryDataResponse)(nil), // 4: gokeeper.DownloadArbitraryDataResponse
+	(*FileMetadata)(nil),                  // 5: gokeeper.FileMetadata
+	(*CreateArbitraryDataRequest)(nil),    // 6: gokeeper.CreateArbitraryDataRequest
+	(*CreateArbitraryDataResponse)(nil),   // 7: gokeeper.CreateArbitraryDataResponse
+	(*DeleteArbitraryDataRequest)(nil),    // 8: gokeeper.DeleteArbitraryDataRequest
+	(*DeleteArbitraryDataResponse)(nil),   // 9: gokeeper.DeleteArbitraryDataResponse
+	(*timestamppb.Timestamp)(nil),         // 10: google.protobuf.Timestamp
 }
 var file_arbitrary_data_proto_depIdxs = []int32{
-	7, // 0: gokeeper.ArbitraryData.created_at:type_name -> google.protobuf.Timestamp
-	0, // 1: gokeeper.ArbitraryDataResponse.arbitrary_data:type_name -> gokeeper.ArbitraryData
-	2, // [2:2] is the sub-list for method output_type
-	2, // [2:2] is the sub-list for method input_type
-	2, // [2:2] is the sub-list for extension type_name
-	2, // [2:2] is the sub-list for extension extendee
-	0, // [0:2] is the sub-list for field type_name
+	10, // 0: gokeeper.ArbitraryData.created_at:type_name -> google.protobuf.Timestamp
+	0,  // 1: gokeeper.ListArbitraryDataResponse.arbitrary_data:type_name -> gokeeper.ArbitraryData
+	5,  // 2: gokeeper.CreateArbitraryDataRequest.metadata:type_name -> gokeeper.FileMetadata
+	3,  // [3:3] is the sub-list for method output_type
+	3,  // [3:3] is the sub-list for method input_type
+	3,  // [3:3] is the sub-list for extension type_name
+	3,  // [3:3] is the sub-list for extension extendee
+	0,  // [0:3] is the sub-list for field type_name
 }
 
 func init() { file_arbitrary_data_proto_init() }
@@ -514,13 +810,17 @@ func file_arbitrary_data_proto_init() {
 	if File_arbitrary_data_proto != nil {
 		return
 	}
+	file_arbitrary_data_proto_msgTypes[6].OneofWrappers = []any{
+		(*createArbitraryDataRequest_Metadata)(nil),
+		(*createArbitraryDataRequest_Chunk)(nil),
+	}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_arbitrary_data_proto_rawDesc), len(file_arbitrary_data_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   7,
+			NumMessages:   10,
 			NumExtensions: 0,
 			NumServices:   0,
 		},

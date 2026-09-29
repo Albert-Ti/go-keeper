@@ -2,7 +2,6 @@ package main
 
 import (
 	"errors"
-	"log/slog"
 
 	tea "charm.land/bubbletea/v2"
 )
@@ -94,10 +93,14 @@ func loginUpdate(msg tea.KeyPressMsg, m model) (model, tea.Cmd) {
 func loadActiveTab(activeTab tabType, m model) tea.Cmd {
 	switch activeTab {
 	case tabProfile:
+		m.isLoad = true
 		return getProfileCmd(m.client)
 	case tabCards:
+		m.isLoad = true
 		return getCardsCmd(m.client)
 	case tabData:
+		m.isLoad = true
+		return getArbitraryDataCmd(m.client)
 	}
 	return nil
 }
@@ -132,14 +135,12 @@ func userUpdate(msg tea.KeyPressMsg, m model) (model, tea.Cmd) {
 			if m.activeTab > 0 {
 				m.activeTab--
 				m.cursor = 0
-				m.isLoad = true
 				return m, loadActiveTab(m.activeTab, m)
 			}
 		case "right":
 			if int(m.activeTab) < len(m.allTabs)-1 {
 				m.activeTab++
 				m.cursor = 0
-				m.isLoad = true
 				return m, loadActiveTab(m.activeTab, m)
 			}
 		}
@@ -274,8 +275,7 @@ func filePickerUpdate(msg tea.KeyPressMsg, m model) (model, tea.Cmd) {
 			return m, m.handleError(errors.New("file is not selected"))
 		}
 		m.isLoad = false
-		slog.Info("SUbmit", "select", m.filepicker.FileSelected, "path", m.filepicker.Path, "size", m.filepicker.ShowSize)
-		return m.navigateTo(userPage), nil
+		return m, createArbitraryDataCmd(m.client, m.filepicker.Path)
 	}
 
 	return m, cmd

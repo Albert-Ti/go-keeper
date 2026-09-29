@@ -375,6 +375,16 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.selectedCard = -1
 		return m.navigateTo(userPage), getCardsCmd(m.client)
 
+	case createArbitraryDataMsg:
+		if msg.err != nil {
+			if strings.Contains(msg.err.Error(), "access token is expired") {
+				return m, refreshTokenCmd(m.client, m.localStorage.Get(refreshTokenKey))
+			}
+			return m, m.handleError(msg.err)
+		}
+		m.isLoad = false
+		return m.navigateTo(userPage), nil
+
 		// Обработка нажатия клавиш
 	case tea.KeyPressMsg:
 		switch msg.String() {

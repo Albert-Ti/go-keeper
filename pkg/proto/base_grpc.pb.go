@@ -19,19 +19,20 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	GoKeeperService_Register_FullMethodName            = "/gokeeper.GoKeeperService/Register"
-	GoKeeperService_Login_FullMethodName               = "/gokeeper.GoKeeperService/Login"
-	GoKeeperService_ConfirmEmail_FullMethodName        = "/gokeeper.GoKeeperService/ConfirmEmail"
-	GoKeeperService_RefreshToken_FullMethodName        = "/gokeeper.GoKeeperService/RefreshToken"
-	GoKeeperService_GetProfile_FullMethodName          = "/gokeeper.GoKeeperService/GetProfile"
-	GoKeeperService_ChangePass_FullMethodName          = "/gokeeper.GoKeeperService/ChangePass"
-	GoKeeperService_GetCards_FullMethodName            = "/gokeeper.GoKeeperService/GetCards"
-	GoKeeperService_CreateCard_FullMethodName          = "/gokeeper.GoKeeperService/CreateCard"
-	GoKeeperService_DeleteCard_FullMethodName          = "/gokeeper.GoKeeperService/DeleteCard"
-	GoKeeperService_ActivateCard_FullMethodName        = "/gokeeper.GoKeeperService/ActivateCard"
-	GoKeeperService_GetArbitraryData_FullMethodName    = "/gokeeper.GoKeeperService/GetArbitraryData"
-	GoKeeperService_CreateArbitraryData_FullMethodName = "/gokeeper.GoKeeperService/CreateArbitraryData"
-	GoKeeperService_DeleteArbitraryData_FullMethodName = "/gokeeper.GoKeeperService/DeleteArbitraryData"
+	GoKeeperService_Register_FullMethodName              = "/gokeeper.GoKeeperService/Register"
+	GoKeeperService_Login_FullMethodName                 = "/gokeeper.GoKeeperService/Login"
+	GoKeeperService_ConfirmEmail_FullMethodName          = "/gokeeper.GoKeeperService/ConfirmEmail"
+	GoKeeperService_RefreshToken_FullMethodName          = "/gokeeper.GoKeeperService/RefreshToken"
+	GoKeeperService_GetProfile_FullMethodName            = "/gokeeper.GoKeeperService/GetProfile"
+	GoKeeperService_ChangePass_FullMethodName            = "/gokeeper.GoKeeperService/ChangePass"
+	GoKeeperService_GetCards_FullMethodName              = "/gokeeper.GoKeeperService/GetCards"
+	GoKeeperService_CreateCard_FullMethodName            = "/gokeeper.GoKeeperService/CreateCard"
+	GoKeeperService_DeleteCard_FullMethodName            = "/gokeeper.GoKeeperService/DeleteCard"
+	GoKeeperService_ActivateCard_FullMethodName          = "/gokeeper.GoKeeperService/ActivateCard"
+	GoKeeperService_GetArbitraryData_FullMethodName      = "/gokeeper.GoKeeperService/GetArbitraryData"
+	GoKeeperService_DownloadArbitraryData_FullMethodName = "/gokeeper.GoKeeperService/DownloadArbitraryData"
+	GoKeeperService_CreateArbitraryData_FullMethodName   = "/gokeeper.GoKeeperService/CreateArbitraryData"
+	GoKeeperService_DeleteArbitraryData_FullMethodName   = "/gokeeper.GoKeeperService/DeleteArbitraryData"
 )
 
 // GoKeeperServiceClient is the client API for GoKeeperService service.
@@ -48,8 +49,9 @@ type GoKeeperServiceClient interface {
 	CreateCard(ctx context.Context, in *CreateCardRequest, opts ...grpc.CallOption) (*CreateCardResponse, error)
 	DeleteCard(ctx context.Context, in *DeleteCardRequest, opts ...grpc.CallOption) (*DeleteCardResponse, error)
 	ActivateCard(ctx context.Context, in *ActiveCardRequest, opts ...grpc.CallOption) (*ActiveCardResponse, error)
-	GetArbitraryData(ctx context.Context, in *ArbitraryDataRequest, opts ...grpc.CallOption) (*ArbitraryDataResponse, error)
-	CreateArbitraryData(ctx context.Context, in *CreateArbitraryDataRequest, opts ...grpc.CallOption) (*CreateArbitraryDataResponse, error)
+	GetArbitraryData(ctx context.Context, in *ListArbitraryDataRequest, opts ...grpc.CallOption) (*ListArbitraryDataResponse, error)
+	DownloadArbitraryData(ctx context.Context, in *DownloadArbitraryDataRequest, opts ...grpc.CallOption) (grpc.ServerStreamingClient[DownloadArbitraryDataResponse], error)
+	CreateArbitraryData(ctx context.Context, opts ...grpc.CallOption) (grpc.ClientStreamingClient[CreateArbitraryDataRequest, CreateArbitraryDataResponse], error)
 	DeleteArbitraryData(ctx context.Context, in *DeleteArbitraryDataRequest, opts ...grpc.CallOption) (*DeleteArbitraryDataResponse, error)
 }
 
@@ -161,9 +163,9 @@ func (c *goKeeperServiceClient) ActivateCard(ctx context.Context, in *ActiveCard
 	return out, nil
 }
 
-func (c *goKeeperServiceClient) GetArbitraryData(ctx context.Context, in *ArbitraryDataRequest, opts ...grpc.CallOption) (*ArbitraryDataResponse, error) {
+func (c *goKeeperServiceClient) GetArbitraryData(ctx context.Context, in *ListArbitraryDataRequest, opts ...grpc.CallOption) (*ListArbitraryDataResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(ArbitraryDataResponse)
+	out := new(ListArbitraryDataResponse)
 	err := c.cc.Invoke(ctx, GoKeeperService_GetArbitraryData_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
@@ -171,15 +173,37 @@ func (c *goKeeperServiceClient) GetArbitraryData(ctx context.Context, in *Arbitr
 	return out, nil
 }
 
-func (c *goKeeperServiceClient) CreateArbitraryData(ctx context.Context, in *CreateArbitraryDataRequest, opts ...grpc.CallOption) (*CreateArbitraryDataResponse, error) {
+func (c *goKeeperServiceClient) DownloadArbitraryData(ctx context.Context, in *DownloadArbitraryDataRequest, opts ...grpc.CallOption) (grpc.ServerStreamingClient[DownloadArbitraryDataResponse], error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(CreateArbitraryDataResponse)
-	err := c.cc.Invoke(ctx, GoKeeperService_CreateArbitraryData_FullMethodName, in, out, cOpts...)
+	stream, err := c.cc.NewStream(ctx, &GoKeeperService_ServiceDesc.Streams[0], GoKeeperService_DownloadArbitraryData_FullMethodName, cOpts...)
 	if err != nil {
 		return nil, err
 	}
-	return out, nil
+	x := &grpc.GenericClientStream[DownloadArbitraryDataRequest, DownloadArbitraryDataResponse]{ClientStream: stream}
+	if err := x.ClientStream.SendMsg(in); err != nil {
+		return nil, err
+	}
+	if err := x.ClientStream.CloseSend(); err != nil {
+		return nil, err
+	}
+	return x, nil
 }
+
+// This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
+type GoKeeperService_DownloadArbitraryDataClient = grpc.ServerStreamingClient[DownloadArbitraryDataResponse]
+
+func (c *goKeeperServiceClient) CreateArbitraryData(ctx context.Context, opts ...grpc.CallOption) (grpc.ClientStreamingClient[CreateArbitraryDataRequest, CreateArbitraryDataResponse], error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	stream, err := c.cc.NewStream(ctx, &GoKeeperService_ServiceDesc.Streams[1], GoKeeperService_CreateArbitraryData_FullMethodName, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	x := &grpc.GenericClientStream[CreateArbitraryDataRequest, CreateArbitraryDataResponse]{ClientStream: stream}
+	return x, nil
+}
+
+// This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
+type GoKeeperService_CreateArbitraryDataClient = grpc.ClientStreamingClient[CreateArbitraryDataRequest, CreateArbitraryDataResponse]
 
 func (c *goKeeperServiceClient) DeleteArbitraryData(ctx context.Context, in *DeleteArbitraryDataRequest, opts ...grpc.CallOption) (*DeleteArbitraryDataResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
@@ -205,8 +229,9 @@ type GoKeeperServiceServer interface {
 	CreateCard(context.Context, *CreateCardRequest) (*CreateCardResponse, error)
 	DeleteCard(context.Context, *DeleteCardRequest) (*DeleteCardResponse, error)
 	ActivateCard(context.Context, *ActiveCardRequest) (*ActiveCardResponse, error)
-	GetArbitraryData(context.Context, *ArbitraryDataRequest) (*ArbitraryDataResponse, error)
-	CreateArbitraryData(context.Context, *CreateArbitraryDataRequest) (*CreateArbitraryDataResponse, error)
+	GetArbitraryData(context.Context, *ListArbitraryDataRequest) (*ListArbitraryDataResponse, error)
+	DownloadArbitraryData(*DownloadArbitraryDataRequest, grpc.ServerStreamingServer[DownloadArbitraryDataResponse]) error
+	CreateArbitraryData(grpc.ClientStreamingServer[CreateArbitraryDataRequest, CreateArbitraryDataResponse]) error
 	DeleteArbitraryData(context.Context, *DeleteArbitraryDataRequest) (*DeleteArbitraryDataResponse, error)
 	mustEmbedUnimplementedGoKeeperServiceServer()
 }
@@ -248,11 +273,14 @@ func (UnimplementedGoKeeperServiceServer) DeleteCard(context.Context, *DeleteCar
 func (UnimplementedGoKeeperServiceServer) ActivateCard(context.Context, *ActiveCardRequest) (*ActiveCardResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method ActivateCard not implemented")
 }
-func (UnimplementedGoKeeperServiceServer) GetArbitraryData(context.Context, *ArbitraryDataRequest) (*ArbitraryDataResponse, error) {
+func (UnimplementedGoKeeperServiceServer) GetArbitraryData(context.Context, *ListArbitraryDataRequest) (*ListArbitraryDataResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method GetArbitraryData not implemented")
 }
-func (UnimplementedGoKeeperServiceServer) CreateArbitraryData(context.Context, *CreateArbitraryDataRequest) (*CreateArbitraryDataResponse, error) {
-	return nil, status.Error(codes.Unimplemented, "method CreateArbitraryData not implemented")
+func (UnimplementedGoKeeperServiceServer) DownloadArbitraryData(*DownloadArbitraryDataRequest, grpc.ServerStreamingServer[DownloadArbitraryDataResponse]) error {
+	return status.Error(codes.Unimplemented, "method DownloadArbitraryData not implemented")
+}
+func (UnimplementedGoKeeperServiceServer) CreateArbitraryData(grpc.ClientStreamingServer[CreateArbitraryDataRequest, CreateArbitraryDataResponse]) error {
+	return status.Error(codes.Unimplemented, "method CreateArbitraryData not implemented")
 }
 func (UnimplementedGoKeeperServiceServer) DeleteArbitraryData(context.Context, *DeleteArbitraryDataRequest) (*DeleteArbitraryDataResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method DeleteArbitraryData not implemented")
@@ -459,7 +487,7 @@ func _GoKeeperService_ActivateCard_Handler(srv interface{}, ctx context.Context,
 }
 
 func _GoKeeperService_GetArbitraryData_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(ArbitraryDataRequest)
+	in := new(ListArbitraryDataRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -471,28 +499,28 @@ func _GoKeeperService_GetArbitraryData_Handler(srv interface{}, ctx context.Cont
 		FullMethod: GoKeeperService_GetArbitraryData_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(GoKeeperServiceServer).GetArbitraryData(ctx, req.(*ArbitraryDataRequest))
+		return srv.(GoKeeperServiceServer).GetArbitraryData(ctx, req.(*ListArbitraryDataRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _GoKeeperService_CreateArbitraryData_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(CreateArbitraryDataRequest)
-	if err := dec(in); err != nil {
-		return nil, err
+func _GoKeeperService_DownloadArbitraryData_Handler(srv interface{}, stream grpc.ServerStream) error {
+	m := new(DownloadArbitraryDataRequest)
+	if err := stream.RecvMsg(m); err != nil {
+		return err
 	}
-	if interceptor == nil {
-		return srv.(GoKeeperServiceServer).CreateArbitraryData(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: GoKeeperService_CreateArbitraryData_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(GoKeeperServiceServer).CreateArbitraryData(ctx, req.(*CreateArbitraryDataRequest))
-	}
-	return interceptor(ctx, in, info, handler)
+	return srv.(GoKeeperServiceServer).DownloadArbitraryData(m, &grpc.GenericServerStream[DownloadArbitraryDataRequest, DownloadArbitraryDataResponse]{ServerStream: stream})
 }
+
+// This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
+type GoKeeperService_DownloadArbitraryDataServer = grpc.ServerStreamingServer[DownloadArbitraryDataResponse]
+
+func _GoKeeperService_CreateArbitraryData_Handler(srv interface{}, stream grpc.ServerStream) error {
+	return srv.(GoKeeperServiceServer).CreateArbitraryData(&grpc.GenericServerStream[CreateArbitraryDataRequest, CreateArbitraryDataResponse]{ServerStream: stream})
+}
+
+// This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
+type GoKeeperService_CreateArbitraryDataServer = grpc.ClientStreamingServer[CreateArbitraryDataRequest, CreateArbitraryDataResponse]
 
 func _GoKeeperService_DeleteArbitraryData_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(DeleteArbitraryDataRequest)
@@ -564,14 +592,21 @@ var GoKeeperService_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _GoKeeperService_GetArbitraryData_Handler,
 		},
 		{
-			MethodName: "CreateArbitraryData",
-			Handler:    _GoKeeperService_CreateArbitraryData_Handler,
-		},
-		{
 			MethodName: "DeleteArbitraryData",
 			Handler:    _GoKeeperService_DeleteArbitraryData_Handler,
 		},
 	},
-	Streams:  []grpc.StreamDesc{},
+	Streams: []grpc.StreamDesc{
+		{
+			StreamName:    "DownloadArbitraryData",
+			Handler:       _GoKeeperService_DownloadArbitraryData_Handler,
+			ServerStreams: true,
+		},
+		{
+			StreamName:    "CreateArbitraryData",
+			Handler:       _GoKeeperService_CreateArbitraryData_Handler,
+			ClientStreams: true,
+		},
+	},
 	Metadata: "base.proto",
 }

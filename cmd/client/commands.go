@@ -2,8 +2,11 @@ package main
 
 import (
 	"context"
+	"io"
+	"log/slog"
 	"os"
 	"slices"
+	"strings"
 	"time"
 
 	tea "charm.land/bubbletea/v2"
@@ -57,6 +60,10 @@ type deleteCardResultMsg struct {
 }
 
 type activateCardResultMsg struct {
+	err error
+}
+
+type createArbitraryDataMsg struct {
 	err error
 }
 
@@ -210,10 +217,69 @@ func activateCardCmd(client pb.GoKeeperServiceClient, id int64) tea.Cmd {
 	}
 }
 
-func createArbitraryDataCmd(client pb.GoKeeperServiceClient, file os.File) tea.Cmd {
+func createArbitraryDataCmd(client pb.GoKeeperServiceClient, filepath string) tea.Cmd {
 	return func() tea.Msg {
-		_, err := client.CreateArbitraryData(context.Background(), &pb.CreateArbitraryDataRequest_builder{}.Build())
+		var filename string
+		if os.PathSeparator == '\\' {
+			s := strings.Split(filepath, "\\")
+			filename = s[len(s)-1]
+		} else {
+			s := strings.Split(filepath, "/")
+			filename = s[len(s)-1]
+		}
+		s := strings.Split(filename, ".")
+		filetype := s[len(s)-1]
 
-		return createCardResultMsg{err: err}
+		file, err := os.Open(filepath)
+		if err != nil {
+			return createArbitraryDataMsg{err: err}
+		}
+		defer file.Close()
+
+		slog.Info("createArbitraryDataCmd", "filename", filename, "filetype", filetype, "file", file)
+
+		stream, err := client.CreateArbitraryData(context.Background())
+
+		// отправляем метаданные первым сообщением
+		err = stream.Send(pb.CreateArbitraryDataRequest_builder{
+			Metadata: pb.FileMetadata_builder{
+				Filename: filename,
+				Type:     filetype,
+			}.Build(),
+		}.Build())
+		if err != nil {
+			return createArbitraryDataMsg{err: err}
+		}
+
+		buf := make([]byte, 1024*1024) // 1mb
+
+		for {
+			n, err := file.Read(buf) // прочитал => записал => вернул длину
+
+			if n > 0 {
+				err = stream.Send(pb.CreateArbitraryDataRequest_builder{
+					Chunk: buf[:n], // buf[:n] n являются новыми данными, если buf запишет новые и старые данные
+				}.Build())
+				if err != nil {
+					return createArbitraryDataMsg{err: err}
+				}
+			}
+
+			if err == io.EOF {
+				break
+			}
+
+			if err != nil {
+				return createArbitraryDataMsg{err: err}
+			}
+		}
+		return createArbitraryDataMsg{err: nil}
+	}
+}
+
+func getArbitraryDataCmd(client pb.GoKeeperServiceClient) tea.Cmd {
+	return func() tea.Msg {
+
+		return createArbitraryDataMsg{err: nil}
 	}
 }
