@@ -2,8 +2,8 @@ package main
 
 import (
 	"context"
+	"errors"
 	"io"
-	"log/slog"
 	"os"
 	"slices"
 	"strings"
@@ -63,7 +63,11 @@ type activateCardResultMsg struct {
 	err error
 }
 
-type createArbitraryDataMsg struct {
+type arbitraryDataResultMsg struct {
+	err           error
+	arbitraryData []*pb.ArbitraryData
+}
+type createArbitraryDataResultMsg struct {
 	err error
 }
 
@@ -227,28 +231,27 @@ func createArbitraryDataCmd(client pb.GoKeeperServiceClient, filepath string) te
 			s := strings.Split(filepath, "/")
 			filename = s[len(s)-1]
 		}
-		s := strings.Split(filename, ".")
-		filetype := s[len(s)-1]
 
 		file, err := os.Open(filepath)
 		if err != nil {
-			return createArbitraryDataMsg{err: err}
+			return createArbitraryDataResultMsg{err: errors.New("failed to open: " + err.Error())}
 		}
 		defer file.Close()
 
-		slog.Info("createArbitraryDataCmd", "filename", filename, "filetype", filetype, "file", file)
-
 		stream, err := client.CreateArbitraryData(context.Background())
+
+		s := strings.Split(filename, ".")
+		name, typ := s[0], s[len(s)-1]
 
 		// отправляем метаданные первым сообщением
 		err = stream.Send(pb.CreateArbitraryDataRequest_builder{
 			Metadata: pb.FileMetadata_builder{
-				Filename: filename,
-				Type:     filetype,
+				Filename: name,
+				Type:     typ,
 			}.Build(),
 		}.Build())
 		if err != nil {
-			return createArbitraryDataMsg{err: err}
+			return createArbitraryDataResultMsg{err: errors.New("failed to send metadata: " + err.Error())}
 		}
 
 		buf := make([]byte, 1024*1024) // 1mb
@@ -258,10 +261,10 @@ func createArbitraryDataCmd(client pb.GoKeeperServiceClient, filepath string) te
 
 			if n > 0 {
 				err = stream.Send(pb.CreateArbitraryDataRequest_builder{
-					Chunk: buf[:n], // buf[:n] n являются новыми данными, если buf запишет новые и старые данные
+					Chunk: buf[:n], // если записать просто buf запишет новые и старые данные
 				}.Build())
 				if err != nil {
-					return createArbitraryDataMsg{err: err}
+					return createArbitraryDataResultMsg{err: err}
 				}
 			}
 
@@ -270,16 +273,26 @@ func createArbitraryDataCmd(client pb.GoKeeperServiceClient, filepath string) te
 			}
 
 			if err != nil {
-				return createArbitraryDataMsg{err: err}
+				return createArbitraryDataResultMsg{err: err}
 			}
 		}
-		return createArbitraryDataMsg{err: nil}
+
+		_, err = stream.CloseAndRecv()
+		if err != nil {
+			return createArbitraryDataResultMsg{err: err}
+		}
+
+		return createArbitraryDataResultMsg{err: nil}
 	}
 }
 
 func getArbitraryDataCmd(client pb.GoKeeperServiceClient) tea.Cmd {
 	return func() tea.Msg {
+		resp, err := client.GetArbitraryData(context.Background(), &pb.ListArbitraryDataRequest{})
+		if err != nil {
+			return cardsResultMsg{err: err}
+		}
 
-		return createArbitraryDataMsg{err: nil}
+		return arbitraryDataResultMsg{err: err, arbitraryData: resp.GetArbitraryData()}
 	}
 }

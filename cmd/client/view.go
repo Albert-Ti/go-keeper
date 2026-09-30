@@ -214,7 +214,33 @@ func contentCardsView(m model) string {
 
 func contentDataView(m model) string {
 	s := ""
+
+	if len(m.arbitraryData) > 0 {
+		// Заголовок
+		s += lipgloss.NewStyle().Width(30).Align(lipgloss.Left).Bold(true).Render("name") +
+			lipgloss.NewStyle().Width(15).Align(lipgloss.Left).Bold(true).Render("type") +
+			lipgloss.NewStyle().Width(15).Align(lipgloss.Left).Bold(true).Render("size") +
+			lipgloss.NewStyle().Width(15).Align(lipgloss.Left).Bold(true).Render("status") + "\n\n"
+
+		// Строки
+		for i, v := range m.arbitraryData {
+			filename := v.GetName()
+			if len(filename) > 25 {
+				filename = v.GetName()[:20] + "..."
+			}
+			s += lipgloss.NewStyle().Width(30).Align(lipgloss.Left).Render(strconv.Itoa(i+1)+". "+filename) +
+				lipgloss.NewStyle().Width(15).Align(lipgloss.Left).Render(v.GetType()) +
+				lipgloss.NewStyle().Width(15).Align(lipgloss.Left).Render("111111") +
+				lipgloss.NewStyle().Width(15).Align(lipgloss.Left).Render("UPLOADING") + "\n"
+		}
+
+		s += "\n" + button("add", "press enter", false)
+
+		return lipgloss.NewStyle().MarginTop(1).PaddingLeft(3).Render(s)
+	}
+
 	textInfo := lipgloss.NewStyle().Faint(true).Render("You have not added a files yet, press enter to ")
 	s = "\n\n" + textInfo + button("add", "", false) + "\n"
-	return lipgloss.NewStyle().Width(cardWidth).Align(lipgloss.Center).Render(s)
+
+	return lipgloss.NewStyle().PaddingLeft(3).Align(lipgloss.Center).Render(s)
 }

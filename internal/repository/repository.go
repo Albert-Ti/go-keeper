@@ -2,6 +2,7 @@ package repository
 
 import (
 	"context"
+	"io"
 	"time"
 
 	"github.com/Albert-Ti/go-keeper/internal/models"
@@ -21,7 +22,7 @@ type Database interface {
 	ActivateCard(ctx context.Context, uuid string, cardID int64) error
 
 	GetArbitraryData(ctx context.Context, uuid string) ([]models.ArbitraryData, error)
-	CreateArbitraryData(ctx context.Context, uuid, name, typ, objectKey string) error
+	CreateArbitraryData(ctx context.Context, uuid, filename, filetype, objectKey string, status uint) error
 	DeleteArbitraryData(ctx context.Context, uuid string, dataID int64) error
 }
 
@@ -41,8 +42,8 @@ func NewCache(addr, pass string) Cache {
 }
 
 type ObjStorage interface {
-	Put(ctx context.Context, key string, data []byte) error
-	Get(ctx context.Context, key string) ([]byte, error)
+	Put(ctx context.Context, key string, r io.Reader) error
+	Get(ctx context.Context, key string) (io.ReadCloser, error)
 	Delete(ctx context.Context, key string) error
 }
 

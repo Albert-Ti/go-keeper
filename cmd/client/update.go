@@ -274,7 +274,7 @@ func filePickerUpdate(msg tea.KeyPressMsg, m model) (model, tea.Cmd) {
 		if m.selectedFile == "" {
 			return m, m.handleError(errors.New("file is not selected"))
 		}
-		m.isLoad = false
+		m.isLoad = true
 		return m, createArbitraryDataCmd(m.client, m.filepicker.Path)
 	}
 

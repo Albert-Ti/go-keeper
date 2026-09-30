@@ -2,36 +2,61 @@ package handler
 
 import (
 	"fmt"
-	"io"
 
+	"github.com/Albert-Ti/go-keeper/internal/interceptor"
 	pb "github.com/Albert-Ti/go-keeper/pkg/proto"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 )
 
-func (g *GrpcServer) CreateArbitraryData(stream pb.GoKeeperService_CreateArbitraryDataServer) error {
+type StreamReader struct {
+	stream pb.GoKeeperService_CreateArbitraryDataServer
+	buf    []byte
+	total  int64
+}
 
-	var metadata *pb.FileMetadata
-	var chunks []byte
+func (r *StreamReader) Read(p []byte) (int, error) {
 
-	for {
-		req, err := stream.Recv()
-		if err == io.EOF {
-			break
-		}
+	for len(r.buf) == 0 {
+		req, err := r.stream.Recv()
+		fmt.Println("CHUNK", len(req.GetChunk()))
 		if err != nil {
-			return fmt.Errorf("ошибка при чтении стрима от сервера: %v", err)
+			return 0, err
 		}
 
-		if req.GetMetadata() != nil {
-			metadata = req.GetMetadata()
-			fmt.Println("metadata:", metadata)
-		}
-
-		if req.GetChunk() != nil {
-			chunks = append(chunks, req.GetChunk()...)
-			fmt.Println("chunk:", len(req.GetChunk()))
+		if chunk := req.GetChunk(); len(chunk) > 0 {
+			r.buf = chunk
 		}
 	}
-	fmt.Println("stream off")
+
+	n := copy(p, r.buf)
+	r.buf = r.buf[n:]
+	r.total += int64(n)
+
+	return n, nil
+}
+
+func (g *GrpcServer) CreateArbitraryData(stream pb.GoKeeperService_CreateArbitraryDataServer) error {
+	var metadata *pb.FileMetadata
+	ctx := stream.Context()
+	uuid, err := interceptor.GetAuthUserID(ctx)
+	if err != nil {
+		return status.Error(codes.Unauthenticated, "failed to get user")
+	}
+
+	req, err := stream.Recv()
+	if err != nil {
+		return status.Errorf(codes.Internal, "error while reading the stream from the server: %v", err)
+	}
+
+	if req.GetMetadata() != nil {
+		metadata = req.GetMetadata()
+	}
+
+	reader := &StreamReader{stream: stream}
+	if err := g.Svc.SaveArbitraryData(ctx, uuid, metadata.GetFilename(), metadata.GetType(), reader); err != nil {
+		return status.Error(codes.Internal, err.Error())
+	}
 
 	return nil
 }

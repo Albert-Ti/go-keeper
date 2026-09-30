@@ -3,7 +3,6 @@ package handler
 import (
 	"context"
 	"errors"
-	"time"
 
 	"github.com/Albert-Ti/go-keeper/internal/service"
 	pb "github.com/Albert-Ti/go-keeper/pkg/proto"
@@ -12,8 +11,6 @@ import (
 )
 
 func (g *GrpcServer) ConfirmEmail(ctx context.Context, in *pb.ConfirmEmailRequest) (*pb.ConfirmEmailResponse, error) {
-	time.Sleep(time.Second * 2) // для тестирование loader
-
 	err := g.Svc.ConfirmEmail(ctx, in.GetEmail(), in.GetEmailCode())
 
 	if err != nil {

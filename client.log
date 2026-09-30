@@ -1,13 +1,2 @@
-time=2026-09-28T18:50:57.290+03:00 level=INFO msg=SUbmit ""="" "/Users/albert/Movies/2026-01-18 16-16-39.mov"=true
-time=2026-09-28T18:52:23.061+03:00 level=INFO msg=SUbmit select="" path="/Users/albert/Movies/2026-01-18 16-16-39.mov" size=true
-time=2026-09-29T14:53:19.684+03:00 level=INFO msg=createArbitraryDataCmd filename="2026-01-18 16-12-00.mov" filetype=mov file=&{file:0x14000102d20}
-time=2026-09-29T14:54:10.898+03:00 level=INFO msg=createArbitraryDataCmd filename="2026-01-18 16-12-00.mov" filetype=mov file="/Users/albert/Movies/2026-01-18 16-12-00.mov"
-time=2026-09-29T14:55:28.021+03:00 level=INFO msg=createArbitraryDataCmd filename="2026-01-18 16-12-00.mov" filetype=mov file=11
-time=2026-09-29T15:01:30.502+03:00 level=INFO msg=createArbitraryDataCmd filename="2026-01-18 16-12-00.mov" filetype=mov file=&{file:0x14000103d40}
-time=2026-09-29T15:03:09.645+03:00 level=INFO msg=createArbitraryDataCmd filename=5823589-2920x1640-desktop-hd-boy-programmer-wallpaper-image.jpg filetype=jpg file=&{file:0x1400060d380}
-time=2026-09-29T15:03:37.891+03:00 level=INFO msg=createArbitraryDataCmd filename=5823589-2920x1640-desktop-hd-boy-programmer-wallpaper-image.jpg filetype=jpg file=&{file:0x140001b49c0}
-time=2026-09-29T15:11:00.574+03:00 level=INFO msg=createArbitraryDataCmd filename=5823589-2920x1640-desktop-hd-boy-programmer-wallpaper-image.jpg filetype=jpg file=&{file:0x1400060c4e0}
-time=2026-09-29T15:16:07.199+03:00 level=INFO msg=createArbitraryDataCmd filename=5823589-2920x1640-desktop-hd-boy-programmer-wallpaper-image.jpg filetype=jpg file=&{file:0x1400070c540}
-time=2026-09-29T15:18:15.558+03:00 level=INFO msg=createArbitraryDataCmd filename=5823589-2920x1640-desktop-hd-boy-programmer-wallpaper-image.jpg filetype=jpg file=&{file:0x14000b320c0}
-time=2026-09-29T15:23:44.679+03:00 level=INFO msg=createArbitraryDataCmd filename=5823589-2920x1640-desktop-hd-boy-programmer-wallpaper-image.jpg filetype=jpg file=&{file:0x1400060d7a0}
-time=2026-09-29T15:24:27.562+03:00 level=INFO msg=createArbitraryDataCmd filename=1fe837abf1af3143192355796027417a.png filetype=png file=&{file:0x140000ed5c0}
+time=2026-09-30T21:06:24.478+03:00 level=ERROR msg=createArbitraryDataResultMsg ERROR="failed to close stream: rpc error: code = Unknown desc = internal server: operation error S3: PutObject, https response error StatusCode: 403, RequestID: 18DA2B75437ACCEE9E1E708F, HostID: , api error InvalidAccessKeyId: The access key ID you provided does not exist in our records."
+time=2026-09-30T21:24:13.193+03:00 level=ERROR msg=createArbitraryDataResultMsg ERROR=EOF

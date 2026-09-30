@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"errors"
+	"io"
 	"strings"
 	"time"
 
@@ -19,6 +20,12 @@ import (
 	"google.golang.org/grpc/metadata"
 )
 
+const (
+	UPLOADING uint = iota
+	UPLOADED
+	FAILED
+)
+
 var (
 	ErrAlreadyExists     = errors.New("user already exist")
 	ErrInvalidPassword   = errors.New("incorrect password")
@@ -30,19 +37,19 @@ var (
 )
 
 type Service struct {
-	repo       repository.Database
+	db         repository.Database
 	opts       *config.Options
 	sender     *email.Sender
 	objStorage repository.ObjStorage
 }
 
 func NewService(
-	repo repository.Database,
+	db repository.Database,
 	opts *config.Options,
 	sender *email.Sender,
 	objStorage repository.ObjStorage,
 ) *Service {
-	return &Service{repo, opts, sender, objStorage}
+	return &Service{db, opts, sender, objStorage}
 }
 
 func (s *Service) Register(ctx context.Context, email, pass string) error {
@@ -56,7 +63,7 @@ func (s *Service) Register(ctx context.Context, email, pass string) error {
 	hash := utils.HashPass(salt, pass)
 	code := utils.GenerateCodeEmail()
 
-	if err := s.repo.AddUser(ctx, email, code, hash); err != nil {
+	if err := s.db.AddUser(ctx, email, code, hash); err != nil {
 		if errors.As(err, &pgErr) && pgerrcode.IsIntegrityConstraintViolation(pgErr.Code) {
 			return ErrAlreadyExists
 		}
@@ -70,7 +77,7 @@ func (s *Service) Register(ctx context.Context, email, pass string) error {
 }
 
 func (s *Service) Login(ctx context.Context, email string, pass string) (models.User, error) {
-	user, err := s.repo.GetUserByEmail(ctx, email)
+	user, err := s.db.GetUserByEmail(ctx, email)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return models.User{}, ErrNoRows
@@ -97,14 +104,14 @@ func (s *Service) Login(ctx context.Context, email string, pass string) (models.
 }
 
 func (s *Service) ConfirmEmail(ctx context.Context, email, code string) error {
-	user, err := s.repo.GetUserByEmail(ctx, email)
+	user, err := s.db.GetUserByEmail(ctx, email)
 	if err != nil {
 		return err
 	}
 
 	if user.EmailCode == code {
 		params := models.UpdateUserParams{Email: user.Email, IsConfirmEmail: ptr.Bool(true)}
-		if err := s.repo.UpdateUser(ctx, params); err != nil {
+		if err := s.db.UpdateUser(ctx, params); err != nil {
 			return err
 		}
 	} else {
@@ -115,7 +122,7 @@ func (s *Service) ConfirmEmail(ctx context.Context, email, code string) error {
 }
 
 func (s *Service) GetProfile(ctx context.Context, uuid string) (models.Profile, error) {
-	user, err := s.repo.GetProfile(ctx, uuid)
+	user, err := s.db.GetProfile(ctx, uuid)
 	if err != nil {
 		return models.Profile{}, err
 	}
@@ -124,7 +131,7 @@ func (s *Service) GetProfile(ctx context.Context, uuid string) (models.Profile, 
 }
 
 func (s *Service) ChangePass(ctx context.Context, uuid, passOld, passNew string) error {
-	user, err := s.repo.GetProfile(ctx, uuid)
+	user, err := s.db.GetProfile(ctx, uuid)
 	if err != nil {
 		return err
 	}
@@ -135,7 +142,7 @@ func (s *Service) ChangePass(ctx context.Context, uuid, passOld, passNew string)
 	}
 
 	// 2. новый пароль не совпадает ни с текущим, ни с прошлыми
-	listHistory, err := s.repo.GetPassList(ctx, uuid)
+	listHistory, err := s.db.GetPassList(ctx, uuid)
 	if err != nil {
 		return err
 	}
@@ -148,19 +155,19 @@ func (s *Service) ChangePass(ctx context.Context, uuid, passOld, passNew string)
 	salt := strings.Split(user.Pass, ".")[0]
 	hashPassNew := utils.HashPass(salt, passNew)
 
-	return s.repo.ChangePass(ctx, uuid, user.Pass, hashPassNew)
+	return s.db.ChangePass(ctx, uuid, user.Pass, hashPassNew)
 }
 
 func (s *Service) GetCards(ctx context.Context, uuid string) ([]models.Card, error) {
-	return s.repo.GetCards(ctx, uuid)
+	return s.db.GetCards(ctx, uuid)
 }
 
 func (s *Service) CreateCard(ctx context.Context, uuid string, number string, expiry time.Time) error {
-	return s.repo.CreateCard(ctx, uuid, number, expiry)
+	return s.db.CreateCard(ctx, uuid, number, expiry)
 }
 
 func (s *Service) DeleteCard(ctx context.Context, uuid string, cardID int64) error {
-	err := s.repo.DeleteCard(ctx, uuid, cardID)
+	err := s.db.DeleteCard(ctx, uuid, cardID)
 
 	if err != nil {
 		return ErrCardNotFound
@@ -169,7 +176,7 @@ func (s *Service) DeleteCard(ctx context.Context, uuid string, cardID int64) err
 }
 
 func (s *Service) ActivateCard(ctx context.Context, uuid string, cardID int64) error {
-	return s.repo.ActivateCard(ctx, uuid, cardID)
+	return s.db.ActivateCard(ctx, uuid, cardID)
 }
 
 func (s *Service) sendEmailCode(ctx context.Context, email, code string) error {
@@ -186,21 +193,30 @@ func (s *Service) sendEmailCode(ctx context.Context, email, code string) error {
 		return err
 	}
 
-	if err := s.repo.UpdateUser(ctx, params); err != nil {
+	if err := s.db.UpdateUser(ctx, params); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (c *Service) CreateArbitraryData(ctx context.Context, uuid, filename string) error {
-	return c.repo.CreateArbitraryData(ctx, uuid, filename, filename, "bucket/"+filename)
+func (s *Service) SaveArbitraryData(ctx context.Context, uuid, filename, filetype string, reader io.Reader) error {
+	key := uuid + "/" + filename
+
+	if err := s.db.CreateArbitraryData(ctx, uuid, filename, filetype, key, UPLOADING); err != nil {
+		return err
+	}
+
+	if err := s.objStorage.Put(ctx, key, reader); err != nil {
+		return err
+	}
+	return nil
 }
 
-func (c *Service) GetArbitraryData(ctx context.Context, uuid string) ([]models.ArbitraryData, error) {
-	return c.repo.GetArbitraryData(ctx, uuid)
+func (s *Service) GetArbitraryData(ctx context.Context, uuid string) ([]models.ArbitraryData, error) {
+	return s.db.GetArbitraryData(ctx, uuid)
 }
 
-func (c *Service) DeleteArbitraryData(ctx context.Context, uuid string, dataID int64) error {
-	return c.repo.DeleteArbitraryData(ctx, uuid, dataID)
+func (s *Service) DeleteArbitraryData(ctx context.Context, uuid string, dataID int64) error {
+	return s.db.DeleteArbitraryData(ctx, uuid, dataID)
 }

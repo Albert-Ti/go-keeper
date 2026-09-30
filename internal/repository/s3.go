@@ -2,15 +2,17 @@ package repository
 
 import (
 	"context"
+	"io"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/credentials"
+	"github.com/aws/aws-sdk-go-v2/feature/s3/transfermanager"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 )
 
 type S3Client struct {
-	client *s3.Client
+	client *transfermanager.Client
 }
 
 func NewS3Client(ctx context.Context, endpoint, accessKey, secretKey string) (*S3Client, error) {
@@ -24,20 +26,29 @@ func NewS3Client(ctx context.Context, endpoint, accessKey, secretKey string) (*S
 		return nil, err
 	}
 
-	client := s3.NewFromConfig(cfg, func(o *s3.Options) {
+	s3Client := s3.NewFromConfig(cfg, func(o *s3.Options) {
 		o.BaseEndpoint = aws.String(endpoint)
-		o.UsePathStyle = true // обязательно для LocalStack
+		o.UsePathStyle = true
 	})
 
-	return &S3Client{client}, nil
+	tmClient := transfermanager.New(s3Client) // ← оборачиваем s3.Client в transfermanager.Client
+
+	return &S3Client{client: tmClient}, nil
 }
 
-func (s3 *S3Client) Put(ctx context.Context, key string, data []byte) error {
-	return nil
+func (s3c *S3Client) Put(ctx context.Context, key string, r io.Reader) error {
+	_, err := s3c.client.UploadObject(ctx, &transfermanager.UploadObjectInput{
+		Bucket: aws.String("test"),
+		Key:    aws.String(key),
+		Body:   r,
+	})
+	return err
 }
-func (s3 *S3Client) Get(ctx context.Context, key string) ([]byte, error) {
+
+func (s3c *S3Client) Get(ctx context.Context, key string) (io.ReadCloser, error) {
 	return nil, nil
 }
-func (s3 *S3Client) Delete(ctx context.Context, key string) error {
+
+func (s3c *S3Client) Delete(ctx context.Context, key string) error {
 	return nil
 }

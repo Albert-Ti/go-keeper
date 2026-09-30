@@ -273,10 +273,10 @@ func (pg *Postgres) ActivateCard(ctx context.Context, uuid string, cardID int64)
 	return tx.Commit(ctx)
 }
 
-func (pg *Postgres) CreateArbitraryData(ctx context.Context, uuid, name, typ, objectKey string) error {
+func (pg *Postgres) CreateArbitraryData(ctx context.Context, uuid, name, filetype, objectKey string, status uint) error {
 	_, err := pg.pool.Exec(ctx,
-		`INSERT INTO arbitrary_data (user_uuid, name, type, object_key) VALUES ($1, $2, $3, $4)`,
-		uuid, name, typ, objectKey,
+		`INSERT INTO arbitrary_data (user_uuid, name, type, object_key, size, status) VALUES ($1, $2, $3, $4, $5, $6)`,
+		uuid, name, filetype, objectKey, 1, status,
 	)
 	if err != nil {
 		return err

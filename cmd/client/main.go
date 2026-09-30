@@ -109,26 +109,30 @@ type model struct {
 	cardsActions      []cardActionsType
 	contentTabProfile []string
 
-	authForm      authForm
-	cardForm      cardForm
-	profileForm   profileForm
-	spinner       spinner.Model
-	filepicker    filepicker.Model
-	selectedFile  string
-	width         int
-	height        int
-	textError     string
-	errorSeq      int
-	codeEmail     string
-	authUser      string
-	accessToken   string
-	refreshToken  string
-	profile       map[string]string
+	authForm     authForm
+	cardForm     cardForm
+	profileForm  profileForm
+	spinner      spinner.Model
+	filepicker   filepicker.Model
+	selectedFile string
+	width        int
+	height       int
+	textError    string
+	errorSeq     int
+	codeEmail    string
+	authUser     string
+	accessToken  string
+	refreshToken string
+	profile      map[string]string
+
 	cards         []*pb.CardData
 	selectedCard  int
 	activeCardBtn cardActionsType
-	isLoad        bool
-	localStorage  *FileStorage
+
+	arbitraryData []*pb.ArbitraryData
+
+	isLoad       bool
+	localStorage *FileStorage
 
 	client pb.GoKeeperServiceClient
 }
@@ -375,11 +379,22 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.selectedCard = -1
 		return m.navigateTo(userPage), getCardsCmd(m.client)
 
-	case createArbitraryDataMsg:
+	case arbitraryDataResultMsg:
 		if msg.err != nil {
 			if strings.Contains(msg.err.Error(), "access token is expired") {
 				return m, refreshTokenCmd(m.client, m.localStorage.Get(refreshTokenKey))
 			}
+			return m, m.handleError(msg.err)
+		}
+		m.arbitraryData = msg.arbitraryData
+		m.isLoad = false
+
+	case createArbitraryDataResultMsg:
+		if msg.err != nil {
+			if strings.Contains(msg.err.Error(), "access token is expired") {
+				return m, refreshTokenCmd(m.client, m.localStorage.Get(refreshTokenKey))
+			}
+			slog.Error("createArbitraryDataResultMsg", "ERROR", msg.err)
 			return m, m.handleError(msg.err)
 		}
 		m.isLoad = false
@@ -560,6 +575,7 @@ func main() {
 		"127.0.0.1:8080",
 		grpc.WithTransportCredentials(insecure.NewCredentials()),
 		grpc.WithChainUnaryInterceptor(auth.UnaryInterceptor),
+		grpc.WithChainStreamInterceptor(auth.StreamInterceptor),
 	)
 	if err != nil {
 		slog.Error("ошибка при установлении соединения с сервером", "error", err)

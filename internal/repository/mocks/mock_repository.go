@@ -85,17 +85,17 @@ func (mr *MockDatabaseMockRecorder) ChangePass(ctx, uuid, passOld, passNew any) 
 }
 
 // CreateArbitraryData mocks base method.
-func (m *MockDatabase) CreateArbitraryData(ctx context.Context, uuid, name, typ, objectKey string) error {
+func (m *MockDatabase) CreateArbitraryData(ctx context.Context, uuid, name, filetype, objectKey string, status uint) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CreateArbitraryData", ctx, uuid, name, typ, objectKey)
+	ret := m.ctrl.Call(m, "CreateArbitraryData", ctx, uuid, name, filetype, objectKey, status)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // CreateArbitraryData indicates an expected call of CreateArbitraryData.
-func (mr *MockDatabaseMockRecorder) CreateArbitraryData(ctx, uuid, name, typ, objectKey any) *gomock.Call {
+func (mr *MockDatabaseMockRecorder) CreateArbitraryData(ctx, uuid, name, filetype, objectKey, status any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateArbitraryData", reflect.TypeOf((*MockDatabase)(nil).CreateArbitraryData), ctx, uuid, name, typ, objectKey)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateArbitraryData", reflect.TypeOf((*MockDatabase)(nil).CreateArbitraryData), ctx, uuid, name, filetype, objectKey, status)
 }
 
 // CreateCard mocks base method.

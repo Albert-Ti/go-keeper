@@ -22,14 +22,14 @@ func main() {
 		panic(errCfg)
 	}
 
-	pgRepo, err := repository.NewDatabase(opts.DBConnStr)
+	db, err := repository.NewDatabase(opts.DBConnStr)
 	if err != nil {
 		panic(err)
 	}
 	cache := repository.NewCache(opts.CacheClientRunAddr, opts.CacheClientPass)
 	cache.Ping(context.Background())
 
-	repo := repository.NewCachedDatabase(pgRepo, cache)
+	cachedDB := repository.NewCachedDatabase(db, cache)
 
 	var sender *email.Sender
 	if opts.EnableSMTP {
@@ -51,7 +51,7 @@ func main() {
 		panic(err)
 	}
 
-	svc := service.NewService(repo, opts, sender, objStorage)
+	svc := service.NewService(cachedDB, opts, sender, objStorage)
 
 	lis, err := net.Listen("tcp", opts.RunAddr)
 
@@ -60,8 +60,11 @@ func main() {
 	}
 
 	srv := grpc.NewServer(
+		grpc.MaxRecvMsgSize(4*1024*1024), // под 1MB чанки
 		grpc.ChainUnaryInterceptor(
-			interceptor.Logging(), interceptor.Auth(opts.JWTSecret),
+			interceptor.Logging(), interceptor.AuthUnary(opts.JWTSecret)),
+		grpc.ChainStreamInterceptor(
+			interceptor.AuthStream(opts.JWTSecret),
 		),
 	)
 
