@@ -132,8 +132,9 @@ func (c *CachedDatabase) GetPassList(ctx context.Context, uuid string) ([]string
 	return c.next.GetPassList(ctx, uuid)
 }
 
-func (c *CachedDatabase) CreateArbitraryData(ctx context.Context, uuid, name, filetype, objectKey string, status uint) error {
-	return c.next.CreateArbitraryData(ctx, uuid, name, filetype, objectKey, status)
+func (c *CachedDatabase) CreateArbitraryData(
+	ctx context.Context, uuid, name, filetype, objectKey string, status uint, clientSize int64) (int64, error) {
+	return c.next.CreateArbitraryData(ctx, uuid, name, filetype, objectKey, status, clientSize)
 }
 func (c *CachedDatabase) GetArbitraryData(ctx context.Context, uuid string) ([]models.ArbitraryData, error) {
 	return c.next.GetArbitraryData(ctx, uuid)
@@ -141,4 +142,8 @@ func (c *CachedDatabase) GetArbitraryData(ctx context.Context, uuid string) ([]m
 
 func (c *CachedDatabase) DeleteArbitraryData(ctx context.Context, uuid string, dataID int64) error {
 	return c.next.DeleteCard(ctx, uuid, dataID)
+}
+
+func (c *CachedDatabase) UpdateArbitraryData(ctx context.Context, uuid string, dataID int64, params models.UpdateArbitraryDataParams) error {
+	return c.next.UpdateArbitraryData(ctx, uuid, dataID, params)
 }

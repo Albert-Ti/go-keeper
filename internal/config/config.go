@@ -52,7 +52,7 @@ func NewOptions(opts ...func(*Options)) *Options {
 		Mode:                ModeDev,
 		CacheClientRunAddr:  "localhost:6379",
 		CacheClientPass:     "redis",
-		ObjStorageRunAddr:   "http://localhost:8333",
+		ObjStorageRunAddr:   "http://127.0.0.1:8333",
 		ObjStorageAccessKey: "s3-access",
 		ObjStorageSecretKey: "s3-secret",
 	}

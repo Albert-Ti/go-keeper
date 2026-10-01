@@ -192,7 +192,7 @@ func userUpdate(msg tea.KeyPressMsg, m model) (model, tea.Cmd) {
 
 	case tabData:
 		switch msg.String() {
-		case "enter":
+		case "ctrl+a":
 			return m.navigateTo(filePickerPage), nil
 		}
 	}
@@ -266,13 +266,13 @@ func filePickerUpdate(msg tea.KeyPressMsg, m model) (model, tea.Cmd) {
 	// Did the user select a disabled file?
 	if didSelect, _ := m.filepicker.DidSelectDisabledFile(msg); didSelect {
 		m.selectedFile = ""
-		return m, m.handleError(errors.New("is not valid"))
+		return m, m.handleError(errors.New("is not valid"), "filePickerUpdate")
 	}
 
 	switch msg.String() {
 	case "ctrl+s":
 		if m.selectedFile == "" {
-			return m, m.handleError(errors.New("file is not selected"))
+			return m, m.handleError(errors.New("file is not selected"), "filePickerUpdate")
 		}
 		m.isLoad = true
 		return m, createArbitraryDataCmd(m.client, m.filepicker.Path)

@@ -241,7 +241,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		// API result public
 	case registerResultMsg:
 		if msg.err != nil {
-			return m, m.handleError(msg.err)
+			return m, m.handleError(msg.err, "registerResultMsg")
 		}
 
 		m.codeEmail = msg.emailCode
@@ -271,13 +271,13 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.refreshToken = msg.refreshToken
 		m.authUser = m.authForm.email.Value()
 		if err := m.localStorage.Set(emailKey, m.authForm.email.Value()); err != nil {
-			return m, m.handleError(err)
+			return m, m.handleError(err, "loginResultMsg")
 		}
 		if err := m.localStorage.Set(accessTokenKey, msg.accessToken); err != nil {
-			return m, m.handleError(err)
+			return m, m.handleError(err, "loginResultMsg")
 		}
 		if err := m.localStorage.Set(refreshTokenKey, msg.refreshToken); err != nil {
-			return m, m.handleError(err)
+			return m, m.handleError(err, "loginResultMsg")
 		}
 		m.authForm.email.Blur()
 		m.authForm.pass.Blur()
@@ -286,7 +286,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 	case confirmResultMsg:
 		if msg.err != nil {
-			return m, m.handleError(msg.err)
+			return m, m.handleError(msg.err, "confirmResultMsg")
 		}
 		m.isLoad = false
 		m.authForm.email.Focus()
@@ -297,15 +297,15 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case refreshTokenResultMsg:
 		if msg.err != nil {
 			m.Reset()
-			return m, m.handleError(msg.err)
+			return m, m.handleError(msg.err, "refreshTokenResultMsg")
 		}
 		m.accessToken = msg.accessToken
 		m.refreshToken = msg.refreshToken
 		if err := m.localStorage.Set(accessTokenKey, msg.accessToken); err != nil {
-			return m, m.handleError(err)
+			return m, m.handleError(err, "refreshTokenResultMsg")
 		}
 		if err := m.localStorage.Set(refreshTokenKey, msg.refreshToken); err != nil {
-			return m, m.handleError(err)
+			return m, m.handleError(err, "refreshTokenResultMsg")
 		}
 		return m, getProfileCmd(m.client)
 
@@ -316,7 +316,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				return m, refreshTokenCmd(m.client, m.localStorage.Get(refreshTokenKey))
 			}
 			m.Reset()
-			return m, m.handleError(msg.err)
+			return m, m.handleError(msg.err, "profileResultMsg")
 		}
 		m.profile = msg.profile
 		m.isLoad = false
@@ -327,7 +327,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				return m, refreshTokenCmd(m.client, m.localStorage.Get(refreshTokenKey))
 			}
 			m.Reset()
-			return m, m.handleError(msg.err)
+			return m, m.handleError(msg.err, "cardsResultMsg")
 		}
 		m.cards = msg.cards
 		m.isLoad = false
@@ -337,7 +337,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			if strings.Contains(msg.err.Error(), "access token is expired") {
 				return m, refreshTokenCmd(m.client, m.localStorage.Get(refreshTokenKey))
 			}
-			return m, m.handleError(msg.err)
+			return m, m.handleError(msg.err, "createCardResultMsg")
 		}
 
 		m.cardForm.number.SetValue("")
@@ -352,7 +352,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			if strings.Contains(msg.err.Error(), "access token is expired") {
 				return m, refreshTokenCmd(m.client, m.localStorage.Get(refreshTokenKey))
 			}
-			return m, m.handleError(msg.err)
+			return m, m.handleError(msg.err, "changePassResultMsg")
 		}
 		m.isLoad = false
 		return m.navigateTo(userPage), getProfileCmd(m.client)
@@ -362,7 +362,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			if strings.Contains(msg.err.Error(), "access token is expired") {
 				return m, refreshTokenCmd(m.client, m.localStorage.Get(refreshTokenKey))
 			}
-			return m, m.handleError(msg.err)
+			return m, m.handleError(msg.err, "deleteCardResultMsg")
 		}
 		m.isLoad = false
 		m.selectedCard = -1
@@ -373,7 +373,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			if strings.Contains(msg.err.Error(), "access token is expired") {
 				return m, refreshTokenCmd(m.client, m.localStorage.Get(refreshTokenKey))
 			}
-			return m, m.handleError(msg.err)
+			return m, m.handleError(msg.err, "activateCardResultMsg")
 		}
 		m.isLoad = false
 		m.selectedCard = -1
@@ -384,7 +384,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			if strings.Contains(msg.err.Error(), "access token is expired") {
 				return m, refreshTokenCmd(m.client, m.localStorage.Get(refreshTokenKey))
 			}
-			return m, m.handleError(msg.err)
+			return m, m.handleError(msg.err, "arbitraryDataResultMsg")
 		}
 		m.arbitraryData = msg.arbitraryData
 		m.isLoad = false
@@ -394,8 +394,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			if strings.Contains(msg.err.Error(), "access token is expired") {
 				return m, refreshTokenCmd(m.client, m.localStorage.Get(refreshTokenKey))
 			}
-			slog.Error("createArbitraryDataResultMsg", "ERROR", msg.err)
-			return m, m.handleError(msg.err)
+			return m, m.handleError(msg.err, "createArbitraryDataResultMsg")
 		}
 		m.isLoad = false
 		return m.navigateTo(userPage), nil
@@ -502,9 +501,10 @@ func (m model) View() tea.View {
 	return v
 }
 
-func (m *model) handleError(err error) tea.Cmd {
+func (m *model) handleError(err error, info string) tea.Cmd {
 	m.textError = err.Error()
 	m.isLoad = false
+	slog.Error(info, "value_error", m.textError)
 
 	return clearErrorAfter(m.errorSeq)
 }

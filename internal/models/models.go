@@ -31,9 +31,18 @@ type Card struct {
 }
 
 type ArbitraryData struct {
+	ID         int64
+	Name       string
+	Type       string
+	Status     int64
+	ObjectKey  string
+	ClientSize int64
+	TotalSize  int64
+	CreatedAt  time.Time
+}
+
+type UpdateArbitraryDataParams struct {
 	ID        int64
-	Name      string
-	Type      string
-	ObjectKey string
-	CreatedAt time.Time
+	Status    *uint
+	TotalSize *int64
 }

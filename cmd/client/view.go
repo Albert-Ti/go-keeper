@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"strconv"
 	"strings"
 
@@ -218,8 +219,8 @@ func contentDataView(m model) string {
 	if len(m.arbitraryData) > 0 {
 		// Заголовок
 		s += lipgloss.NewStyle().Width(30).Align(lipgloss.Left).Bold(true).Render("name") +
-			lipgloss.NewStyle().Width(15).Align(lipgloss.Left).Bold(true).Render("type") +
-			lipgloss.NewStyle().Width(15).Align(lipgloss.Left).Bold(true).Render("size") +
+			lipgloss.NewStyle().Width(10).Align(lipgloss.Left).Bold(true).Render("type") +
+			lipgloss.NewStyle().Width(20).Align(lipgloss.Left).Bold(true).Render("client/total") +
 			lipgloss.NewStyle().Width(15).Align(lipgloss.Left).Bold(true).Render("status") + "\n\n"
 
 		// Строки
@@ -228,19 +229,34 @@ func contentDataView(m model) string {
 			if len(filename) > 25 {
 				filename = v.GetName()[:20] + "..."
 			}
-			s += lipgloss.NewStyle().Width(30).Align(lipgloss.Left).Render(strconv.Itoa(i+1)+". "+filename) +
-				lipgloss.NewStyle().Width(15).Align(lipgloss.Left).Render(v.GetType()) +
-				lipgloss.NewStyle().Width(15).Align(lipgloss.Left).Render("111111") +
-				lipgloss.NewStyle().Width(15).Align(lipgloss.Left).Render("UPLOADING") + "\n"
+
+			var status string
+			var size = formatMB(v.GetClientSize()) + "/" + formatMB(v.GetTotalSize())
+			switch v.GetStatus() {
+			case 0:
+				status = lipgloss.NewStyle().Faint(true).Render("uploading")
+			case 1:
+				status = lipgloss.NewStyle().Render("success")
+			case 2:
+				status = lipgloss.NewStyle().Foreground(colorError).Render("failed")
+			}
+
+			s += lipgloss.NewStyle().Width(30).Foreground(colorPrimary).Align(lipgloss.Left).Render(strconv.Itoa(i+1)+". "+filename) +
+				lipgloss.NewStyle().Width(10).Align(lipgloss.Left).Render(v.GetType()) +
+				lipgloss.NewStyle().Width(20).Align(lipgloss.Left).Render(size) +
+				lipgloss.NewStyle().Width(15).Align(lipgloss.Left).Render(status) + "\n"
 		}
 
-		s += "\n" + button("add", "press enter", false)
+		s += "\n" + button("add", "press ctrl+a", false)
 
 		return lipgloss.NewStyle().MarginTop(1).PaddingLeft(3).Render(s)
 	}
 
-	textInfo := lipgloss.NewStyle().Faint(true).Render("You have not added a files yet, press enter to ")
+	textInfo := lipgloss.NewStyle().Faint(true).Render("You have not added a files yet, press ctrl+a to ")
 	s = "\n\n" + textInfo + button("add", "", false) + "\n"
 
 	return lipgloss.NewStyle().PaddingLeft(3).Align(lipgloss.Center).Render(s)
+}
+func formatMB(b int64) string {
+	return fmt.Sprintf("%.2fmb", float64(b)/1048576)
 }

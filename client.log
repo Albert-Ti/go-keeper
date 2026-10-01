@@ -1,2 +1,14 @@
-time=2026-09-30T21:06:24.478+03:00 level=ERROR msg=createArbitraryDataResultMsg ERROR="failed to close stream: rpc error: code = Unknown desc = internal server: operation error S3: PutObject, https response error StatusCode: 403, RequestID: 18DA2B75437ACCEE9E1E708F, HostID: , api error InvalidAccessKeyId: The access key ID you provided does not exist in our records."
-time=2026-09-30T21:24:13.193+03:00 level=ERROR msg=createArbitraryDataResultMsg ERROR=EOF
+time=2026-10-01T15:14:13.124+03:00 level=ERROR msg=createArbitraryDataResultMsg value_error=EOF
+time=2026-10-01T15:14:23.507+03:00 level=ERROR msg=createArbitraryDataResultMsg value_error=EOF
+time=2026-10-01T15:14:56.840+03:00 level=ERROR msg=createArbitraryDataResultMsg value_error="rpc error: code = Internal desc = cardinality violation: received no response message from non-server-streaming RPC"
+time=2026-10-01T15:38:56.730+03:00 level=ERROR msg=refreshTokenResultMsg value_error="rpc error: code = Unauthenticated desc = refresh token is expired"
+time=2026-10-01T15:44:34.121+03:00 level=ERROR msg=cardsResultMsg value_error="rpc error: code = Unavailable desc = connection error: desc = \"transport: Error while dialing: dial tcp 127.0.0.1:8080: connectex: No connection could be made because the target machine actively refused it.\""
+time=2026-10-01T17:59:05.523+03:00 level=ERROR msg=refreshTokenResultMsg value_error="rpc error: code = Unauthenticated desc = refresh token is expired"
+time=2026-10-01T18:09:31.052+03:00 level=ERROR msg=refreshTokenResultMsg value_error="rpc error: code = Unauthenticated desc = refresh token is expired"
+time=2026-10-01T18:10:44.795+03:00 level=ERROR msg=createArbitraryDataResultMsg value_error="rpc error: code = Internal desc = ERROR: column \"uuid\" does not exist (SQLSTATE 42703)"
+time=2026-10-01T18:13:17.591+03:00 level=ERROR msg=createArbitraryDataResultMsg value_error="rpc error: code = Internal desc = ERROR: column \"uuid\" does not exist (SQLSTATE 42703)"
+time=2026-10-01T18:14:02.347+03:00 level=ERROR msg=createArbitraryDataResultMsg value_error=EOF
+time=2026-10-01T18:14:13.403+03:00 level=ERROR msg=createArbitraryDataResultMsg value_error="rpc error: code = Internal desc = ERROR: column \"uuid\" does not exist (SQLSTATE 42703)"
+time=2026-10-01T18:15:18.457+03:00 level=ERROR msg=createArbitraryDataResultMsg value_error="rpc error: code = Internal desc = ERROR: column \"uuid\" does not exist (SQLSTATE 42703)"
+time=2026-10-01T18:21:48.001+03:00 level=ERROR msg=profileResultMsg value_error="rpc error: code = Unavailable desc = connection error: desc = \"transport: Error while dialing: dial tcp 127.0.0.1:8080: connectex: No connection could be made because the target machine actively refused it.\""
+time=2026-10-01T18:23:27.681+03:00 level=ERROR msg=createArbitraryDataResultMsg value_error=EOF

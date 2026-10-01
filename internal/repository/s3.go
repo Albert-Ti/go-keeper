@@ -3,6 +3,7 @@ package repository
 import (
 	"context"
 	"io"
+	"time"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/config"
@@ -37,6 +38,9 @@ func NewS3Client(ctx context.Context, endpoint, accessKey, secretKey string) (*S
 }
 
 func (s3c *S3Client) Put(ctx context.Context, key string, r io.Reader) error {
+	ctx, cancel := context.WithTimeout(ctx, 10*time.Second)
+	defer cancel()
+
 	_, err := s3c.client.UploadObject(ctx, &transfermanager.UploadObjectInput{
 		Bucket: aws.String("test"),
 		Key:    aws.String(key),

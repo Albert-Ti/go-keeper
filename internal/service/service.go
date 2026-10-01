@@ -22,7 +22,7 @@ import (
 
 const (
 	UPLOADING uint = iota
-	UPLOADED
+	SUCCESS
 	FAILED
 )
 
@@ -200,17 +200,33 @@ func (s *Service) sendEmailCode(ctx context.Context, email, code string) error {
 	return nil
 }
 
-func (s *Service) SaveArbitraryData(ctx context.Context, uuid, filename, filetype string, reader io.Reader) error {
+func (s *Service) SaveArbitraryData(
+	ctx context.Context, uuid, filename, filetype string, reader io.Reader, clientSize, totalSize int64) (int64, error) {
 	key := uuid + "/" + filename
 
-	if err := s.db.CreateArbitraryData(ctx, uuid, filename, filetype, key, UPLOADING); err != nil {
-		return err
+	id, err := s.db.CreateArbitraryData(
+		ctx, uuid, filename, filetype, key, UPLOADING, clientSize)
+	if err != nil {
+		return -1, err
 	}
 
 	if err := s.objStorage.Put(ctx, key, reader); err != nil {
-		return err
+		if updErr := s.db.UpdateArbitraryData(ctx, uuid, id, models.UpdateArbitraryDataParams{
+			Status: ptr.Uint(FAILED),
+		}); updErr != nil {
+			return -1, updErr
+		}
+		return -1, err
 	}
-	return nil
+
+	if err := s.db.UpdateArbitraryData(ctx, uuid, id, models.UpdateArbitraryDataParams{
+		Status:    ptr.Uint(SUCCESS),
+		TotalSize: &totalSize,
+	}); err != nil {
+		return -1, err
+	}
+
+	return id, nil
 }
 
 func (s *Service) GetArbitraryData(ctx context.Context, uuid string) ([]models.ArbitraryData, error) {

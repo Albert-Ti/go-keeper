@@ -11,7 +11,10 @@ message ArbitraryData {
   string name = 2;
   string type = 3;
   string object_key = 4;
-  google.protobuf.Timestamp created_at = 5;
+  int64 status = 5;
+  int64 client_size = 6;
+  int64 total_size = 7;
+  google.protobuf.Timestamp created_at = 8;
 }
 
 message ListArbitraryDataRequest {}
@@ -31,6 +34,7 @@ message DownloadArbitraryDataResponse {
 message FileMetadata {
   string filename = 1;
   string type = 2;
+  int64 size = 3;
 }
 
 message CreateArbitraryDataRequest {
@@ -40,7 +44,9 @@ message CreateArbitraryDataRequest {
   }
 }
 
-message CreateArbitraryDataResponse {}
+message CreateArbitraryDataResponse {
+  int64 id = 1;
+}
 
 message DeleteArbitraryDataRequest {
   int64 id = 1;

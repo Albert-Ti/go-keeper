@@ -30,39 +30,26 @@ services:
     image: chrislusf/seaweedfs:latest
     restart: unless-stopped
     ports:
-      - 8333:8333 # S3 API
-      - 9333:9333 # master UI
-    entrypoint: /bin/sh -c
-    command: |
-      "echo '{
-        \"identities\": [
-          {
-            \"name\": \"anonymous\",
-            \"actions\": [
-              \"Read\"
-            ]
-          },
-          {
-            \"name\": \"gokeeper\",
-            \"credentials\": [
-              {
-                \"accessKey\": \"s3-access\",
-                \"secretKey\": \"s3-secret\"
-              }
-            ],
-            \"actions\": [
-              \"Admin\",
-              \"Read\",
-              \"List\",
-              \"Tagging\",
-              \"Write\"
-            ]
-          }
-        ]
-      }' > /etc/seaweedfs/config.json && \
-      weed server -s3 -s3.config /etc/seaweedfs/config.json"
+      - 8333:8333
+      - 9333:9333
+      - 8888:8888 # Визуальный просмотр файлов в браузере
     volumes:
+      - ./security.toml:/etc/seaweedfs/security.toml:ro
       - seaweedfs-data:/data
+    entrypoint: ['/bin/sh', '-c']
+    command:
+      - |
+        echo '{
+          "identities": [
+            {"name": "anonymous", "actions": ["Read"]},
+            {
+              "name": "gokeeper",
+              "credentials": [{"accessKey": "s3-access", "secretKey": "s3-secret"}],
+              "actions": ["Admin", "Read", "List", "Tagging", "Write"]
+            }
+          ]
+        }' > /etc/seaweedfs/config.json && \
+        weed -config_dir=/etc/seaweedfs server -s3 -s3.config /etc/seaweedfs/config.json
 
   adminer:
     container_name: adminer

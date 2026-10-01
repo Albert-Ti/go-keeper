@@ -35,7 +35,8 @@ CREATE TABLE
     type VARCHAR(255) NOT NULL,
     status SMALLINT NOT NULL DEFAULT 0,
     object_key VARCHAR(255) NOT NULL,
-    size BIGINT DEFAULT 0,
+    client_size BIGINT NOT NULL,
+    total_size BIGINT DEFAULT 0,
     created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (user_uuid) REFERENCES users (uuid)
   );

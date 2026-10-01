@@ -99,8 +99,8 @@ func (pg *Postgres) GetProfile(ctx context.Context, uuid string) (models.Profile
 
 // UpdateUser - Универсальный метод db, который легко масштабируется при увеличении полей у таблицы users.
 func (pg *Postgres) UpdateUser(ctx context.Context, p models.UpdateUserParams) error {
-	setParts := make([]string, 0, 4)
-	args := make([]any, 0, 5)
+	setParts := make([]string, 0, 2)
+	args := make([]any, 0, 3)
 	argIdx := 1
 
 	if p.EmailCode != nil {
@@ -131,7 +131,6 @@ func (pg *Postgres) UpdateUser(ctx context.Context, p models.UpdateUserParams) e
 
 	if p.UUID != "" {
 		args = append(args, p.UUID)
-
 		query = fmt.Sprintf(
 			"UPDATE users SET %s WHERE uuid = $%d",
 			strings.Join(setParts, ", "),
@@ -273,20 +272,26 @@ func (pg *Postgres) ActivateCard(ctx context.Context, uuid string, cardID int64)
 	return tx.Commit(ctx)
 }
 
-func (pg *Postgres) CreateArbitraryData(ctx context.Context, uuid, name, filetype, objectKey string, status uint) error {
-	_, err := pg.pool.Exec(ctx,
-		`INSERT INTO arbitrary_data (user_uuid, name, type, object_key, size, status) VALUES ($1, $2, $3, $4, $5, $6)`,
-		uuid, name, filetype, objectKey, 1, status,
-	)
+func (pg *Postgres) CreateArbitraryData(
+	ctx context.Context, uuid, filename, filetype, objectKey string, status uint, clientSize int64) (int64, error) {
+	row := pg.pool.QueryRow(ctx,
+		`INSERT INTO 
+		arbitrary_data (user_uuid, name, type, status, object_key, client_size)
+		VALUES ($1, $2, $3, $4, $5, $6)
+		RETURNING id`,
+		uuid, filename, filetype, status, objectKey, clientSize)
+
+	var returningID int64
+	err := row.Scan(&returningID)
 	if err != nil {
-		return err
+		return -1, err
 	}
-	return nil
+	return returningID, err
 }
 
 func (pg *Postgres) GetArbitraryData(ctx context.Context, uuid string) ([]models.ArbitraryData, error) {
 	sql := `
-	SELECT id, name, type, object_key
+	SELECT id, name, type, status, object_key, client_size, total_size, created_at
 	FROM arbitrary_data 
 	WHERE user_uuid = $1
 	`
@@ -298,7 +303,16 @@ func (pg *Postgres) GetArbitraryData(ctx context.Context, uuid string) ([]models
 	var list []models.ArbitraryData
 	for rows.Next() {
 		var data models.ArbitraryData
-		err := rows.Scan(&data.ID, &data.Name, &data.Type, &data.ObjectKey)
+		err := rows.Scan(
+			&data.ID,
+			&data.Name,
+			&data.Type,
+			&data.Status,
+			&data.ObjectKey,
+			&data.ClientSize,
+			&data.TotalSize,
+			&data.CreatedAt,
+		)
 		if err != nil {
 			return nil, err
 		}
@@ -319,4 +333,38 @@ func (pg *Postgres) DeleteArbitraryData(ctx context.Context, uuid string, dataID
 	}
 
 	return nil
+}
+
+func (pg *Postgres) UpdateArbitraryData(
+	ctx context.Context, uuid string, dataID int64, params models.UpdateArbitraryDataParams) error {
+	setParts := make([]string, 0, 2)
+	args := make([]any, 0, 4)
+	argIdx := 1
+
+	if params.Status != nil {
+		setParts = append(setParts, fmt.Sprintf("status = $%d", argIdx))
+		args = append(args, *params.Status)
+		argIdx++
+	}
+
+	if params.TotalSize != nil {
+		setParts = append(setParts, fmt.Sprintf("total_size = $%d", argIdx))
+		args = append(args, *params.TotalSize)
+		argIdx++
+	}
+
+	if len(setParts) == 0 {
+		return nil
+	}
+	args = append(args, uuid, dataID)
+
+	query := fmt.Sprintf(
+		"UPDATE arbitrary_data SET %s WHERE user_uuid = $%d AND id = $%d",
+		strings.Join(setParts, ", "),
+		argIdx,
+		argIdx+1,
+	)
+
+	_, err := pg.pool.Exec(ctx, query, args...)
+	return err
 }

@@ -23,11 +23,14 @@ func (g *GrpcServer) GetArbitraryData(ctx context.Context, in *pb.ListArbitraryD
 	var list []*pb.ArbitraryData
 	for _, v := range arbitraryData {
 		list = append(list, pb.ArbitraryData_builder{
-			Id:        v.ID,
-			Name:      v.Name,
-			Type:      v.Type,
-			ObjectKey: v.ObjectKey,
-			CreatedAt: timestamppb.New(v.CreatedAt),
+			Id:         v.ID,
+			Name:       v.Name,
+			Type:       v.Type,
+			Status:     v.Status,
+			ObjectKey:  v.ObjectKey,
+			ClientSize: v.ClientSize,
+			TotalSize:  v.TotalSize,
+			CreatedAt:  timestamppb.New(v.CreatedAt),
 		}.Build())
 	}
 

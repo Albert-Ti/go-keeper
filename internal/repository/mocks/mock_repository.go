@@ -11,6 +11,7 @@ package mocks
 
 import (
 	context "context"
+	io "io"
 	reflect "reflect"
 	time "time"
 
@@ -85,17 +86,18 @@ func (mr *MockDatabaseMockRecorder) ChangePass(ctx, uuid, passOld, passNew any) 
 }
 
 // CreateArbitraryData mocks base method.
-func (m *MockDatabase) CreateArbitraryData(ctx context.Context, uuid, name, filetype, objectKey string, status uint) error {
+func (m *MockDatabase) CreateArbitraryData(ctx context.Context, uuid, filename, filetype, objectKey string, status uint, clientSize int64) (int64, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CreateArbitraryData", ctx, uuid, name, filetype, objectKey, status)
-	ret0, _ := ret[0].(error)
-	return ret0
+	ret := m.ctrl.Call(m, "CreateArbitraryData", ctx, uuid, filename, filetype, objectKey, status, clientSize)
+	ret0, _ := ret[0].(int64)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
 }
 
 // CreateArbitraryData indicates an expected call of CreateArbitraryData.
-func (mr *MockDatabaseMockRecorder) CreateArbitraryData(ctx, uuid, name, filetype, objectKey, status any) *gomock.Call {
+func (mr *MockDatabaseMockRecorder) CreateArbitraryData(ctx, uuid, filename, filetype, objectKey, status, clientSize any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateArbitraryData", reflect.TypeOf((*MockDatabase)(nil).CreateArbitraryData), ctx, uuid, name, filetype, objectKey, status)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateArbitraryData", reflect.TypeOf((*MockDatabase)(nil).CreateArbitraryData), ctx, uuid, filename, filetype, objectKey, status, clientSize)
 }
 
 // CreateCard mocks base method.
@@ -213,6 +215,20 @@ func (m *MockDatabase) GetUserByEmail(ctx context.Context, email string) (models
 func (mr *MockDatabaseMockRecorder) GetUserByEmail(ctx, email any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetUserByEmail", reflect.TypeOf((*MockDatabase)(nil).GetUserByEmail), ctx, email)
+}
+
+// UpdateArbitraryData mocks base method.
+func (m *MockDatabase) UpdateArbitraryData(ctx context.Context, uuid string, dataID int64, params models.UpdateArbitraryDataParams) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "UpdateArbitraryData", ctx, uuid, dataID, params)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// UpdateArbitraryData indicates an expected call of UpdateArbitraryData.
+func (mr *MockDatabaseMockRecorder) UpdateArbitraryData(ctx, uuid, dataID, params any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateArbitraryData", reflect.TypeOf((*MockDatabase)(nil).UpdateArbitraryData), ctx, uuid, dataID, params)
 }
 
 // UpdateUser mocks base method.
@@ -352,10 +368,10 @@ func (mr *MockObjStorageMockRecorder) Delete(ctx, key any) *gomock.Call {
 }
 
 // Get mocks base method.
-func (m *MockObjStorage) Get(ctx context.Context, key string) ([]byte, error) {
+func (m *MockObjStorage) Get(ctx context.Context, key string) (io.ReadCloser, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Get", ctx, key)
-	ret0, _ := ret[0].([]byte)
+	ret0, _ := ret[0].(io.ReadCloser)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -367,15 +383,15 @@ func (mr *MockObjStorageMockRecorder) Get(ctx, key any) *gomock.Call {
 }
 
 // Put mocks base method.
-func (m *MockObjStorage) Put(ctx context.Context, key string, data []byte) error {
+func (m *MockObjStorage) Put(ctx context.Context, key string, r io.Reader) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Put", ctx, key, data)
+	ret := m.ctrl.Call(m, "Put", ctx, key, r)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // Put indicates an expected call of Put.
-func (mr *MockObjStorageMockRecorder) Put(ctx, key, data any) *gomock.Call {
+func (mr *MockObjStorageMockRecorder) Put(ctx, key, r any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Put", reflect.TypeOf((*MockObjStorage)(nil).Put), ctx, key, data)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Put", reflect.TypeOf((*MockObjStorage)(nil).Put), ctx, key, r)
 }

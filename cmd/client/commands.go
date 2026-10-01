@@ -241,13 +241,18 @@ func createArbitraryDataCmd(client pb.GoKeeperServiceClient, filepath string) te
 		stream, err := client.CreateArbitraryData(context.Background())
 
 		s := strings.Split(filename, ".")
-		name, typ := s[0], s[len(s)-1]
+		filetype := s[len(s)-1]
 
+		info, err := file.Stat()
+		if err != nil {
+			return createArbitraryDataResultMsg{err: err}
+		}
 		// отправляем метаданные первым сообщением
 		err = stream.Send(pb.CreateArbitraryDataRequest_builder{
 			Metadata: pb.FileMetadata_builder{
-				Filename: name,
-				Type:     typ,
+				Filename: filename,
+				Type:     filetype,
+				Size:     info.Size(),
 			}.Build(),
 		}.Build())
 		if err != nil {
@@ -257,23 +262,24 @@ func createArbitraryDataCmd(client pb.GoKeeperServiceClient, filepath string) te
 		buf := make([]byte, 1024*1024) // 1mb
 
 		for {
-			n, err := file.Read(buf) // прочитал => записал => вернул длину
+			n, readErr := file.Read(buf)
 
 			if n > 0 {
-				err = stream.Send(pb.CreateArbitraryDataRequest_builder{
-					Chunk: buf[:n], // если записать просто buf запишет новые и старые данные
-				}.Build())
-				if err != nil {
+				if err := stream.Send(
+					pb.CreateArbitraryDataRequest_builder{
+						Chunk: buf[:n],
+					}.Build(),
+				); err != nil {
 					return createArbitraryDataResultMsg{err: err}
 				}
 			}
 
-			if err == io.EOF {
+			if readErr == io.EOF {
 				break
 			}
 
-			if err != nil {
-				return createArbitraryDataResultMsg{err: err}
+			if readErr != nil {
+				return createArbitraryDataResultMsg{err: readErr}
 			}
 		}
 

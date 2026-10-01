@@ -12,7 +12,7 @@ import (
 type StreamReader struct {
 	stream pb.GoKeeperService_CreateArbitraryDataServer
 	buf    []byte
-	total  int64
+	Total  int64
 }
 
 func (r *StreamReader) Read(p []byte) (int, error) {
@@ -31,7 +31,7 @@ func (r *StreamReader) Read(p []byte) (int, error) {
 
 	n := copy(p, r.buf)
 	r.buf = r.buf[n:]
-	r.total += int64(n)
+	r.Total += int64(n)
 
 	return n, nil
 }
@@ -54,9 +54,22 @@ func (g *GrpcServer) CreateArbitraryData(stream pb.GoKeeperService_CreateArbitra
 	}
 
 	reader := &StreamReader{stream: stream}
-	if err := g.Svc.SaveArbitraryData(ctx, uuid, metadata.GetFilename(), metadata.GetType(), reader); err != nil {
+
+	id, err := g.Svc.SaveArbitraryData(
+		ctx,
+		uuid,
+		metadata.GetFilename(),
+		metadata.GetType(),
+		reader,
+		metadata.GetSize(),
+		reader.Total,
+	)
+
+	if err != nil {
 		return status.Error(codes.Internal, err.Error())
 	}
 
-	return nil
+	return stream.SendAndClose(pb.CreateArbitraryDataResponse_builder{
+		Id: id,
+	}.Build())
 }
