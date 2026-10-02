@@ -106,27 +106,56 @@ func loadActiveTab(activeTab tabType, m model) tea.Cmd {
 }
 
 func userUpdate(msg tea.KeyPressMsg, m model) (model, tea.Cmd) {
-	if m.selectedCard >= 0 {
-		switch msg.String() {
-		case "left":
-			if m.activeCardBtn > 0 {
-				m.activeCardBtn--
-				return m, nil
-			}
-		case "right":
-			if int(m.activeCardBtn) < len(m.cardsActions)-1 {
-				m.activeCardBtn++
-				return m, nil
-			}
-		case "enter":
-			if m.activeCardBtn == cardActionsUpdate {
-				m.isLoad = true
-				return m, activateCardCmd(m.client, m.cards[m.selectedCard].GetId())
-			}
+	if m.selectedRowID >= 0 {
+		switch m.activeTab {
+		case tabCards:
+			switch msg.String() {
+			case "left":
+				if m.activeBtn > 0 {
+					m.activeBtn--
+					return m, nil
+				}
+			case "right":
+				if m.activeBtn < len(m.cardsActions)-1 {
+					m.activeBtn++
+					return m, nil
+				}
+			case "enter":
+				if m.activeBtn == int(cardActionsUpdate) {
+					m.isLoad = true
+					return m, activateCardCmd(m.client, m.cards[m.selectedRowID].GetId())
+				}
 
-			if m.activeCardBtn == cardActionsDelete {
-				m.isLoad = true
-				return m, deleteCardCmd(m.client, m.cards[m.selectedCard].GetId())
+				if m.activeBtn == int(cardActionsDelete) {
+					m.isLoad = true
+					return m, deleteCardCmd(m.client, m.cards[m.selectedRowID].GetId())
+				}
+			}
+		case tabData:
+			switch msg.String() {
+			case "left":
+				if m.activeBtn > 0 {
+					m.activeBtn--
+					return m, nil
+				}
+			case "right":
+				if m.activeBtn < len(m.dataActions)-1 {
+					m.activeBtn++
+					return m, nil
+				}
+			case "enter":
+				if m.activeBtn == int(dataActionsReload) {
+					m.isLoad = true
+					if m.arbitraryData[m.selectedRowID].GetStatus() == 1 {
+						return m, m.handleInfo("file has been successfully uploaded", "tabData")
+					}
+					return m, nil
+				}
+
+				if m.activeBtn == int(dataActionsDelete) {
+					m.isLoad = true
+					return m, nil
+				}
 			}
 		}
 	} else {
@@ -170,12 +199,12 @@ func userUpdate(msg tea.KeyPressMsg, m model) (model, tea.Cmd) {
 		case "up":
 			if m.cursor > 0 {
 				m.cursor--
-				m.selectedCard = -1
+				m.selectedRowID = -1
 			}
 		case "down":
 			if m.cursor < len(m.cards)-1 {
 				m.cursor++
-				m.selectedCard = -1
+				m.selectedRowID = -1
 			}
 		case "ctrl+a":
 			m.cardForm.number.Focus()
@@ -186,12 +215,26 @@ func userUpdate(msg tea.KeyPressMsg, m model) (model, tea.Cmd) {
 
 		case "enter":
 			if len(m.cards) > 0 {
-				m.selectedCard = m.cursor
+				m.selectedRowID = m.cursor
 			}
 		}
 
 	case tabData:
 		switch msg.String() {
+		case "up":
+			if m.cursor > 0 {
+				m.cursor--
+				m.selectedRowID = -1
+			}
+		case "down":
+			if m.cursor < len(m.arbitraryData)-1 {
+				m.cursor++
+				m.selectedRowID = -1
+			}
+		case "enter":
+			if len(m.cards) > 0 {
+				m.selectedRowID = m.cursor
+			}
 		case "ctrl+a":
 			return m.navigateTo(filePickerPage), nil
 		}

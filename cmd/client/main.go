@@ -49,6 +49,13 @@ const (
 	cardActionsDelete
 )
 
+type dataActionsType int
+
+const (
+	dataActionsReload dataActionsType = iota
+	dataActionsDelete
+)
+
 type pageType int
 
 const (
@@ -107,6 +114,7 @@ type model struct {
 	choices           []pageType
 	allTabs           []tabType
 	cardsActions      []cardActionsType
+	dataActions       []dataActionsType
 	contentTabProfile []string
 
 	authForm     authForm
@@ -118,6 +126,7 @@ type model struct {
 	width        int
 	height       int
 	textError    string
+	textInfo     string
 	errorSeq     int
 	codeEmail    string
 	authUser     string
@@ -126,8 +135,8 @@ type model struct {
 	profile      map[string]string
 
 	cards         []*pb.CardData
-	selectedCard  int
-	activeCardBtn cardActionsType
+	selectedRowID int
+	activeBtn     int
 
 	arbitraryData []*pb.ArbitraryData
 
@@ -179,6 +188,7 @@ func NewModel(client pb.GoKeeperServiceClient, localStorage *FileStorage) (*mode
 		allTabs:           []tabType{tabProfile, tabCards, tabData},
 		contentTabProfile: []string{"email", "create_date"},
 		cardsActions:      []cardActionsType{cardActionsUpdate, cardActionsDelete},
+		dataActions:       []dataActionsType{dataActionsReload, dataActionsDelete},
 		authForm: authForm{
 			email:   email,
 			pass:    pass,
@@ -195,13 +205,13 @@ func NewModel(client pb.GoKeeperServiceClient, localStorage *FileStorage) (*mode
 		spinner:    s,
 		filepicker: fp,
 
-		cards:        []*pb.CardData{},
-		client:       client,
-		selectedCard: -1,
-		localStorage: localStorage,
-		authUser:     localStorage.Get(emailKey),
-		accessToken:  localStorage.Get(accessTokenKey),
-		refreshToken: localStorage.Get(refreshTokenKey),
+		cards:         []*pb.CardData{},
+		client:        client,
+		selectedRowID: -1,
+		localStorage:  localStorage,
+		authUser:      localStorage.Get(emailKey),
+		accessToken:   localStorage.Get(accessTokenKey),
+		refreshToken:  localStorage.Get(refreshTokenKey),
 	}, nil
 }
 
@@ -235,6 +245,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case clearErrorMsg:
 		if msg.seq == m.errorSeq {
 			m.textError = ""
+			m.textInfo = ""
 		}
 		return m, nil
 
@@ -365,7 +376,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return m, m.handleError(msg.err, "deleteCardResultMsg")
 		}
 		m.isLoad = false
-		m.selectedCard = -1
+		m.selectedRowID = -1
 		return m.navigateTo(userPage), getCardsCmd(m.client)
 
 	case activateCardResultMsg:
@@ -376,7 +387,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return m, m.handleError(msg.err, "activateCardResultMsg")
 		}
 		m.isLoad = false
-		m.selectedCard = -1
+		m.selectedRowID = -1
 		return m.navigateTo(userPage), getCardsCmd(m.client)
 
 	case arbitraryDataResultMsg:
@@ -397,7 +408,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return m, m.handleError(msg.err, "createArbitraryDataResultMsg")
 		}
 		m.isLoad = false
-		return m.navigateTo(userPage), nil
+		return m.navigateTo(userPage), getArbitraryDataCmd(m.client)
 
 		// Обработка нажатия клавиш
 	case tea.KeyPressMsg:
@@ -408,8 +419,9 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			m.Reset()
 			return m, nil
 		case "esc":
-			if m.selectedCard >= 0 {
-				m.selectedCard = -1
+			if m.selectedRowID >= 0 {
+				m.selectedRowID = -1
+				m.activeBtn = 0
 				return m, nil
 			}
 			if m.activePage == cardFormPage {
@@ -417,8 +429,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				m.cardForm.date.Blur()
 			}
 			if len(m.history) <= 1 {
-				m.textError = "to log out, press ctrl+q"
-				return m, clearErrorAfter(m.errorSeq)
+				return m, m.handleInfo("to log out, press ctrl+q", "")
 			}
 			if len(m.history) > 1 {
 				m.history = m.history[:len(m.history)-1]
@@ -501,15 +512,28 @@ func (m model) View() tea.View {
 	return v
 }
 
-func (m *model) handleError(err error, info string) tea.Cmd {
+func (m *model) handleError(err error, trigger string) tea.Cmd {
 	m.textError = err.Error()
 	m.isLoad = false
-	slog.Error(info, "value_error", m.textError)
+	if trigger != "" {
+		slog.Error(trigger, "value_error", m.textError)
+	}
+
+	return clearErrorAfter(m.errorSeq)
+}
+
+func (m *model) handleInfo(info, trigger string) tea.Cmd {
+	m.textInfo = info
+	m.isLoad = false
+	if trigger != "" {
+		slog.Info(trigger, "value_info", info)
+	}
 
 	return clearErrorAfter(m.errorSeq)
 }
 
 func (m *model) Reset() {
+	m.cursor = 0
 	m.activePage = homePage
 	m.activeTab = tabProfile
 	m.history = []pageType{homePage}
@@ -518,7 +542,9 @@ func (m *model) Reset() {
 	m.accessToken = ""
 	m.refreshToken = ""
 	m.codeEmail = ""
-	m.selectedCard = -1
+	m.selectedRowID = -1
+	m.activeBtn = 0
+
 	m.authForm.email.Focus()
 	m.authForm.pass.Blur()
 	m.authForm.confirm.Blur()
@@ -538,7 +564,7 @@ type clearErrorMsg struct {
 }
 
 func clearErrorAfter(seq int) tea.Cmd {
-	return tea.Tick(4*time.Second, func(t time.Time) tea.Msg {
+	return tea.Tick(3*time.Second, func(t time.Time) tea.Msg {
 		return clearErrorMsg{seq: seq}
 	})
 }

@@ -14,16 +14,18 @@ const minHeight = 18
 
 // Color
 var (
-	colorPrimary     = lipgloss.Color("140") // розовый — акцент на активном поле
+	colorPrimary     = lipgloss.Color("140")
 	colorMuted       = lipgloss.Color("240") // серый — неактивные элементы
 	colorPlaceholder = lipgloss.Color("244")
 	colorError       = lipgloss.Color("203")
 	colorText        = lipgloss.Color("255")
+	infoText         = lipgloss.Color("150")
 )
 
 var (
 	labelStyle = lipgloss.NewStyle().Foreground(lipgloss.Color("245"))
 	errorStyle = lipgloss.NewStyle().Foreground(colorError)
+	infoStyle  = lipgloss.NewStyle().Foreground(infoText)
 
 	inputBoxFocused = lipgloss.NewStyle().
 			Border(lipgloss.RoundedBorder()).

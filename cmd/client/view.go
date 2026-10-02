@@ -60,11 +60,18 @@ func mainView(m model) string {
 	}
 
 	if m.activePage == registerPage || m.activePage == loginPage {
+		switch m.activePage {
+		case registerPage:
+			s += lipgloss.NewStyle().Foreground(colorPrimary).Render("REGISTRATION") + " \n\n"
+		case loginPage:
+			s += lipgloss.NewStyle().Foreground(colorPrimary).Render("LOGIN") + " \n\n"
+		}
 		s += fieldView("Email", m.authForm.email) + "\n\n"
 		s += fieldView("Pass", m.authForm.pass) + "\n"
 	}
 
 	if m.activePage == confirmPage {
+		s += lipgloss.NewStyle().Foreground(colorPrimary).Render("CONFIRM EMAIL") + " \n\n"
 		s += "Keep a code to confirm your email: " + m.codeEmail + "\n\n"
 		s += fieldView("Confirmation code", m.authForm.confirm) + "\n"
 	}
@@ -117,6 +124,9 @@ func mainView(m model) string {
 
 	if m.textError != "" {
 		s += "\n" + errorStyle.Width(cardWidth).Align(lipgloss.Center).Render(m.textError) + "\n"
+	}
+	if m.textInfo != "" {
+		s += "\n" + infoStyle.Width(cardWidth).Align(lipgloss.Center).Render(m.textInfo) + "\n"
 	}
 
 	// Добавляем пустые строки, чтобы заполнить пространство
@@ -185,7 +195,7 @@ func contentCardsView(m model) string {
 			if i == m.cursor {
 				prefix = "✎ "
 
-				if m.selectedCard == i {
+				if m.selectedRowID == i {
 					cardsBtns = []string{"[ ]", "[ delete ]"}
 					if card.GetActive() {
 						cardsBtns = []string{"[X]", "[ delete ]"}
@@ -198,7 +208,7 @@ func contentCardsView(m model) string {
 			btns := ""
 			for i, v := range cardsBtns {
 				active := lipgloss.NewStyle().Faint(true).Foreground(colorPrimary).Render(v)
-				if i == int(m.activeCardBtn) {
+				if i == m.activeBtn {
 					active = lipgloss.NewStyle().Foreground(colorPrimary).Render(v)
 				}
 				btns += active + " "
@@ -214,14 +224,24 @@ func contentCardsView(m model) string {
 }
 
 func contentDataView(m model) string {
+	var (
+		nameWidth   = 27
+		typeWidth   = 10
+		sizeWidth   = 17
+		statusWidth = 10
+		dateWidth   = 12
+	)
+
 	s := ""
 
 	if len(m.arbitraryData) > 0 {
 		// Заголовок
-		s += lipgloss.NewStyle().Width(30).Align(lipgloss.Left).Bold(true).Render("name") +
-			lipgloss.NewStyle().Width(10).Align(lipgloss.Left).Bold(true).Render("type") +
-			lipgloss.NewStyle().Width(20).Align(lipgloss.Left).Bold(true).Render("size") +
-			lipgloss.NewStyle().Width(15).Align(lipgloss.Left).Bold(true).Render("status") + "\n\n"
+		s += "  " +
+			lipgloss.NewStyle().Width(nameWidth).Bold(true).Render("name") +
+			lipgloss.NewStyle().Width(typeWidth).Bold(true).Render("type") +
+			lipgloss.NewStyle().Width(sizeWidth).Bold(true).Render("size") +
+			lipgloss.NewStyle().Width(dateWidth).Bold(true).Render("date") +
+			lipgloss.NewStyle().Width(statusWidth).Bold(true).Render("status") + "\n\n"
 
 		// Строки
 		for i, v := range m.arbitraryData {
@@ -242,15 +262,44 @@ func contentDataView(m model) string {
 				status = lipgloss.NewStyle().Foreground(colorError).Render("failed")
 			}
 
-			s += lipgloss.NewStyle().Width(30).Foreground(colorPrimary).Align(lipgloss.Left).Render(strconv.Itoa(i+1)+". "+filename) +
-				lipgloss.NewStyle().Width(10).Align(lipgloss.Left).Render(v.GetType()) +
-				lipgloss.NewStyle().Width(20).Align(lipgloss.Left).Render(size) +
-				lipgloss.NewStyle().Width(15).Align(lipgloss.Left).Render(status) + "\n"
+			dataBtns := []string{}
+			prefix := "  "
+			if i == m.cursor {
+				prefix = "✎ "
+
+				if m.selectedRowID == i {
+					dataBtns = []string{"[ reload ]", "[ delete ]"}
+				}
+			}
+			btns := ""
+			for i, v := range dataBtns {
+				active := lipgloss.NewStyle().Faint(true).Foreground(colorPrimary).Render(v)
+				if i == m.activeBtn {
+					active = lipgloss.NewStyle().Foreground(colorPrimary).Render(v)
+				}
+				btns += active + " "
+			}
+
+			btnsOrStatus := ""
+			if btns == "" {
+				btnsOrStatus = lipgloss.NewStyle().Width(dateWidth).
+					Render(v.GetCreatedAt().AsTime().Format("02.01.2006")) +
+					lipgloss.NewStyle().Width(statusWidth).Render(status)
+			} else {
+				btnsOrStatus = btns
+			}
+
+			s += prefix +
+				lipgloss.NewStyle().Width(nameWidth).Foreground(colorPrimary).Render(strconv.Itoa(i+1)+". "+filename) +
+				lipgloss.NewStyle().Width(typeWidth).Render(v.GetType()) +
+				lipgloss.NewStyle().Width(sizeWidth).Render(size) +
+				btnsOrStatus + "\n"
 		}
+		s += "\n"
+		s += "  " + button("add", "ctrl+a", false) + "\n"
+		s += "  " + button("select", "enter", false)
 
-		s += "\n" + button("add", "press ctrl+a", false)
-
-		return lipgloss.NewStyle().MarginTop(1).PaddingLeft(3).Render(s)
+		return lipgloss.NewStyle().Width(cardWidth).Align(lipgloss.Left).MarginTop(1).Render(s)
 	}
 
 	textInfo := lipgloss.NewStyle().Faint(true).Render("You have not added a files yet, press ctrl+a to ")
