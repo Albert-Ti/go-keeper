@@ -12,3 +12,12 @@ time=2026-10-01T18:14:13.403+03:00 level=ERROR msg=createArbitraryDataResultMsg 
 time=2026-10-01T18:15:18.457+03:00 level=ERROR msg=createArbitraryDataResultMsg value_error="rpc error: code = Internal desc = ERROR: column \"uuid\" does not exist (SQLSTATE 42703)"
 time=2026-10-01T18:21:48.001+03:00 level=ERROR msg=profileResultMsg value_error="rpc error: code = Unavailable desc = connection error: desc = \"transport: Error while dialing: dial tcp 127.0.0.1:8080: connectex: No connection could be made because the target machine actively refused it.\""
 time=2026-10-01T18:23:27.681+03:00 level=ERROR msg=createArbitraryDataResultMsg value_error=EOF
+time=2026-10-01T19:10:56.498+03:00 level=ERROR msg=refreshTokenResultMsg value_error="rpc error: code = Unauthenticated desc = refresh token is expired"
+time=2026-10-01T19:12:15.032+03:00 level=ERROR msg=createArbitraryDataResultMsg value_error="rpc error: code = Unavailable desc = error reading from server: read tcp 127.0.0.1:54729->127.0.0.1:8080: wsarecv: An existing connection was forcibly closed by the remote host."
+time=2026-10-02T12:05:35.103+03:00 level=ERROR msg=profileResultMsg value_error="rpc error: code = Unavailable desc = connection error: desc = \"transport: Error while dialing: dial tcp 127.0.0.1:8080: connectex: No connection could be made because the target machine actively refused it.\""
+time=2026-10-02T12:13:02.729+03:00 level=ERROR msg=refreshTokenResultMsg value_error="rpc error: code = Unauthenticated desc = refresh token is expired"
+time=2026-10-02T12:20:44.388+03:00 level=ERROR msg=refreshTokenResultMsg value_error="rpc error: code = Unauthenticated desc = refresh token is expired"
+time=2026-10-02T12:23:46.909+03:00 level=ERROR msg=createArbitraryDataResultMsg value_error="rpc error: code = Unavailable desc = error reading from server: read tcp 127.0.0.1:57118->127.0.0.1:8080: wsarecv: An existing connection was forcibly closed by the remote host."
+time=2026-10-02T12:23:51.117+03:00 level=ERROR msg=cardsResultMsg value_error="rpc error: code = Unavailable desc = connection error: desc = \"transport: Error while dialing: dial tcp 127.0.0.1:8080: connectex: No connection could be made because the target machine actively refused it.\""
+time=2026-10-02T12:36:07.056+03:00 level=ERROR msg=refreshTokenResultMsg value_error="rpc error: code = Unauthenticated desc = refresh token is expired"
+time=2026-10-02T12:36:09.433+03:00 level=ERROR msg=refreshTokenResultMsg value_error="rpc error: code = Unauthenticated desc = refresh token is expired"

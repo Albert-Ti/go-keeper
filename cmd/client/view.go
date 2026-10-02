@@ -1,12 +1,12 @@
 package main
 
 import (
-	"fmt"
 	"strconv"
 	"strings"
 
 	"charm.land/bubbles/v2/textinput"
 	"charm.land/lipgloss/v2"
+	"github.com/dustin/go-humanize"
 )
 
 func headerView(m model) string {
@@ -220,7 +220,7 @@ func contentDataView(m model) string {
 		// Заголовок
 		s += lipgloss.NewStyle().Width(30).Align(lipgloss.Left).Bold(true).Render("name") +
 			lipgloss.NewStyle().Width(10).Align(lipgloss.Left).Bold(true).Render("type") +
-			lipgloss.NewStyle().Width(20).Align(lipgloss.Left).Bold(true).Render("client/total") +
+			lipgloss.NewStyle().Width(20).Align(lipgloss.Left).Bold(true).Render("size") +
 			lipgloss.NewStyle().Width(15).Align(lipgloss.Left).Bold(true).Render("status") + "\n\n"
 
 		// Строки
@@ -231,7 +231,8 @@ func contentDataView(m model) string {
 			}
 
 			var status string
-			var size = formatMB(v.GetClientSize()) + "/" + formatMB(v.GetTotalSize())
+
+			var size = humanize.Bytes(uint64(v.GetClientSize())) + " → " + humanize.Bytes(uint64(v.GetTotalSize()))
 			switch v.GetStatus() {
 			case 0:
 				status = lipgloss.NewStyle().Faint(true).Render("uploading")
@@ -256,7 +257,4 @@ func contentDataView(m model) string {
 	s = "\n\n" + textInfo + button("add", "", false) + "\n"
 
 	return lipgloss.NewStyle().PaddingLeft(3).Align(lipgloss.Center).Render(s)
-}
-func formatMB(b int64) string {
-	return fmt.Sprintf("%.2fmb", float64(b)/1048576)
 }

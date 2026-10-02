@@ -4,7 +4,6 @@ import (
 	"context"
 	"database/sql"
 	"errors"
-	"io"
 	"strings"
 	"time"
 
@@ -201,7 +200,7 @@ func (s *Service) sendEmailCode(ctx context.Context, email, code string) error {
 }
 
 func (s *Service) SaveArbitraryData(
-	ctx context.Context, uuid, filename, filetype string, reader io.Reader, clientSize, totalSize int64) (int64, error) {
+	ctx context.Context, uuid, filename, filetype string, clientSize int64, reader *utils.StreamReader) (int64, error) {
 	key := uuid + "/" + filename
 
 	id, err := s.db.CreateArbitraryData(
@@ -212,7 +211,8 @@ func (s *Service) SaveArbitraryData(
 
 	if err := s.objStorage.Put(ctx, key, reader); err != nil {
 		if updErr := s.db.UpdateArbitraryData(ctx, uuid, id, models.UpdateArbitraryDataParams{
-			Status: ptr.Uint(FAILED),
+			Status:    ptr.Uint(FAILED),
+			TotalSize: &reader.Total,
 		}); updErr != nil {
 			return -1, updErr
 		}
@@ -221,7 +221,7 @@ func (s *Service) SaveArbitraryData(
 
 	if err := s.db.UpdateArbitraryData(ctx, uuid, id, models.UpdateArbitraryDataParams{
 		Status:    ptr.Uint(SUCCESS),
-		TotalSize: &totalSize,
+		TotalSize: &reader.Total,
 	}); err != nil {
 		return -1, err
 	}

@@ -247,6 +247,7 @@ func createArbitraryDataCmd(client pb.GoKeeperServiceClient, filepath string) te
 		if err != nil {
 			return createArbitraryDataResultMsg{err: err}
 		}
+
 		// отправляем метаданные первым сообщением
 		err = stream.Send(pb.CreateArbitraryDataRequest_builder{
 			Metadata: pb.FileMetadata_builder{

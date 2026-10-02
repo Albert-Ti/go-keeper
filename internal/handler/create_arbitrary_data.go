@@ -1,40 +1,12 @@
 package handler
 
 import (
-	"fmt"
-
 	"github.com/Albert-Ti/go-keeper/internal/interceptor"
+	"github.com/Albert-Ti/go-keeper/internal/utils"
 	pb "github.com/Albert-Ti/go-keeper/pkg/proto"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
-
-type StreamReader struct {
-	stream pb.GoKeeperService_CreateArbitraryDataServer
-	buf    []byte
-	Total  int64
-}
-
-func (r *StreamReader) Read(p []byte) (int, error) {
-
-	for len(r.buf) == 0 {
-		req, err := r.stream.Recv()
-		fmt.Println("CHUNK", len(req.GetChunk()))
-		if err != nil {
-			return 0, err
-		}
-
-		if chunk := req.GetChunk(); len(chunk) > 0 {
-			r.buf = chunk
-		}
-	}
-
-	n := copy(p, r.buf)
-	r.buf = r.buf[n:]
-	r.Total += int64(n)
-
-	return n, nil
-}
 
 func (g *GrpcServer) CreateArbitraryData(stream pb.GoKeeperService_CreateArbitraryDataServer) error {
 	var metadata *pb.FileMetadata
@@ -53,16 +25,17 @@ func (g *GrpcServer) CreateArbitraryData(stream pb.GoKeeperService_CreateArbitra
 		metadata = req.GetMetadata()
 	}
 
-	reader := &StreamReader{stream: stream}
+	reader := &utils.StreamReader{
+		Stream: stream,
+	}
 
 	id, err := g.Svc.SaveArbitraryData(
 		ctx,
 		uuid,
 		metadata.GetFilename(),
 		metadata.GetType(),
-		reader,
 		metadata.GetSize(),
-		reader.Total,
+		reader,
 	)
 
 	if err != nil {
