@@ -233,21 +233,6 @@ func (pg *Postgres) CreateCard(ctx context.Context, uuid string, number string, 
 	return tx.Commit(ctx)
 }
 
-func (pg *Postgres) DeleteCard(ctx context.Context, uuid string, cardID int64) error {
-	sql := `DELETE FROM bank_cards WHERE user_uuid = $1 AND id = $2 AND active = true`
-
-	// нужно будет вернуть исключение где карточка если не последняя не может быть удалена, так как является активной.
-	tag, err := pg.pool.Exec(ctx, sql, uuid, cardID)
-	if err != nil {
-		return err
-	}
-	if tag.RowsAffected() == 0 {
-		return ErrRowAffected
-	}
-
-	return nil
-}
-
 func (pg *Postgres) ActivateCard(ctx context.Context, uuid string, cardID int64) error {
 	tx, err := pg.pool.Begin(ctx)
 	if err != nil {
@@ -270,6 +255,20 @@ func (pg *Postgres) ActivateCard(ctx context.Context, uuid string, cardID int64)
 	}
 
 	return tx.Commit(ctx)
+}
+
+func (pg *Postgres) DeleteCard(ctx context.Context, uuid string, cardID int64) error {
+	sql := `DELETE FROM bank_cards WHERE user_uuid = $1 AND id = $2 AND active = false`
+
+	tag, err := pg.pool.Exec(ctx, sql, uuid, cardID)
+	if err != nil {
+		return err
+	}
+	if tag.RowsAffected() == 0 {
+		return ErrRowAffected
+	}
+
+	return nil
 }
 
 func (pg *Postgres) CreateArbitraryData(
@@ -321,18 +320,24 @@ func (pg *Postgres) GetArbitraryData(ctx context.Context, uuid string) ([]models
 	return list, nil
 }
 
-func (pg *Postgres) DeleteArbitraryData(ctx context.Context, uuid string, dataID int64) error {
-	sql := `DELETE FROM arbitrary_data WHERE user_uuid = $1 AND id = $2`
+func (pg *Postgres) GetArbitraryDataByID(ctx context.Context, uuid string, dataID int64) (models.ArbitraryData, error) {
+	sql := `
+	SELECT status, object_key
+	FROM arbitrary_data 
+	WHERE user_uuid = $1 AND id = $2
+	`
+	row := pg.pool.QueryRow(ctx, sql, uuid, dataID)
 
-	tag, err := pg.pool.Exec(ctx, sql, uuid, dataID)
+	var data models.ArbitraryData
+	err := row.Scan(
+		&data.Status,
+		&data.ObjectKey,
+	)
 	if err != nil {
-		return err
-	}
-	if tag.RowsAffected() == 0 {
-		return ErrRowAffected
+		return models.ArbitraryData{}, err
 	}
 
-	return nil
+	return data, nil
 }
 
 func (pg *Postgres) UpdateArbitraryData(
@@ -367,4 +372,18 @@ func (pg *Postgres) UpdateArbitraryData(
 
 	_, err := pg.pool.Exec(ctx, query, args...)
 	return err
+}
+
+func (pg *Postgres) DeleteArbitraryData(ctx context.Context, uuid string, dataID int64) error {
+	sql := `DELETE FROM arbitrary_data WHERE user_uuid = $1 AND id = $2`
+
+	tag, err := pg.pool.Exec(ctx, sql, uuid, dataID)
+	if err != nil {
+		return err
+	}
+	if tag.RowsAffected() == 0 {
+		return ErrRowAffected
+	}
+
+	return nil
 }

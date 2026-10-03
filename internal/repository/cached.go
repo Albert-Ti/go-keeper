@@ -106,23 +106,23 @@ func (c *CachedDatabase) CreateCard(ctx context.Context, uuid string, number str
 	return nil
 }
 
-func (c *CachedDatabase) DeleteCard(ctx context.Context, uuid string, cardID int64) error {
-	key := fmt.Sprintf("user:%s:%s", uuid, "cards")
-
-	err := c.cache.Delete(ctx, key)
-	if err == nil {
-		return c.next.DeleteCard(ctx, uuid, cardID)
-
-	}
-	return nil
-}
-
 func (c *CachedDatabase) ActivateCard(ctx context.Context, uuid string, cardID int64) error {
 	key := fmt.Sprintf("user:%s:%s", uuid, "cards")
 
 	err := c.cache.Delete(ctx, key)
 	if err == nil {
 		return c.next.ActivateCard(ctx, uuid, cardID)
+
+	}
+	return nil
+}
+
+func (c *CachedDatabase) DeleteCard(ctx context.Context, uuid string, cardID int64) error {
+	key := fmt.Sprintf("user:%s:%s", uuid, "cards")
+
+	err := c.cache.Delete(ctx, key)
+	if err == nil {
+		return c.next.DeleteCard(ctx, uuid, cardID)
 
 	}
 	return nil
@@ -136,14 +136,19 @@ func (c *CachedDatabase) CreateArbitraryData(
 	ctx context.Context, uuid, name, filetype, objectKey string, status uint, clientSize int64) (int64, error) {
 	return c.next.CreateArbitraryData(ctx, uuid, name, filetype, objectKey, status, clientSize)
 }
+
 func (c *CachedDatabase) GetArbitraryData(ctx context.Context, uuid string) ([]models.ArbitraryData, error) {
 	return c.next.GetArbitraryData(ctx, uuid)
 }
 
-func (c *CachedDatabase) DeleteArbitraryData(ctx context.Context, uuid string, dataID int64) error {
-	return c.next.DeleteCard(ctx, uuid, dataID)
+func (c *CachedDatabase) GetArbitraryDataByID(ctx context.Context, uuid string, dataID int64) (models.ArbitraryData, error) {
+	return c.next.GetArbitraryDataByID(ctx, uuid, dataID)
 }
 
 func (c *CachedDatabase) UpdateArbitraryData(ctx context.Context, uuid string, dataID int64, params models.UpdateArbitraryDataParams) error {
 	return c.next.UpdateArbitraryData(ctx, uuid, dataID, params)
+}
+
+func (c *CachedDatabase) DeleteArbitraryData(ctx context.Context, uuid string, dataID int64) error {
+	return c.next.DeleteArbitraryData(ctx, uuid, dataID)
 }

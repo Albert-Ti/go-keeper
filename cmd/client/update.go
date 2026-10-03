@@ -6,7 +6,7 @@ import (
 	tea "charm.land/bubbletea/v2"
 )
 
-func homeUpdate(msg tea.KeyPressMsg, m model) (model, tea.Cmd) {
+func homePageUpdate(msg tea.KeyPressMsg, m model) (model, tea.Cmd) {
 	switch msg.String() {
 	case "up", "k":
 		if m.cursor > 0 {
@@ -24,7 +24,7 @@ func homeUpdate(msg tea.KeyPressMsg, m model) (model, tea.Cmd) {
 	return m, nil
 }
 
-func registerUpdate(msg tea.KeyPressMsg, m model) (model, tea.Cmd) {
+func registerPageUpdate(msg tea.KeyPressMsg, m model) (model, tea.Cmd) {
 	switch msg.String() {
 	case "tab":
 		if m.authForm.email.Focused() {
@@ -49,7 +49,7 @@ func registerUpdate(msg tea.KeyPressMsg, m model) (model, tea.Cmd) {
 	return m, cmd
 }
 
-func confirmUpdate(msg tea.KeyPressMsg, m model) (model, tea.Cmd) {
+func confirmPageUpdate(msg tea.KeyPressMsg, m model) (model, tea.Cmd) {
 	m.authForm.pass.Blur()
 	m.authForm.email.Blur()
 	m.authForm.confirm.Focus()
@@ -65,7 +65,7 @@ func confirmUpdate(msg tea.KeyPressMsg, m model) (model, tea.Cmd) {
 	return m, cmd
 }
 
-func loginUpdate(msg tea.KeyPressMsg, m model) (model, tea.Cmd) {
+func loginPageUpdate(msg tea.KeyPressMsg, m model) (model, tea.Cmd) {
 	switch msg.String() {
 	case "tab":
 		if m.authForm.email.Focused() {
@@ -105,7 +105,7 @@ func loadActiveTab(activeTab tabType, m model) tea.Cmd {
 	return nil
 }
 
-func userUpdate(msg tea.KeyPressMsg, m model) (model, tea.Cmd) {
+func userPageUpdate(msg tea.KeyPressMsg, m model) (model, tea.Cmd) {
 	if m.selectedRowID >= 0 {
 		switch m.activeTab {
 		case tabCards:
@@ -154,7 +154,7 @@ func userUpdate(msg tea.KeyPressMsg, m model) (model, tea.Cmd) {
 
 				if m.activeBtn == int(dataActionsDelete) {
 					m.isLoad = true
-					return m, nil
+					return m, deleteArbitraryDataCmd(m.client, m.arbitraryData[m.selectedRowID].GetId())
 				}
 			}
 		}
@@ -206,17 +206,16 @@ func userUpdate(msg tea.KeyPressMsg, m model) (model, tea.Cmd) {
 				m.cursor++
 				m.selectedRowID = -1
 			}
+		case "enter":
+			if len(m.cards) > 0 {
+				m.selectedRowID = m.cursor
+			}
 		case "ctrl+a":
 			m.cardForm.number.Focus()
 			// Для теста
 			m.cardForm.number.SetValue("5555640328235487")
 			m.cardForm.date.SetValue("01/27")
 			return m.navigateTo(cardFormPage), nil
-
-		case "enter":
-			if len(m.cards) > 0 {
-				m.selectedRowID = m.cursor
-			}
 		}
 
 	case tabData:
@@ -232,7 +231,7 @@ func userUpdate(msg tea.KeyPressMsg, m model) (model, tea.Cmd) {
 				m.selectedRowID = -1
 			}
 		case "enter":
-			if len(m.cards) > 0 {
+			if len(m.arbitraryData) > 0 {
 				m.selectedRowID = m.cursor
 			}
 		case "ctrl+a":
@@ -242,7 +241,7 @@ func userUpdate(msg tea.KeyPressMsg, m model) (model, tea.Cmd) {
 	return m, nil
 }
 
-func profileFormUpdate(msg tea.KeyPressMsg, m model) (model, tea.Cmd) {
+func profileFormPageUpdate(msg tea.KeyPressMsg, m model) (model, tea.Cmd) {
 	switch msg.String() {
 	case "tab":
 		var cmd tea.Cmd
@@ -270,7 +269,7 @@ func profileFormUpdate(msg tea.KeyPressMsg, m model) (model, tea.Cmd) {
 	return m, cmd
 }
 
-func cardFormUpdate(msg tea.KeyPressMsg, m model) (model, tea.Cmd) {
+func cardFormPageUpdate(msg tea.KeyPressMsg, m model) (model, tea.Cmd) {
 	switch msg.String() {
 	case "tab":
 		var cmd tea.Cmd
@@ -297,7 +296,7 @@ func cardFormUpdate(msg tea.KeyPressMsg, m model) (model, tea.Cmd) {
 	return m, cmd
 }
 
-func filePickerUpdate(msg tea.KeyPressMsg, m model) (model, tea.Cmd) {
+func filePickerPageUpdate(msg tea.KeyPressMsg, m model) (model, tea.Cmd) {
 	var cmd tea.Cmd
 	m.filepicker, cmd = m.filepicker.Update(msg)
 
@@ -309,13 +308,13 @@ func filePickerUpdate(msg tea.KeyPressMsg, m model) (model, tea.Cmd) {
 	// Did the user select a disabled file?
 	if didSelect, _ := m.filepicker.DidSelectDisabledFile(msg); didSelect {
 		m.selectedFile = ""
-		return m, m.handleError(errors.New("is not valid"), "filePickerUpdate")
+		return m, m.handleError(errors.New("is not valid"), "filePickerPageUpdate")
 	}
 
 	switch msg.String() {
 	case "ctrl+s":
 		if m.selectedFile == "" {
-			return m, m.handleError(errors.New("file is not selected"), "filePickerUpdate")
+			return m, m.handleError(errors.New("file is not selected"), "filePickerPageUpdate")
 		}
 		m.isLoad = true
 		return m, createArbitraryDataCmd(m.client, m.filepicker.Path)

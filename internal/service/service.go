@@ -31,7 +31,7 @@ var (
 	ErrInvalidCodeEmail  = errors.New("invalid confirmation code")
 	ErrEmailNotConfirmed = errors.New("email has not been confirmed")
 	ErrNoRows            = errors.New("no rows")
-	ErrCardNotFound      = errors.New("card not found or not active")
+	ErrNotFound          = errors.New("NotFound")
 	ErrPasswordReused    = errors.New("password was used before")
 )
 
@@ -167,9 +167,11 @@ func (s *Service) CreateCard(ctx context.Context, uuid string, number string, ex
 
 func (s *Service) DeleteCard(ctx context.Context, uuid string, cardID int64) error {
 	err := s.db.DeleteCard(ctx, uuid, cardID)
-
 	if err != nil {
-		return ErrCardNotFound
+		if errors.Is(err, repository.ErrRowAffected) {
+			return ErrNotFound
+		}
+		return err
 	}
 	return nil
 }
@@ -234,5 +236,20 @@ func (s *Service) GetArbitraryData(ctx context.Context, uuid string) ([]models.A
 }
 
 func (s *Service) DeleteArbitraryData(ctx context.Context, uuid string, dataID int64) error {
-	return s.db.DeleteArbitraryData(ctx, uuid, dataID)
+	data, err := s.db.GetArbitraryDataByID(ctx, uuid, dataID)
+	if err != nil {
+		return err
+	}
+	if err := s.objStorage.Delete(ctx, data.ObjectKey); err != nil {
+		return err
+	}
+
+	if err := s.db.DeleteArbitraryData(ctx, uuid, dataID); err != nil {
+		if errors.Is(err, repository.ErrRowAffected) {
+			return ErrNotFound
+		}
+		return err
+	}
+
+	return nil
 }

@@ -19,13 +19,13 @@ var (
 	colorPlaceholder = lipgloss.Color("244")
 	colorError       = lipgloss.Color("203")
 	colorText        = lipgloss.Color("255")
-	infoText         = lipgloss.Color("150")
+	colorSuccess     = lipgloss.Color("150")
 )
 
 var (
 	labelStyle = lipgloss.NewStyle().Foreground(lipgloss.Color("245"))
 	errorStyle = lipgloss.NewStyle().Foreground(colorError)
-	infoStyle  = lipgloss.NewStyle().Foreground(infoText)
+	infoStyle  = lipgloss.NewStyle().Foreground(colorSuccess)
 
 	inputBoxFocused = lipgloss.NewStyle().
 			Border(lipgloss.RoundedBorder()).
@@ -38,11 +38,13 @@ var (
 			Padding(0, 1)
 
 	tabActiveStyle = lipgloss.NewStyle().
+			Bold(true).
 			Foreground(colorText).
 			Background(colorPrimary).
 			Padding(0, 2)
 
 	tabInactiveStyle = lipgloss.NewStyle().
+				Bold(true).
 				Foreground(colorMuted).
 				Padding(0, 2)
 )
@@ -75,7 +77,9 @@ func newStyledInput(placeholder string, isPass bool) textinput.Model {
 func button(text, description string, disabled bool) string {
 	textInfo := lipgloss.NewStyle().Faint(true).Render(description)
 	if disabled {
-		return lipgloss.NewStyle().Foreground(colorPrimary).Faint(true).Render(fmt.Sprintf("[ %s ]", text)) + " " + textInfo
+		return lipgloss.NewStyle().Foreground(colorPrimary).Bold(true).Faint(true).
+			Render(fmt.Sprintf("[ %s ]", text)) + " " + textInfo
 	}
-	return lipgloss.NewStyle().Foreground(colorPrimary).Render(fmt.Sprintf("[ %s ]", text)) + " " + textInfo
+	return lipgloss.NewStyle().Foreground(colorPrimary).Bold(true).
+		Render(fmt.Sprintf("[ %s ]", text)) + " " + textInfo
 }

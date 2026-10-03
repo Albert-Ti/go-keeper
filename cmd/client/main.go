@@ -410,6 +410,17 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.isLoad = false
 		return m.navigateTo(userPage), getArbitraryDataCmd(m.client)
 
+	case deleteArbitraryDataResultMsg:
+		if msg.err != nil {
+			if strings.Contains(msg.err.Error(), "access token is expired") {
+				return m, refreshTokenCmd(m.client, m.localStorage.Get(refreshTokenKey))
+			}
+			return m, m.handleError(msg.err, "deleteArbitraryDataResultMsg")
+		}
+		m.isLoad = false
+		m.selectedRowID = -1
+		return m.navigateTo(userPage), getArbitraryDataCmd(m.client)
+
 		// Обработка нажатия клавиш
 	case tea.KeyPressMsg:
 		switch msg.String() {
@@ -421,9 +432,9 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case "esc":
 			if m.selectedRowID >= 0 {
 				m.selectedRowID = -1
-				m.activeBtn = 0
 				return m, nil
 			}
+
 			if m.activePage == cardFormPage {
 				m.cardForm.number.Blur()
 				m.cardForm.date.Blur()
@@ -440,21 +451,21 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 		switch m.activePage {
 		case registerPage:
-			return registerUpdate(msg, m)
+			return registerPageUpdate(msg, m)
 		case confirmPage:
-			return confirmUpdate(msg, m)
+			return confirmPageUpdate(msg, m)
 		case loginPage:
-			return loginUpdate(msg, m)
+			return loginPageUpdate(msg, m)
 		case homePage:
-			return homeUpdate(msg, m)
+			return homePageUpdate(msg, m)
 		case userPage:
-			return userUpdate(msg, m)
+			return userPageUpdate(msg, m)
 		case cardFormPage:
-			return cardFormUpdate(msg, m)
+			return cardFormPageUpdate(msg, m)
 		case profileFormPage:
-			return profileFormUpdate(msg, m)
+			return profileFormPageUpdate(msg, m)
 		case filePickerPage:
-			return filePickerUpdate(msg, m)
+			return filePickerPageUpdate(msg, m)
 		}
 
 	default:

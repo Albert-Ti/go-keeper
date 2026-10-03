@@ -22,6 +22,7 @@ type Database interface {
 	ActivateCard(ctx context.Context, uuid string, cardID int64) error
 
 	GetArbitraryData(ctx context.Context, uuid string) ([]models.ArbitraryData, error)
+	GetArbitraryDataByID(ctx context.Context, uuid string, dataID int64) (models.ArbitraryData, error)
 	CreateArbitraryData(
 		ctx context.Context, uuid, filename, filetype, objectKey string, status uint, clientSize int64) (int64, error)
 	UpdateArbitraryData(ctx context.Context, uuid string, dataID int64, params models.UpdateArbitraryDataParams) error

@@ -157,6 +157,21 @@ func (mr *MockDatabaseMockRecorder) GetArbitraryData(ctx, uuid any) *gomock.Call
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetArbitraryData", reflect.TypeOf((*MockDatabase)(nil).GetArbitraryData), ctx, uuid)
 }
 
+// GetArbitraryDataByID mocks base method.
+func (m *MockDatabase) GetArbitraryDataByID(ctx context.Context, uuid string, dataID int64) (models.ArbitraryData, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetArbitraryDataByID", ctx, uuid, dataID)
+	ret0, _ := ret[0].(models.ArbitraryData)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetArbitraryDataByID indicates an expected call of GetArbitraryDataByID.
+func (mr *MockDatabaseMockRecorder) GetArbitraryDataByID(ctx, uuid, dataID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetArbitraryDataByID", reflect.TypeOf((*MockDatabase)(nil).GetArbitraryDataByID), ctx, uuid, dataID)
+}
+
 // GetCards mocks base method.
 func (m *MockDatabase) GetCards(ctx context.Context, uuid string) ([]models.Card, error) {
 	m.ctrl.T.Helper()

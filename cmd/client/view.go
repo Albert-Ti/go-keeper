@@ -15,7 +15,9 @@ func headerView(m model) string {
 		spinner = m.spinner.View()
 	}
 
-	leftRendered := lipgloss.NewStyle().Foreground(colorPrimary).
+	leftRendered := lipgloss.NewStyle().
+		Foreground(colorPrimary).
+		Bold(true).
 		Render("Go Keeper") + " " + spinner
 
 	page := m.activePage.String()
@@ -225,11 +227,11 @@ func contentCardsView(m model) string {
 
 func contentDataView(m model) string {
 	var (
-		nameWidth   = 27
-		typeWidth   = 10
-		sizeWidth   = 17
+		nameWidth   = 28
+		typeWidth   = 8
+		sizeWidth   = 19
 		statusWidth = 10
-		dateWidth   = 12
+		dateWidth   = 13
 	)
 
 	s := ""
@@ -257,7 +259,7 @@ func contentDataView(m model) string {
 			case 0:
 				status = lipgloss.NewStyle().Faint(true).Render("uploading")
 			case 1:
-				status = lipgloss.NewStyle().Render("success")
+				status = lipgloss.NewStyle().Foreground(colorSuccess).Render("success")
 			case 2:
 				status = lipgloss.NewStyle().Foreground(colorError).Render("failed")
 			}
@@ -286,6 +288,7 @@ func contentDataView(m model) string {
 					Render(v.GetCreatedAt().AsTime().Format("02.01.2006")) +
 					lipgloss.NewStyle().Width(statusWidth).Render(status)
 			} else {
+
 				btnsOrStatus = btns
 			}
 

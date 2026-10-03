@@ -60,11 +60,11 @@ func main() {
 	}
 
 	srv := grpc.NewServer(
-		grpc.MaxRecvMsgSize(4*1024*1024), // под 1MB чанки
+		grpc.MaxRecvMsgSize(4*1024*1024),
 		grpc.ChainUnaryInterceptor(
 			interceptor.Logging(), interceptor.AuthUnary(opts.JWTSecret)),
 		grpc.ChainStreamInterceptor(
-			interceptor.AuthStream(opts.JWTSecret),
+			interceptor.LoggingStream(), interceptor.AuthStream(opts.JWTSecret),
 		),
 	)
 
