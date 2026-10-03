@@ -408,6 +408,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return m, m.handleError(msg.err, "createArbitraryDataResultMsg")
 		}
 		m.isLoad = false
+		m.selectedFile = ""
 		return m.navigateTo(userPage), getArbitraryDataCmd(m.client)
 
 	case deleteArbitraryDataResultMsg:
@@ -419,6 +420,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 		m.isLoad = false
 		m.selectedRowID = -1
+		m.cursor = 0
 		return m.navigateTo(userPage), getArbitraryDataCmd(m.client)
 
 		// Обработка нажатия клавиш
@@ -430,11 +432,14 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			m.Reset()
 			return m, nil
 		case "esc":
+			if m.selectedFile != "" {
+				m.selectedFile = ""
+				return m, nil
+			}
 			if m.selectedRowID >= 0 {
 				m.selectedRowID = -1
 				return m, nil
 			}
-
 			if m.activePage == cardFormPage {
 				m.cardForm.number.Blur()
 				m.cardForm.date.Blur()

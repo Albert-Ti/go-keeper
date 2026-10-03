@@ -46,7 +46,11 @@ func main() {
 	}
 
 	objStorage, err := repository.NewObjStorage(
-		opts.ObjStorageRunAddr, opts.ObjStorageAccessKey, opts.ObjStorageSecretKey)
+		opts.ObjStorageRunAddr,
+		opts.ObjStorageAccessKey,
+		opts.ObjStorageSecretKey,
+		opts.ObjStorageBucket,
+	)
 	if err != nil {
 		panic(err)
 	}

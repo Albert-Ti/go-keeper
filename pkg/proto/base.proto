@@ -27,4 +27,5 @@ service GoKeeperService {
   rpc DownloadArbitraryData(DownloadArbitraryDataRequest) returns (stream DownloadArbitraryDataResponse);
   rpc CreateArbitraryData(stream CreateArbitraryDataRequest) returns (CreateArbitraryDataResponse);
   rpc DeleteArbitraryData(DeleteArbitraryDataRequest) returns (DeleteArbitraryDataResponse);
+  rpc ReloadArbitraryData(stream ReloadArbitraryDataRequest) returns (ReloadArbitraryDataResponse);
 }

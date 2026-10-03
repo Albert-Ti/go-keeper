@@ -35,6 +35,7 @@ type Options struct {
 	ObjStorageRunAddr   string
 	ObjStorageAccessKey string
 	ObjStorageSecretKey string
+	ObjStorageBucket    string
 }
 
 type smtpFileOptions struct {
@@ -55,6 +56,7 @@ func NewOptions(opts ...func(*Options)) *Options {
 		ObjStorageRunAddr:   "http://127.0.0.1:8333",
 		ObjStorageAccessKey: "s3-access",
 		ObjStorageSecretKey: "s3-secret",
+		ObjStorageBucket:    "test",
 	}
 
 	for _, opt := range opts {

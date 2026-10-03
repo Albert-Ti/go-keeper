@@ -1,8 +1,6 @@
 package utils
 
 import (
-	"fmt"
-
 	pb "github.com/Albert-Ti/go-keeper/pkg/proto"
 )
 
@@ -16,7 +14,6 @@ func (r *StreamReader) Read(p []byte) (int, error) {
 
 	for len(r.buf) == 0 {
 		req, err := r.Stream.Recv()
-		fmt.Println("CHUNK", len(req.GetChunk()))
 		if err != nil {
 			return 0, err
 		}

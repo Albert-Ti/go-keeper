@@ -3,7 +3,6 @@ package repository
 import (
 	"context"
 	"io"
-	"time"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/config"
@@ -13,10 +12,12 @@ import (
 )
 
 type S3Client struct {
-	client *transfermanager.Client
+	s3     *s3.Client
+	tm     *transfermanager.Client
+	bucket string
 }
 
-func NewS3Client(ctx context.Context, endpoint, accessKey, secretKey string) (*S3Client, error) {
+func NewS3Client(ctx context.Context, endpoint, accessKey, secretKey, bucket string) (*S3Client, error) {
 	cfg, err := config.LoadDefaultConfig(ctx,
 		config.WithRegion("us-east-1"),
 		config.WithCredentialsProvider(
@@ -32,27 +33,37 @@ func NewS3Client(ctx context.Context, endpoint, accessKey, secretKey string) (*S
 		o.UsePathStyle = true
 	})
 
-	tmClient := transfermanager.New(s3Client) // ← оборачиваем s3.Client в transfermanager.Client
-
-	return &S3Client{client: tmClient}, nil
+	return &S3Client{
+		s3:     s3Client,
+		tm:     transfermanager.New(s3Client),
+		bucket: bucket,
+	}, nil
 }
 
-func (s3c *S3Client) Put(ctx context.Context, key string, r io.Reader) error {
-	ctx, cancel := context.WithTimeout(ctx, 10*time.Second)
-	defer cancel()
-
-	_, err := s3c.client.UploadObject(ctx, &transfermanager.UploadObjectInput{
-		Bucket: aws.String("test"),
+func (c *S3Client) Put(ctx context.Context, key string, r io.Reader) error {
+	_, err := c.tm.UploadObject(ctx, &transfermanager.UploadObjectInput{
+		Bucket: aws.String(c.bucket),
 		Key:    aws.String(key),
 		Body:   r,
 	})
 	return err
 }
 
-func (s3c *S3Client) Get(ctx context.Context, key string) (io.ReadCloser, error) {
-	return nil, nil
+func (c *S3Client) Get(ctx context.Context, key string) (io.ReadCloser, error) {
+	out, err := c.s3.GetObject(ctx, &s3.GetObjectInput{
+		Bucket: aws.String(c.bucket),
+		Key:    aws.String(key),
+	})
+	if err != nil {
+		return nil, err
+	}
+	return out.Body, nil // вызывающий обязан закрыть
 }
 
-func (s3c *S3Client) Delete(ctx context.Context, key string) error {
-	return nil
+func (c *S3Client) Delete(ctx context.Context, key string) error {
+	_, err := c.s3.DeleteObject(ctx, &s3.DeleteObjectInput{
+		Bucket: aws.String(c.bucket),
+		Key:    aws.String(key),
+	})
+	return err
 }

@@ -253,3 +253,23 @@ func (s *Service) DeleteArbitraryData(ctx context.Context, uuid string, dataID i
 
 	return nil
 }
+
+func (s *Service) ReloadArbitraryData(ctx context.Context, uuid string, dataID int64, reader *utils.StreamReader) error {
+	data, err := s.db.GetArbitraryDataByID(ctx, uuid, dataID)
+	if err != nil {
+		return err
+	}
+
+	if err := s.objStorage.Put(ctx, data.ObjectKey, reader); err != nil {
+		return err
+	}
+
+	if err := s.db.UpdateArbitraryData(ctx, uuid, dataID, models.UpdateArbitraryDataParams{
+		Status:    ptr.Uint(SUCCESS),
+		TotalSize: &reader.Total,
+	}); err != nil {
+		return err
+	}
+
+	return nil
+}
