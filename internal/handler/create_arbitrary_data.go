@@ -25,7 +25,7 @@ func (g *GrpcServer) CreateArbitraryData(stream pb.GoKeeperService_CreateArbitra
 		metadata = req.GetMetadata()
 	}
 
-	reader := &utils.StreamReader{
+	reader := &utils.GoKeeperStream[*pb.CreateArbitraryDataRequest]{
 		Stream: stream,
 	}
 
@@ -34,6 +34,7 @@ func (g *GrpcServer) CreateArbitraryData(stream pb.GoKeeperService_CreateArbitra
 		uuid,
 		metadata.GetFilename(),
 		metadata.GetType(),
+		metadata.GetOsPath(),
 		metadata.GetSize(),
 		reader,
 	)

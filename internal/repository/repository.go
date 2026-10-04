@@ -24,7 +24,7 @@ type Database interface {
 	GetArbitraryData(ctx context.Context, uuid string) ([]models.ArbitraryData, error)
 	GetArbitraryDataByID(ctx context.Context, uuid string, dataID int64) (models.ArbitraryData, error)
 	CreateArbitraryData(
-		ctx context.Context, uuid, filename, filetype, objectKey string, status uint, clientSize int64) (int64, error)
+		ctx context.Context, uuid, filename, filetype, osPath, objectKey string, status uint, clientSize int64) (int64, error)
 	UpdateArbitraryData(ctx context.Context, uuid string, dataID int64, params models.UpdateArbitraryDataParams) error
 	DeleteArbitraryData(ctx context.Context, uuid string, dataID int64) error
 }

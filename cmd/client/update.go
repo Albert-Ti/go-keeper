@@ -149,7 +149,9 @@ func userPageUpdate(msg tea.KeyPressMsg, m model) (model, tea.Cmd) {
 					if m.arbitraryData[m.selectedRowID].GetStatus() == 1 {
 						return m, m.handleInfo("file has been successfully uploaded", "tabData")
 					}
-					return m, nil
+					id := m.arbitraryData[m.selectedRowID].GetId()
+					filepath := m.arbitraryData[m.selectedRowID].GetOsPath()
+					return m, reloadArbitraryDataCmd(m.client, id, filepath)
 				}
 
 				if m.activeBtn == int(dataActionsDelete) {

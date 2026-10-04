@@ -26,11 +26,12 @@ type ArbitraryData struct {
 	xxx_hidden_Id         int64                  `protobuf:"varint,1,opt,name=id,proto3"`
 	xxx_hidden_Name       string                 `protobuf:"bytes,2,opt,name=name,proto3"`
 	xxx_hidden_Type       string                 `protobuf:"bytes,3,opt,name=type,proto3"`
-	xxx_hidden_ObjectKey  string                 `protobuf:"bytes,4,opt,name=object_key,json=objectKey,proto3"`
-	xxx_hidden_Status     int64                  `protobuf:"varint,5,opt,name=status,proto3"`
-	xxx_hidden_ClientSize int64                  `protobuf:"varint,6,opt,name=client_size,json=clientSize,proto3"`
-	xxx_hidden_TotalSize  int64                  `protobuf:"varint,7,opt,name=total_size,json=totalSize,proto3"`
-	xxx_hidden_CreatedAt  *timestamppb.Timestamp `protobuf:"bytes,8,opt,name=created_at,json=createdAt,proto3"`
+	xxx_hidden_OsPath     string                 `protobuf:"bytes,4,opt,name=os_path,json=osPath,proto3"`
+	xxx_hidden_ObjectKey  string                 `protobuf:"bytes,5,opt,name=object_key,json=objectKey,proto3"`
+	xxx_hidden_Status     int64                  `protobuf:"varint,6,opt,name=status,proto3"`
+	xxx_hidden_ClientSize int64                  `protobuf:"varint,7,opt,name=client_size,json=clientSize,proto3"`
+	xxx_hidden_TotalSize  int64                  `protobuf:"varint,8,opt,name=total_size,json=totalSize,proto3"`
+	xxx_hidden_CreatedAt  *timestamppb.Timestamp `protobuf:"bytes,9,opt,name=created_at,json=createdAt,proto3"`
 	unknownFields         protoimpl.UnknownFields
 	sizeCache             protoimpl.SizeCache
 }
@@ -77,6 +78,13 @@ func (x *ArbitraryData) GetName() string {
 func (x *ArbitraryData) GetType() string {
 	if x != nil {
 		return x.xxx_hidden_Type
+	}
+	return ""
+}
+
+func (x *ArbitraryData) GetOsPath() string {
+	if x != nil {
+		return x.xxx_hidden_OsPath
 	}
 	return ""
 }
@@ -128,6 +136,10 @@ func (x *ArbitraryData) SetType(v string) {
 	x.xxx_hidden_Type = v
 }
 
+func (x *ArbitraryData) SetOsPath(v string) {
+	x.xxx_hidden_OsPath = v
+}
+
 func (x *ArbitraryData) SetObjectKey(v string) {
 	x.xxx_hidden_ObjectKey = v
 }
@@ -165,6 +177,7 @@ type ArbitraryData_builder struct {
 	Id         int64
 	Name       string
 	Type       string
+	OsPath     string
 	ObjectKey  string
 	Status     int64
 	ClientSize int64
@@ -179,6 +192,7 @@ func (b0 ArbitraryData_builder) Build() *ArbitraryData {
 	x.xxx_hidden_Id = b.Id
 	x.xxx_hidden_Name = b.Name
 	x.xxx_hidden_Type = b.Type
+	x.xxx_hidden_OsPath = b.OsPath
 	x.xxx_hidden_ObjectKey = b.ObjectKey
 	x.xxx_hidden_Status = b.Status
 	x.xxx_hidden_ClientSize = b.ClientSize
@@ -411,6 +425,7 @@ type FileMetadata struct {
 	xxx_hidden_Filename string                 `protobuf:"bytes,1,opt,name=filename,proto3"`
 	xxx_hidden_Type     string                 `protobuf:"bytes,2,opt,name=type,proto3"`
 	xxx_hidden_Size     int64                  `protobuf:"varint,3,opt,name=size,proto3"`
+	xxx_hidden_OsPath   string                 `protobuf:"bytes,4,opt,name=os_path,json=osPath,proto3"`
 	unknownFields       protoimpl.UnknownFields
 	sizeCache           protoimpl.SizeCache
 }
@@ -461,6 +476,13 @@ func (x *FileMetadata) GetSize() int64 {
 	return 0
 }
 
+func (x *FileMetadata) GetOsPath() string {
+	if x != nil {
+		return x.xxx_hidden_OsPath
+	}
+	return ""
+}
+
 func (x *FileMetadata) SetFilename(v string) {
 	x.xxx_hidden_Filename = v
 }
@@ -473,12 +495,17 @@ func (x *FileMetadata) SetSize(v int64) {
 	x.xxx_hidden_Size = v
 }
 
+func (x *FileMetadata) SetOsPath(v string) {
+	x.xxx_hidden_OsPath = v
+}
+
 type FileMetadata_builder struct {
 	_ [0]func() // Prevents comparability and use of unkeyed literals for the builder.
 
 	Filename string
 	Type     string
 	Size     int64
+	OsPath   string
 }
 
 func (b0 FileMetadata_builder) Build() *FileMetadata {
@@ -488,6 +515,7 @@ func (b0 FileMetadata_builder) Build() *FileMetadata {
 	x.xxx_hidden_Filename = b.Filename
 	x.xxx_hidden_Type = b.Type
 	x.xxx_hidden_Size = b.Size
+	x.xxx_hidden_OsPath = b.OsPath
 	return m0
 }
 
@@ -1031,31 +1059,33 @@ var File_arbitrary_data_proto protoreflect.FileDescriptor
 
 const file_arbitrary_data_proto_rawDesc = "" +
 	"\n" +
-	"\x14arbitrary_data.proto\x12\bgokeeper\x1a\x1fgoogle/protobuf/timestamp.proto\"\xf9\x01\n" +
+	"\x14arbitrary_data.proto\x12\bgokeeper\x1a\x1fgoogle/protobuf/timestamp.proto\"\x92\x02\n" +
 	"\rArbitraryData\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\x03R\x02id\x12\x12\n" +
 	"\x04name\x18\x02 \x01(\tR\x04name\x12\x12\n" +
-	"\x04type\x18\x03 \x01(\tR\x04type\x12\x1d\n" +
+	"\x04type\x18\x03 \x01(\tR\x04type\x12\x17\n" +
+	"\aos_path\x18\x04 \x01(\tR\x06osPath\x12\x1d\n" +
 	"\n" +
-	"object_key\x18\x04 \x01(\tR\tobjectKey\x12\x16\n" +
-	"\x06status\x18\x05 \x01(\x03R\x06status\x12\x1f\n" +
-	"\vclient_size\x18\x06 \x01(\x03R\n" +
+	"object_key\x18\x05 \x01(\tR\tobjectKey\x12\x16\n" +
+	"\x06status\x18\x06 \x01(\x03R\x06status\x12\x1f\n" +
+	"\vclient_size\x18\a \x01(\x03R\n" +
 	"clientSize\x12\x1d\n" +
 	"\n" +
-	"total_size\x18\a \x01(\x03R\ttotalSize\x129\n" +
+	"total_size\x18\b \x01(\x03R\ttotalSize\x129\n" +
 	"\n" +
-	"created_at\x18\b \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedAt\"\x1a\n" +
+	"created_at\x18\t \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedAt\"\x1a\n" +
 	"\x18ListArbitraryDataRequest\"[\n" +
 	"\x19ListArbitraryDataResponse\x12>\n" +
 	"\x0earbitrary_data\x18\x01 \x03(\v2\x17.gokeeper.ArbitraryDataR\rarbitraryData\".\n" +
 	"\x1cDownloadArbitraryDataRequest\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\x03R\x02id\"5\n" +
 	"\x1dDownloadArbitraryDataResponse\x12\x14\n" +
-	"\x05chunk\x18\x01 \x01(\fR\x05chunk\"R\n" +
+	"\x05chunk\x18\x01 \x01(\fR\x05chunk\"k\n" +
 	"\fFileMetadata\x12\x1a\n" +
 	"\bfilename\x18\x01 \x01(\tR\bfilename\x12\x12\n" +
 	"\x04type\x18\x02 \x01(\tR\x04type\x12\x12\n" +
-	"\x04size\x18\x03 \x01(\x03R\x04size\"r\n" +
+	"\x04size\x18\x03 \x01(\x03R\x04size\x12\x17\n" +
+	"\aos_path\x18\x04 \x01(\tR\x06osPath\"r\n" +
 	"\x1aCreateArbitraryDataRequest\x124\n" +
 	"\bmetadata\x18\x01 \x01(\v2\x16.gokeeper.FileMetadataH\x00R\bmetadata\x12\x16\n" +
 	"\x05chunk\x18\x02 \x01(\fH\x00R\x05chunkB\x06\n" +

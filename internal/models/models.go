@@ -36,6 +36,7 @@ type ArbitraryData struct {
 	Type       string
 	Status     int64
 	ObjectKey  string
+	OSPath     string
 	ClientSize int64
 	TotalSize  int64
 	CreatedAt  time.Time

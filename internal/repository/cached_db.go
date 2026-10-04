@@ -133,8 +133,8 @@ func (c *CachedDatabase) GetPassList(ctx context.Context, uuid string) ([]string
 }
 
 func (c *CachedDatabase) CreateArbitraryData(
-	ctx context.Context, uuid, name, filetype, objectKey string, status uint, clientSize int64) (int64, error) {
-	return c.next.CreateArbitraryData(ctx, uuid, name, filetype, objectKey, status, clientSize)
+	ctx context.Context, uuid, filename, filetype, osPath, objectKey string, status uint, clientSize int64) (int64, error) {
+	return c.next.CreateArbitraryData(ctx, uuid, filename, filetype, osPath, objectKey, status, clientSize)
 }
 
 func (c *CachedDatabase) GetArbitraryData(ctx context.Context, uuid string) ([]models.ArbitraryData, error) {

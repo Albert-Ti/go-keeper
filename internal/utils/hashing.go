@@ -18,7 +18,7 @@ func RandomHash(length int) (string, error) {
 	return hex.EncodeToString(b), nil
 }
 
-func HashPass(salt string, pass string) string {
+func HashString(salt string, pass string) string {
 	sum := sha256.Sum256([]byte(pass + salt))
 	encStr := base64.StdEncoding.EncodeToString(sum[:])
 	return fmt.Sprint(salt, ".", encStr)

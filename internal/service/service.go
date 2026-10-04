@@ -17,6 +17,8 @@ import (
 	"github.com/jackc/pgx/v5/pgconn"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/metadata"
+
+	pb "github.com/Albert-Ti/go-keeper/pkg/proto"
 )
 
 const (
@@ -59,7 +61,7 @@ func (s *Service) Register(ctx context.Context, email, pass string) error {
 		return err
 	}
 
-	hash := utils.HashPass(salt, pass)
+	hash := utils.HashString(salt, pass)
 	code := utils.GenerateCodeEmail()
 
 	if err := s.db.AddUser(ctx, email, code, hash); err != nil {
@@ -93,7 +95,7 @@ func (s *Service) Login(ctx context.Context, email string, pass string) (models.
 	}
 
 	salt := strings.Split(user.Pass, ".")[0]
-	hashPass := utils.HashPass(salt, pass)
+	hashPass := utils.HashString(salt, pass)
 
 	if hashPass != user.Pass {
 		return models.User{}, ErrInvalidPassword
@@ -152,7 +154,7 @@ func (s *Service) ChangePass(ctx context.Context, uuid, passOld, passNew string)
 	}
 
 	salt := strings.Split(user.Pass, ".")[0]
-	hashPassNew := utils.HashPass(salt, passNew)
+	hashPassNew := utils.HashString(salt, passNew)
 
 	return s.db.ChangePass(ctx, uuid, user.Pass, hashPassNew)
 }
@@ -202,11 +204,12 @@ func (s *Service) sendEmailCode(ctx context.Context, email, code string) error {
 }
 
 func (s *Service) SaveArbitraryData(
-	ctx context.Context, uuid, filename, filetype string, clientSize int64, reader *utils.StreamReader) (int64, error) {
+	ctx context.Context, uuid, filename, filetype, osPath string, clientSize int64, reader *utils.GoKeeperStream[*pb.CreateArbitraryDataRequest]) (int64, error) {
+
 	key := uuid + "/" + filename
 
 	id, err := s.db.CreateArbitraryData(
-		ctx, uuid, filename, filetype, key, UPLOADING, clientSize)
+		ctx, uuid, filename, filetype, osPath, key, UPLOADING, clientSize)
 	if err != nil {
 		return -1, err
 	}
@@ -254,7 +257,7 @@ func (s *Service) DeleteArbitraryData(ctx context.Context, uuid string, dataID i
 	return nil
 }
 
-func (s *Service) ReloadArbitraryData(ctx context.Context, uuid string, dataID int64, reader *utils.StreamReader) error {
+func (s *Service) ReloadArbitraryData(ctx context.Context, uuid string, dataID int64, reader *utils.GoKeeperStream[*pb.ReloadArbitraryDataRequest]) error {
 	data, err := s.db.GetArbitraryDataByID(ctx, uuid, dataID)
 	if err != nil {
 		return err

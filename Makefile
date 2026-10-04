@@ -73,9 +73,9 @@ docker-down:
 docker-exec:
 	docker compose exec -t postgres bash
 
-# Удалить том с данными Postgres
+# Удалить том с данными s3 storage
 docker-volume-rm:
-	docker volume rm shorten_url_data || true 
+	docker volume rm go-keeper_seaweedfs-data || true 
 
 # Команда для удаления контейнеров, образов, томов и сетей за один раз которые не используются
 docker-prune:

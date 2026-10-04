@@ -1,16 +1,20 @@
 package utils
 
-import (
-	pb "github.com/Albert-Ti/go-keeper/pkg/proto"
-)
+type ChunkedReader interface {
+	GetChunk() []byte
+}
 
-type StreamReader struct {
-	Stream pb.GoKeeperService_CreateArbitraryDataServer
+type StreamReader[T ChunkedReader] interface {
+	Recv() (T, error)
+}
+
+type GoKeeperStream[T ChunkedReader] struct {
+	Stream StreamReader[T]
 	buf    []byte
 	Total  int64
 }
 
-func (r *StreamReader) Read(p []byte) (int, error) {
+func (r *GoKeeperStream[T]) Read(p []byte) (int, error) {
 
 	for len(r.buf) == 0 {
 		req, err := r.Stream.Recv()

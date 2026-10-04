@@ -38,6 +38,6 @@ func ValidatePass(pass string) {
 
 func CheckPass(stored, plain string) bool {
 	salt := strings.Split(stored, ".")[0]
-	h := HashPass(salt, plain)
+	h := HashString(salt, plain)
 	return subtle.ConstantTimeCompare([]byte(h), []byte(stored)) == 1
 }

@@ -13,6 +13,7 @@ import (
 
 	tea "charm.land/bubbletea/v2"
 	pb "github.com/Albert-Ti/go-keeper/pkg/proto"
+	"github.com/aws/smithy-go/ptr"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/metadata"
 )
@@ -74,6 +75,10 @@ type createArbitraryDataResultMsg struct {
 }
 
 type deleteArbitraryDataResultMsg struct {
+	err error
+}
+
+type reloadArbitraryDataResultMsg struct {
 	err error
 }
 
@@ -261,6 +266,7 @@ func createArbitraryDataCmd(client pb.GoKeeperServiceClient, path string) tea.Cm
 				Filename: filename,
 				Type:     filetype,
 				Size:     info.Size(),
+				OsPath:   path,
 			}.Build(),
 		}.Build())
 		if err != nil {
@@ -310,5 +316,55 @@ func deleteArbitraryDataCmd(client pb.GoKeeperServiceClient, id int64) tea.Cmd {
 		}.Build())
 
 		return deleteArbitraryDataResultMsg{err: err}
+	}
+}
+
+func reloadArbitraryDataCmd(client pb.GoKeeperServiceClient, id int64, filepath string) tea.Cmd {
+	return func() tea.Msg {
+		file, err := os.Open(filepath)
+		if err != nil {
+			return reloadArbitraryDataResultMsg{err: fmt.Errorf("failed to open: %w", err)}
+		}
+		defer file.Close()
+
+		stream, err := client.ReloadArbitraryData(context.Background())
+		if err != nil {
+			return reloadArbitraryDataResultMsg{err: err}
+		}
+
+		// Если Send вернул io.EOF, настоящую ошибку отдаёт CloseAndRecv.
+		sendErr := func(err error) tea.Msg {
+			if errors.Is(err, io.EOF) {
+				_, err = stream.CloseAndRecv()
+			}
+			return reloadArbitraryDataResultMsg{err: err}
+		}
+
+		if err := stream.Send(pb.ReloadArbitraryDataRequest_builder{Id: ptr.Int64(id)}.Build()); err != nil {
+			return reloadArbitraryDataResultMsg{err: err}
+		}
+
+		buf := make([]byte, 1024*1024)
+		for {
+			n, readErr := file.Read(buf)
+			if n > 0 {
+				if err := stream.Send(pb.ReloadArbitraryDataRequest_builder{
+					Chunk: buf[:n],
+				}.Build()); err != nil {
+					return sendErr(err)
+				}
+			}
+			if readErr == io.EOF {
+				break
+			}
+
+			if readErr != nil {
+				return reloadArbitraryDataResultMsg{err: readErr}
+			}
+		}
+		if _, err := stream.CloseAndRecv(); err != nil {
+			return reloadArbitraryDataResultMsg{err: err}
+		}
+		return reloadArbitraryDataResultMsg{err: nil}
 	}
 }

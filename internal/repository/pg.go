@@ -97,7 +97,6 @@ func (pg *Postgres) GetProfile(ctx context.Context, uuid string) (models.Profile
 	return user, nil
 }
 
-// UpdateUser - Универсальный метод db, который легко масштабируется при увеличении полей у таблицы users.
 func (pg *Postgres) UpdateUser(ctx context.Context, p models.UpdateUserParams) error {
 	setParts := make([]string, 0, 2)
 	args := make([]any, 0, 3)
@@ -272,13 +271,13 @@ func (pg *Postgres) DeleteCard(ctx context.Context, uuid string, cardID int64) e
 }
 
 func (pg *Postgres) CreateArbitraryData(
-	ctx context.Context, uuid, filename, filetype, objectKey string, status uint, clientSize int64) (int64, error) {
+	ctx context.Context, uuid, filename, filetype, osPath, objectKey string, status uint, clientSize int64) (int64, error) {
 	row := pg.pool.QueryRow(ctx,
 		`INSERT INTO 
-		arbitrary_data (user_uuid, name, type, status, object_key, client_size)
-		VALUES ($1, $2, $3, $4, $5, $6)
+		arbitrary_data (user_uuid, name, type, status, os_path, object_key, client_size)
+		VALUES ($1, $2, $3, $4, $5, $6, $7)
 		RETURNING id`,
-		uuid, filename, filetype, status, objectKey, clientSize)
+		uuid, filename, filetype, status, osPath, objectKey, clientSize)
 
 	var returningID int64
 	err := row.Scan(&returningID)
@@ -290,7 +289,7 @@ func (pg *Postgres) CreateArbitraryData(
 
 func (pg *Postgres) GetArbitraryData(ctx context.Context, uuid string) ([]models.ArbitraryData, error) {
 	sql := `
-	SELECT id, name, type, status, object_key, client_size, total_size, created_at
+	SELECT id, name, type, status, object_key, os_path, client_size, total_size, created_at
 	FROM arbitrary_data 
 	WHERE user_uuid = $1
 	`
@@ -308,6 +307,7 @@ func (pg *Postgres) GetArbitraryData(ctx context.Context, uuid string) ([]models
 			&data.Type,
 			&data.Status,
 			&data.ObjectKey,
+			&data.OSPath,
 			&data.ClientSize,
 			&data.TotalSize,
 			&data.CreatedAt,

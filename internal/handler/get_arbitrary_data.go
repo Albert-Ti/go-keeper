@@ -28,6 +28,7 @@ func (g *GrpcServer) GetArbitraryData(ctx context.Context, in *pb.ListArbitraryD
 			Type:       v.Type,
 			Status:     v.Status,
 			ObjectKey:  v.ObjectKey,
+			OsPath:     v.OSPath,
 			ClientSize: v.ClientSize,
 			TotalSize:  v.TotalSize,
 			CreatedAt:  timestamppb.New(v.CreatedAt),
