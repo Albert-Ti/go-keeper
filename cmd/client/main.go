@@ -52,7 +52,8 @@ const (
 type dataActionsType int
 
 const (
-	dataActionsReload dataActionsType = iota
+	dataActionsDownload dataActionsType = iota
+	dataActionsReload
 	dataActionsDelete
 )
 
@@ -188,7 +189,7 @@ func NewModel(client pb.GoKeeperServiceClient, localStorage *FileStorage) (*mode
 		allTabs:           []tabType{tabProfile, tabCards, tabData},
 		contentTabProfile: []string{"email", "create_date"},
 		cardsActions:      []cardActionsType{cardActionsUpdate, cardActionsDelete},
-		dataActions:       []dataActionsType{dataActionsReload, dataActionsDelete},
+		dataActions:       []dataActionsType{dataActionsDownload, dataActionsReload, dataActionsDelete},
 		authForm: authForm{
 			email:   email,
 			pass:    pass,

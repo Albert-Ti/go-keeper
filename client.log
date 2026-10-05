@@ -67,3 +67,8 @@ time=2026-10-04T14:18:43.605+03:00 level=ERROR msg=createArbitraryDataResultMsg 
 time=2026-10-04T14:24:15.231+03:00 level=ERROR msg=refreshTokenResultMsg value_error="rpc error: code = Unauthenticated desc = refresh token is expired"
 time=2026-10-04T14:24:21.394+03:00 level=INFO msg=FILEPATH !BADKEY=""
 time=2026-10-04T14:24:21.396+03:00 level=ERROR msg=deleteArbitraryDataResultMsg value_error="failed to open: open : no such file or directory"
+time=2026-10-04T14:56:35.194+03:00 level=ERROR msg=profileResultMsg value_error="rpc error: code = Unavailable desc = connection error: desc = \"transport: Error while dialing: dial tcp 127.0.0.1:8080: connect: connection refused\""
+time=2026-10-04T14:57:01.308+03:00 level=INFO msg=tabData value_info="file has been successfully uploaded"
+time=2026-10-04T15:06:40.649+03:00 level=INFO msg=tabData value_info="file has been successfully uploaded"
+time=2026-10-04T15:57:03.492+03:00 level=ERROR msg=refreshTokenResultMsg value_error="rpc error: code = Unauthenticated desc = refresh token is expired"
+time=2026-10-04T15:58:48.457+03:00 level=INFO msg=tabData value_info="file has been successfully uploaded"

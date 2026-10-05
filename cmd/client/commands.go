@@ -81,6 +81,9 @@ type deleteArbitraryDataResultMsg struct {
 type reloadArbitraryDataResultMsg struct {
 	err error
 }
+type downloadArbitraryDataResultMsg struct {
+	err error
+}
 
 func registerCmd(client pb.GoKeeperServiceClient, email, pass string) tea.Cmd {
 	return func() tea.Msg {
@@ -366,5 +369,34 @@ func reloadArbitraryDataCmd(client pb.GoKeeperServiceClient, id int64, filepath 
 			return reloadArbitraryDataResultMsg{err: err}
 		}
 		return reloadArbitraryDataResultMsg{err: nil}
+	}
+}
+
+func downloadArbitraryDataCmd(client pb.GoKeeperServiceClient, id int64, destPath string) tea.Cmd {
+	return func() tea.Msg {
+		stream, err := client.DownloadArbitraryData(context.Background(), pb.DownloadArbitraryDataRequest_builder{
+			Id: id,
+		}.Build())
+
+		file, err := os.Create(destPath)
+		if err != nil {
+			return downloadArbitraryDataResultMsg{err: err}
+		}
+		defer file.Close()
+
+		for {
+			resp, err := stream.Recv()
+			if err == io.EOF {
+				break
+			}
+			if err != nil {
+				return downloadArbitraryDataResultMsg{err: err}
+			}
+			if _, err := file.Write(resp.GetChunk()); err != nil {
+				return downloadArbitraryDataResultMsg{err: err}
+			}
+		}
+
+		return downloadArbitraryDataResultMsg{err: err}
 	}
 }

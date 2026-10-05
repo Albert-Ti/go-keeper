@@ -270,7 +270,7 @@ func contentDataView(m model) string {
 				prefix = "✎ "
 
 				if m.selectedRowID == i {
-					dataBtns = []string{"[ reload ]", "[ delete ]"}
+					dataBtns = []string{"[↓]", "[reload]", "[delete]"}
 				}
 			}
 			btns := ""

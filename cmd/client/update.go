@@ -144,6 +144,12 @@ func userPageUpdate(msg tea.KeyPressMsg, m model) (model, tea.Cmd) {
 					return m, nil
 				}
 			case "enter":
+				if m.activeBtn == int(dataActionsDownload) {
+					m.isLoad = true
+					return m, downloadArbitraryDataCmd(
+						m.client, m.arbitraryData[m.selectedRowID].GetId(), DOWNLOAD_PATHNAME)
+				}
+
 				if m.activeBtn == int(dataActionsReload) {
 					m.isLoad = true
 					if m.arbitraryData[m.selectedRowID].GetStatus() == 1 {
