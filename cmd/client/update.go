@@ -147,7 +147,10 @@ func userPageUpdate(msg tea.KeyPressMsg, m model) (model, tea.Cmd) {
 				if m.activeBtn == int(dataActionsDownload) {
 					m.isLoad = true
 					return m, downloadArbitraryDataCmd(
-						m.client, m.arbitraryData[m.selectedRowID].GetId(), DOWNLOAD_PATHNAME)
+						m.client,
+						m.arbitraryData[m.selectedRowID].GetId(),
+						DOWNLOAD_PATHNAME,
+						m.arbitraryData[m.selectedRowID].GetName())
 				}
 
 				if m.activeBtn == int(dataActionsReload) {
