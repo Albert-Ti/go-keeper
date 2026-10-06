@@ -429,12 +429,23 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			if strings.Contains(msg.err.Error(), "access token is expired") {
 				return m, refreshTokenCmd(m.client, m.localStorage.Get(refreshTokenKey))
 			}
-			return m, m.handleError(msg.err, "deleteArbitraryDataResultMsg")
+			return m, m.handleError(msg.err, "reloadArbitraryDataResultMsg")
 		}
 		m.isLoad = false
 		m.selectedFile = ""
 		m.selectedRowID = -1
 		return m, getArbitraryDataCmd(m.client)
+
+	case downloadArbitraryDataResultMsg:
+		if msg.err != nil {
+			if strings.Contains(msg.err.Error(), "access token is expired") {
+				return m, refreshTokenCmd(m.client, m.localStorage.Get(refreshTokenKey))
+			}
+			return m, m.handleError(msg.err, "downloadArbitraryDataResultMsg")
+		}
+		m.isLoad = false
+		m.selectedRowID = -1
+		return m, nil
 
 		// Обработка нажатия клавиш
 	case tea.KeyPressMsg:

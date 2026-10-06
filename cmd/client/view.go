@@ -237,7 +237,6 @@ func contentDataView(m model) string {
 	s := ""
 
 	if len(m.arbitraryData) > 0 {
-		// Заголовок
 		s += "  " +
 			lipgloss.NewStyle().Width(nameWidth).Bold(true).Render("name") +
 			lipgloss.NewStyle().Width(typeWidth).Bold(true).Render("type") +

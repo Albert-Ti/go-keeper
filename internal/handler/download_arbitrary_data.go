@@ -1,6 +1,8 @@
 package handler
 
 import (
+	"io"
+
 	"github.com/Albert-Ti/go-keeper/internal/interceptor"
 	pb "github.com/Albert-Ti/go-keeper/pkg/proto"
 	"google.golang.org/grpc/codes"
@@ -24,11 +26,16 @@ func (g *GrpcServer) DownloadArbitraryData(in *pb.DownloadArbitraryDataRequest, 
 
 	for {
 		n, err := reader.Read(buf)
+
 		if err != nil {
+			if err == io.EOF {
+				return nil
+			}
 			return status.Error(codes.Internal, "failed to download file")
 		}
 		if n > 0 {
 			err := stream.Send(pb.DownloadArbitraryDataResponse_builder{Chunk: buf[:n]}.Build())
+
 			if err != nil {
 				return status.Error(codes.Internal, "failed to download file")
 			}

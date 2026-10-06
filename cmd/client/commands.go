@@ -372,13 +372,18 @@ func reloadArbitraryDataCmd(client pb.GoKeeperServiceClient, id int64, filepath 
 	}
 }
 
-func downloadArbitraryDataCmd(client pb.GoKeeperServiceClient, id int64, destPath, filename string) tea.Cmd {
+func downloadArbitraryDataCmd(client pb.GoKeeperServiceClient, id int64, destDir, filename string) tea.Cmd {
 	return func() tea.Msg {
 		stream, err := client.DownloadArbitraryData(context.Background(), pb.DownloadArbitraryDataRequest_builder{
 			Id: id,
 		}.Build())
 
-		file, err := os.Create(destPath + "/" + filename)
+		// создаём директорию, если её нет (если есть, ничего не делает)
+		if err := os.MkdirAll(destDir, 0o755); err != nil {
+			return downloadArbitraryDataResultMsg{err: err}
+		}
+		fullPath := filepath.Join(destDir, filepath.Base(filename))
+		file, err := os.Create(fullPath)
 		if err != nil {
 			return downloadArbitraryDataResultMsg{err: err}
 		}
