@@ -16,7 +16,7 @@ func headerView(m model) string {
 	}
 
 	leftRendered := lipgloss.NewStyle().
-		Foreground(colorPrimary).
+		Foreground(colorAccent).
 		Bold(true).
 		Render("Go Keeper") + " " + spinner
 
@@ -64,16 +64,16 @@ func mainView(m model) string {
 	if m.activePage == registerPage || m.activePage == loginPage {
 		switch m.activePage {
 		case registerPage:
-			s += lipgloss.NewStyle().Foreground(colorPrimary).Render("REGISTRATION") + " \n\n"
+			s += lipgloss.NewStyle().Foreground(colorAccent).Render("REGISTRATION") + " \n\n"
 		case loginPage:
-			s += lipgloss.NewStyle().Foreground(colorPrimary).Render("LOGIN") + " \n\n"
+			s += lipgloss.NewStyle().Foreground(colorAccent).Render("LOGIN") + " \n\n"
 		}
 		s += fieldView("Email", m.authForm.email) + "\n\n"
 		s += fieldView("Pass", m.authForm.pass) + "\n"
 	}
 
 	if m.activePage == confirmPage {
-		s += lipgloss.NewStyle().Foreground(colorPrimary).Render("CONFIRM EMAIL") + " \n\n"
+		s += lipgloss.NewStyle().Foreground(colorAccent).Render("CONFIRM EMAIL") + " \n\n"
 		s += "Keep a code to confirm your email: " + m.codeEmail + "\n\n"
 		s += fieldView("Confirmation code", m.authForm.confirm) + "\n"
 	}
@@ -124,6 +124,22 @@ func mainView(m model) string {
 		s += "\n" + button("submit", textBtn, disabled) + "\n\n"
 	}
 
+	if m.activePage == localDataListPage {
+		sData := ""
+		sDataTitle := "Local list of uploaded data"
+
+		if len(m.localUploadedDataList) > 0 {
+			for _, v := range m.localUploadedDataList {
+				sData += v.filename + "  " + humanize.Bytes(uint64(v.size)) + "\n"
+			}
+		} else {
+			sData += "Empty"
+		}
+
+		s += lipgloss.NewStyle().Foreground(colorAccent).Render(sDataTitle) + "\n\n" +
+			lipgloss.NewStyle().Width(cardWidth).Align(lipgloss.Left).Foreground(colorMuted).Render(sData)
+	}
+
 	if m.textError != "" {
 		s += "\n" + errorStyle.Width(cardWidth).Align(lipgloss.Center).Render(m.textError) + "\n"
 	}
@@ -144,7 +160,7 @@ func footerView() string {
 	leftRendered := lipgloss.NewStyle().Faint(true).
 		Render("ctrl+c quit· ctrl+q logout · esc back · tab focus")
 
-	rightRendered := lipgloss.NewStyle().Foreground(colorPrimary).Render("© Albert Taygibov")
+	rightRendered := lipgloss.NewStyle().Foreground(colorAccent).Render("© Albert Taygibov")
 
 	gapWidth := cardWidth - lipgloss.Width(leftRendered) - lipgloss.Width(rightRendered)
 	if gapWidth < 0 {
@@ -209,9 +225,9 @@ func contentCardsView(m model) string {
 
 			btns := ""
 			for i, v := range cardsBtns {
-				active := lipgloss.NewStyle().Faint(true).Foreground(colorPrimary).Render(v)
+				active := lipgloss.NewStyle().Faint(true).Foreground(colorAccent).Render(v)
 				if i == m.activeBtn {
-					active = lipgloss.NewStyle().Foreground(colorPrimary).Render(v)
+					active = lipgloss.NewStyle().Foreground(colorAccent).Render(v)
 				}
 				btns += active + " "
 			}
@@ -274,9 +290,9 @@ func contentDataView(m model) string {
 			}
 			btns := ""
 			for i, v := range dataBtns {
-				active := lipgloss.NewStyle().Faint(true).Foreground(colorPrimary).Render(v)
+				active := lipgloss.NewStyle().Faint(true).Foreground(colorAccent).Render(v)
 				if i == m.activeBtn {
-					active = lipgloss.NewStyle().Foreground(colorPrimary).Render(v)
+					active = lipgloss.NewStyle().Foreground(colorAccent).Render(v)
 				}
 				btns += active + " "
 			}
@@ -292,14 +308,15 @@ func contentDataView(m model) string {
 			}
 
 			s += prefix +
-				lipgloss.NewStyle().Width(nameWidth).Foreground(colorPrimary).Render(strconv.Itoa(i+1)+". "+filename) +
+				lipgloss.NewStyle().Width(nameWidth).Foreground(colorAccent).Render(strconv.Itoa(i+1)+". "+filename) +
 				lipgloss.NewStyle().Width(typeWidth).Render(v.GetType()) +
 				lipgloss.NewStyle().Width(sizeWidth).Render(size) +
 				btnsOrStatus + "\n"
 		}
 		s += "\n"
 		s += "  " + button("add", "ctrl+a", false) + "\n"
-		s += "  " + button("select", "enter", false)
+		s += "  " + button("select", "enter", false) + "\n"
+		s += "  " + button("local", "ctrl+d local uploaded data", false)
 
 		return lipgloss.NewStyle().Width(cardWidth).Align(lipgloss.Left).MarginTop(1).Render(s)
 	}

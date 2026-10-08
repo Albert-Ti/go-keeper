@@ -1,0 +1,4 @@
+package main
+
+const SECRET_KEY = "secret_key"
+const DOWNLOAD_PATHNAME = "download"

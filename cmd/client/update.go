@@ -245,6 +245,14 @@ func userPageUpdate(msg tea.KeyPressMsg, m model) (model, tea.Cmd) {
 			if len(m.arbitraryData) > 0 {
 				m.selectedRowID = m.cursor
 			}
+		case "ctrl+d":
+			list, err := scanDir(DOWNLOAD_PATHNAME)
+			if err != nil {
+				return m, m.handleError(err, "tabData")
+			}
+			m.localUploadedDataList = list
+			return m.navigateTo(localDataListPage), nil
+
 		case "ctrl+a":
 			return m.navigateTo(filePickerPage), nil
 		}

@@ -68,6 +68,7 @@ const (
 	profileFormPage
 	cardFormPage
 	filePickerPage
+	localDataListPage
 )
 
 func (p pageType) String() string {
@@ -107,6 +108,10 @@ type profileForm struct {
 	passNew textinput.Model
 }
 
+type localUploadedData struct {
+	filename string
+	size     int64
+}
 type model struct {
 	cursor            int
 	activePage        pageType
@@ -128,7 +133,6 @@ type model struct {
 	height       int
 	textError    string
 	textInfo     string
-	errorSeq     int
 	codeEmail    string
 	authUser     string
 	accessToken  string
@@ -143,6 +147,8 @@ type model struct {
 
 	isLoad       bool
 	localStorage *FileStorage
+
+	localUploadedDataList []localUploadedData
 
 	client pb.GoKeeperServiceClient
 }
@@ -159,7 +165,7 @@ func NewModel(client pb.GoKeeperServiceClient, localStorage *FileStorage) (*mode
 
 	s := spinner.New()
 	s.Spinner = spinner.Dot
-	s.Style = lipgloss.NewStyle().Foreground(colorPrimary)
+	s.Style = lipgloss.NewStyle().Foreground(colorAccent)
 
 	number := newStyledInput("card number", false)
 	date := newStyledInput("09/26", false)
@@ -244,10 +250,8 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 		// очистка сообщения об ошибки
 	case clearErrorMsg:
-		if msg.seq == m.errorSeq {
-			m.textError = ""
-			m.textInfo = ""
-		}
+		m.textError = ""
+		m.textInfo = ""
 		return m, nil
 
 		// API result public
@@ -273,11 +277,8 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				m.authForm.email.Blur()
 				m.authForm.pass.Blur()
 				m.authForm.confirm.Focus()
-			} else {
-				m.textError = msg.err.Error()
 			}
-			m.isLoad = false
-			return m, clearErrorAfter(m.errorSeq)
+			return m, m.handleError(msg.err, "loginResultMsg")
 		}
 		m.accessToken = msg.accessToken
 		m.refreshToken = msg.refreshToken
@@ -300,10 +301,12 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		if msg.err != nil {
 			return m, m.handleError(msg.err, "confirmResultMsg")
 		}
+
 		m.isLoad = false
 		m.authForm.email.Focus()
 		m.authForm.pass.Blur()
 		m.authForm.pass.SetValue("")
+
 		return m.navigateTo(loginPage), nil
 
 	case refreshTokenResultMsg:
@@ -559,7 +562,7 @@ func (m *model) handleError(err error, trigger string) tea.Cmd {
 		slog.Error(trigger, "value_error", m.textError)
 	}
 
-	return clearErrorAfter(m.errorSeq)
+	return clearErrorAfter()
 }
 
 func (m *model) handleInfo(info, trigger string) tea.Cmd {
@@ -569,7 +572,7 @@ func (m *model) handleInfo(info, trigger string) tea.Cmd {
 		slog.Info(trigger, "value_info", info)
 	}
 
-	return clearErrorAfter(m.errorSeq)
+	return clearErrorAfter()
 }
 
 func (m *model) Reset() {
@@ -600,12 +603,11 @@ func (m *model) Reset() {
 }
 
 type clearErrorMsg struct {
-	seq int
 }
 
-func clearErrorAfter(seq int) tea.Cmd {
+func clearErrorAfter() tea.Cmd {
 	return tea.Tick(3*time.Second, func(t time.Time) tea.Msg {
-		return clearErrorMsg{seq: seq}
+		return clearErrorMsg{}
 	})
 }
 

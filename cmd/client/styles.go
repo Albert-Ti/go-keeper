@@ -14,22 +14,21 @@ const minHeight = 18
 
 // Color
 var (
-	colorPrimary     = lipgloss.Color("140")
-	colorMuted       = lipgloss.Color("240") // серый — неактивные элементы
-	colorPlaceholder = lipgloss.Color("244")
-	colorError       = lipgloss.Color("203")
-	colorText        = lipgloss.Color("255")
-	colorSuccess     = lipgloss.Color("150")
+	colorWhite   = lipgloss.Color("255")
+	colorAccent  = lipgloss.Color("140")
+	colorMuted   = lipgloss.Color("244") // серый — неактивные элементы
+	colorError   = lipgloss.Color("203")
+	colorSuccess = lipgloss.Color("150")
 )
 
 var (
-	labelStyle = lipgloss.NewStyle().Foreground(lipgloss.Color("245"))
+	labelStyle = lipgloss.NewStyle().Foreground(colorMuted)
 	errorStyle = lipgloss.NewStyle().Foreground(colorError)
 	infoStyle  = lipgloss.NewStyle().Foreground(colorSuccess)
 
 	inputBoxFocused = lipgloss.NewStyle().
 			Border(lipgloss.RoundedBorder()).
-			BorderForeground(colorPrimary).
+			BorderForeground(colorAccent).
 			Padding(0, 1)
 
 	inputBoxBlurred = lipgloss.NewStyle().
@@ -39,8 +38,8 @@ var (
 
 	tabActiveStyle = lipgloss.NewStyle().
 			Bold(true).
-			Foreground(colorText).
-			Background(colorPrimary).
+			Foreground(colorWhite).
+			Background(colorAccent).
 			Padding(0, 2)
 
 	tabInactiveStyle = lipgloss.NewStyle().
@@ -60,13 +59,13 @@ func newStyledInput(placeholder string, isPass bool) textinput.Model {
 	}
 
 	s := t.Styles()
-	s.Focused.Prompt = lipgloss.NewStyle().Foreground(colorPrimary)
-	s.Focused.Text = lipgloss.NewStyle().Foreground(colorPrimary)
-	s.Focused.Placeholder = lipgloss.NewStyle().Foreground(colorPlaceholder)
+	s.Focused.Prompt = lipgloss.NewStyle().Foreground(colorAccent)
+	s.Focused.Text = lipgloss.NewStyle().Foreground(colorAccent)
+	s.Focused.Placeholder = lipgloss.NewStyle().Foreground(colorMuted)
 	s.Blurred.Prompt = lipgloss.NewStyle().Foreground(colorMuted)
 	s.Blurred.Text = lipgloss.NewStyle().Foreground(colorMuted)
 	s.Blurred.Placeholder = lipgloss.NewStyle().Foreground(colorMuted)
-	s.Cursor.Color = colorPrimary
+	s.Cursor.Color = colorAccent
 	t.SetStyles(s)
 
 	t.Prompt = "» "
@@ -77,9 +76,9 @@ func newStyledInput(placeholder string, isPass bool) textinput.Model {
 func button(text, description string, disabled bool) string {
 	textInfo := lipgloss.NewStyle().Faint(true).Render(description)
 	if disabled {
-		return lipgloss.NewStyle().Foreground(colorPrimary).Bold(true).Faint(true).
+		return lipgloss.NewStyle().Foreground(colorAccent).Bold(true).Faint(true).
 			Render(fmt.Sprintf("[%s]", text)) + " " + textInfo
 	}
-	return lipgloss.NewStyle().Foreground(colorPrimary).Bold(true).
+	return lipgloss.NewStyle().Foreground(colorAccent).Bold(true).
 		Render(fmt.Sprintf("[%s]", text)) + " " + textInfo
 }
