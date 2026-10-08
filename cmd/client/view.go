@@ -21,7 +21,7 @@ func headerView(m model) string {
 		Render("Go Keeper") + " " + spinner
 
 	page := m.activePage.String()
-	if m.activePage >= userPage {
+	if m.activePage >= homePage {
 		page = m.authUser
 	}
 	rightRendered := page
@@ -47,7 +47,7 @@ func mainView(m model) string {
 		s += "\n\n"
 	}
 
-	if m.activePage == homePage {
+	if m.activePage == landingPage {
 		s += "\n\n"
 		s += "Welcome to the Go Keeper project! version 1.0.0\n\n\n"
 		for i, choice := range m.choices {
@@ -78,7 +78,7 @@ func mainView(m model) string {
 		s += fieldView("Confirmation code", m.authForm.confirm) + "\n"
 	}
 
-	if m.activePage == userPage {
+	if m.activePage == homePage {
 		var rendered []string
 		for _, t := range m.allTabs {
 			if t == m.activeTab {
@@ -126,25 +126,25 @@ func mainView(m model) string {
 
 	if m.activePage == localDataListPage {
 		sData := ""
-		sDataTitle := "Local list of uploaded data"
+		sDataTitle := "Local list of uploaded data:"
 
 		if len(m.localUploadedDataList) > 0 {
 			for _, v := range m.localUploadedDataList {
-				sData += v.filename + "  " + humanize.Bytes(uint64(v.size)) + "\n"
+				sData += " | " + v.filename + "  " + humanize.Bytes(uint64(v.size)) + "\n"
 			}
 		} else {
 			sData += "Empty"
 		}
 
-		s += lipgloss.NewStyle().Foreground(colorAccent).Render(sDataTitle) + "\n\n" +
+		s += lipgloss.NewStyle().Width(cardWidth).Align(lipgloss.Left).Foreground(colorAccent).Render(sDataTitle) + "\n\n" +
 			lipgloss.NewStyle().Width(cardWidth).Align(lipgloss.Left).Foreground(colorMuted).Render(sData)
 	}
 
 	if m.textError != "" {
-		s += "\n" + errorStyle.Width(cardWidth).Align(lipgloss.Center).Render(m.textError) + "\n"
+		s += "\n\n" + errorStyle.Width(cardWidth).Align(lipgloss.Center).Render(m.textError) + "\n"
 	}
 	if m.textInfo != "" {
-		s += "\n" + infoStyle.Width(cardWidth).Align(lipgloss.Center).Render(m.textInfo) + "\n"
+		s += "\n\n" + infoStyle.Width(cardWidth).Align(lipgloss.Center).Render(m.textInfo) + "\n"
 	}
 
 	// Добавляем пустые строки, чтобы заполнить пространство

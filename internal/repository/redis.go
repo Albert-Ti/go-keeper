@@ -31,8 +31,8 @@ func (r *Redis) Ping(ctx context.Context) {
 	}
 }
 
-func (r *Redis) Set(ctx context.Context, key string, value string, expiration time.Duration) error {
-	return r.client.Set(ctx, key, value, expiration).Err()
+func (r *Redis) Set(ctx context.Context, key string, value string) error {
+	return r.client.Set(ctx, key, value, 5*time.Minute).Err()
 }
 
 func (r *Redis) Get(ctx context.Context, key string) (string, error) {

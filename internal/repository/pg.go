@@ -257,7 +257,7 @@ func (pg *Postgres) ActivateCard(ctx context.Context, uuid string, cardID int64)
 }
 
 func (pg *Postgres) DeleteCard(ctx context.Context, uuid string, cardID int64) error {
-	sql := `DELETE FROM bank_cards WHERE user_uuid = $1 AND id = $2 AND active = false`
+	sql := `DELETE FROM bank_cards WHERE user_uuid = $1 AND id = $2`
 
 	tag, err := pg.pool.Exec(ctx, sql, uuid, cardID)
 	if err != nil {

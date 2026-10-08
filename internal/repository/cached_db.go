@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"log/slog"
 	"time"
 
 	"github.com/Albert-Ti/go-keeper/internal/models"
@@ -48,13 +49,13 @@ func (c *CachedDatabase) GetProfile(ctx context.Context, uuid string) (models.Pr
 
 	data, err := json.Marshal(profile)
 	if err == nil {
-		_ = c.cache.Set(
-			ctx,
-			key,
-			string(data),
-			5*time.Minute,
-		)
+		err = c.cache.Set(ctx, key, string(data))
+		if err != nil {
+			slog.Info("cached fail", "method", "GetProfile", "error_value", err)
+		}
 	}
+	slog.Info("cached", "method", "GetProfile")
+
 	return profile, nil
 }
 
@@ -85,13 +86,13 @@ func (c *CachedDatabase) GetCards(ctx context.Context, uuid string) ([]models.Ca
 
 	data, err := json.Marshal(cards)
 	if err == nil {
-		_ = c.cache.Set(
-			ctx,
-			key,
-			string(data),
-			5*time.Minute,
-		)
+		err = c.cache.Set(ctx, key, string(data))
+		if err != nil {
+			slog.Info("cached fail", "method", "GetCards", "error_value", err)
+		}
 	}
+	slog.Info("cached", "method", "GetCards")
+
 	return cards, nil
 }
 
@@ -112,7 +113,6 @@ func (c *CachedDatabase) ActivateCard(ctx context.Context, uuid string, cardID i
 	err := c.cache.Delete(ctx, key)
 	if err == nil {
 		return c.next.ActivateCard(ctx, uuid, cardID)
-
 	}
 	return nil
 }
@@ -138,6 +138,30 @@ func (c *CachedDatabase) CreateArbitraryData(
 }
 
 func (c *CachedDatabase) GetArbitraryData(ctx context.Context, uuid string) ([]models.ArbitraryData, error) {
+	key := fmt.Sprintf("user:%s:%s", uuid, "arbitraryData")
+
+	cashed, err := c.cache.Get(ctx, key)
+	if err == nil {
+		var arbitraryData []models.ArbitraryData
+		if err := json.Unmarshal([]byte(cashed), &arbitraryData); err == nil {
+			return arbitraryData, nil
+		}
+	}
+
+	cards, err := c.next.GetArbitraryData(ctx, uuid)
+	if err != nil {
+		return nil, err
+	}
+
+	data, err := json.Marshal(&cards)
+	if err == nil {
+		err = c.cache.Set(ctx, key, string(data))
+		if err != nil {
+			slog.Info("cached fail", "method", "CreateArbitraryData", "error_value", err)
+		}
+	}
+	slog.Info("cached", "method", "CreateArbitraryData")
+
 	return c.next.GetArbitraryData(ctx, uuid)
 }
 
@@ -146,9 +170,21 @@ func (c *CachedDatabase) GetArbitraryDataByID(ctx context.Context, uuid string, 
 }
 
 func (c *CachedDatabase) UpdateArbitraryData(ctx context.Context, uuid string, dataID int64, params models.UpdateArbitraryDataParams) error {
-	return c.next.UpdateArbitraryData(ctx, uuid, dataID, params)
+	key := fmt.Sprintf("user:%s:%s", uuid, "arbitraryData")
+
+	err := c.cache.Delete(ctx, key)
+	if err == nil {
+		return c.next.UpdateArbitraryData(ctx, uuid, dataID, params)
+	}
+	return nil
 }
 
 func (c *CachedDatabase) DeleteArbitraryData(ctx context.Context, uuid string, dataID int64) error {
-	return c.next.DeleteArbitraryData(ctx, uuid, dataID)
+	key := fmt.Sprintf("user:%s:%s", uuid, "arbitraryData")
+
+	err := c.cache.Delete(ctx, key)
+	if err == nil {
+		return c.next.DeleteArbitraryData(ctx, uuid, dataID)
+	}
+	return nil
 }

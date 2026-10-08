@@ -6,7 +6,7 @@ import (
 	tea "charm.land/bubbletea/v2"
 )
 
-func homePageUpdate(msg tea.KeyPressMsg, m model) (model, tea.Cmd) {
+func landingPageUpdate(msg tea.KeyPressMsg, m model) (model, tea.Cmd) {
 	switch msg.String() {
 	case "up", "k":
 		if m.cursor > 0 {
@@ -105,7 +105,7 @@ func loadActiveTab(activeTab tabType, m model) tea.Cmd {
 	return nil
 }
 
-func userPageUpdate(msg tea.KeyPressMsg, m model) (model, tea.Cmd) {
+func homePageUpdate(msg tea.KeyPressMsg, m model) (model, tea.Cmd) {
 	if m.selectedRowID >= 0 {
 		switch m.activeTab {
 		case tabCards:

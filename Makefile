@@ -75,7 +75,7 @@ docker-exec:
 
 # Удалить том с данными s3 storage
 docker-volume-rm:
-	docker volume rm go-keeper_seaweedfs-data || true 
+	docker volume rm go-keeper_seaweedfs-data
 
 # Команда для удаления контейнеров, образов, томов и сетей за один раз которые не используются
 docker-prune:

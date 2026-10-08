@@ -60,11 +60,11 @@ const (
 type pageType int
 
 const (
-	homePage pageType = iota
+	landingPage pageType = iota
 	registerPage
 	loginPage
 	confirmPage
-	userPage
+	homePage
 	profileFormPage
 	cardFormPage
 	filePickerPage
@@ -73,20 +73,24 @@ const (
 
 func (p pageType) String() string {
 	switch p {
-	case homePage:
-		return "home"
+	case landingPage:
+		return "landing"
 	case registerPage:
 		return "registration"
 	case loginPage:
 		return "login"
 	case confirmPage:
 		return "confirm"
-	case userPage:
-		return "user"
+	case homePage:
+		return "home"
 	case profileFormPage:
 		return "profile/update"
 	case cardFormPage:
 		return "cards/create"
+	case filePickerPage:
+		return "files"
+	case localDataListPage:
+		return "uploaded"
 	default:
 		return ""
 	}
@@ -180,17 +184,17 @@ func NewModel(client pb.GoKeeperServiceClient, localStorage *FileStorage) (*mode
 	fp.AutoHeight = false
 	fp.SetHeight(6)
 
-	initPage := homePage
-	initHistory := []pageType{homePage}
+	initPage := landingPage
+	initHistory := []pageType{landingPage}
 	if localStorage.Get(accessTokenKey) != "" {
-		initPage = userPage
-		initHistory = []pageType{userPage}
+		initPage = homePage
+		initHistory = []pageType{homePage}
 	}
 
 	return &model{
 		activePage:        initPage,
-		activeTab:         tabProfile,
 		history:           initHistory,
+		activeTab:         tabProfile,
 		choices:           []pageType{loginPage, registerPage},
 		allTabs:           []tabType{tabProfile, tabCards, tabData},
 		contentTabProfile: []string{"email", "create_date"},
@@ -295,7 +299,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.authForm.email.Blur()
 		m.authForm.pass.Blur()
 		m.authForm.confirm.Blur()
-		return m.navigateTo(userPage), getProfileCmd(m.client)
+		return m.navigateTo(homePage), getProfileCmd(m.client)
 
 	case confirmResultMsg:
 		if msg.err != nil {
@@ -322,7 +326,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		if err := m.localStorage.Set(refreshTokenKey, msg.refreshToken); err != nil {
 			return m, m.handleError(err, "refreshTokenResultMsg")
 		}
-		return m, getProfileCmd(m.client)
+		return m, nil
 
 		// API result private
 	case profileResultMsg:
@@ -360,7 +364,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.cardForm.number.Blur()
 		m.cardForm.date.Blur()
 		// вызов getCardsCmd для получения нового списка после добавления
-		return m.navigateTo(userPage), getCardsCmd(m.client)
+		return m.navigateTo(homePage), getCardsCmd(m.client)
 
 	case changePassResultMsg:
 		if msg.err != nil {
@@ -370,7 +374,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return m, m.handleError(msg.err, "changePassResultMsg")
 		}
 		m.isLoad = false
-		return m.navigateTo(userPage), getProfileCmd(m.client)
+		return m.navigateTo(homePage), getProfileCmd(m.client)
 
 	case deleteCardResultMsg:
 		if msg.err != nil {
@@ -381,7 +385,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 		m.isLoad = false
 		m.selectedRowID = -1
-		return m.navigateTo(userPage), getCardsCmd(m.client)
+		return m.navigateTo(homePage), getCardsCmd(m.client)
 
 	case activateCardResultMsg:
 		if msg.err != nil {
@@ -392,7 +396,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 		m.isLoad = false
 		m.selectedRowID = -1
-		return m.navigateTo(userPage), getCardsCmd(m.client)
+		return m.navigateTo(homePage), getCardsCmd(m.client)
 
 	case arbitraryDataResultMsg:
 		if msg.err != nil {
@@ -413,7 +417,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 		m.isLoad = false
 		m.selectedFile = ""
-		return m.navigateTo(userPage), getArbitraryDataCmd(m.client)
+		return m.navigateTo(homePage), getArbitraryDataCmd(m.client)
 
 	case deleteArbitraryDataResultMsg:
 		if msg.err != nil {
@@ -425,7 +429,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.isLoad = false
 		m.selectedRowID = -1
 		m.cursor = 0
-		return m.navigateTo(userPage), getArbitraryDataCmd(m.client)
+		return m.navigateTo(homePage), getArbitraryDataCmd(m.client)
 
 	case reloadArbitraryDataResultMsg:
 		if msg.err != nil {
@@ -488,10 +492,10 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return confirmPageUpdate(msg, m)
 		case loginPage:
 			return loginPageUpdate(msg, m)
+		case landingPage:
+			return landingPageUpdate(msg, m)
 		case homePage:
 			return homePageUpdate(msg, m)
-		case userPage:
-			return userPageUpdate(msg, m)
 		case cardFormPage:
 			return cardFormPageUpdate(msg, m)
 		case profileFormPage:
@@ -577,9 +581,9 @@ func (m *model) handleInfo(info, trigger string) tea.Cmd {
 
 func (m *model) Reset() {
 	m.cursor = 0
-	m.activePage = homePage
+	m.activePage = landingPage
 	m.activeTab = tabProfile
-	m.history = []pageType{homePage}
+	m.history = []pageType{landingPage}
 
 	m.authUser = ""
 	m.accessToken = ""
@@ -612,7 +616,7 @@ func clearErrorAfter() tea.Cmd {
 }
 
 func (m model) navigateTo(activePage pageType) model {
-	if activePage == homePage || activePage == userPage {
+	if activePage == landingPage || activePage == homePage {
 		m.history = m.history[:0]
 	}
 	m.activePage = activePage
