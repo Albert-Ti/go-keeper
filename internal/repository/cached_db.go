@@ -51,10 +51,10 @@ func (c *CachedDatabase) GetProfile(ctx context.Context, uuid string) (models.Pr
 	if err == nil {
 		err = c.cache.Set(ctx, key, string(data))
 		if err != nil {
-			slog.Info("cached fail", "method", "GetProfile", "error_value", err)
+			slog.Debug("cached fail", "method", "GetProfile", "error_value", err, "user", uuid)
 		}
 	}
-	slog.Info("cached", "method", "GetProfile")
+	slog.Debug("cached", "method", "GetProfile", "user", uuid)
 
 	return profile, nil
 }
@@ -88,10 +88,10 @@ func (c *CachedDatabase) GetCards(ctx context.Context, uuid string) ([]models.Ca
 	if err == nil {
 		err = c.cache.Set(ctx, key, string(data))
 		if err != nil {
-			slog.Info("cached fail", "method", "GetCards", "error_value", err)
+			slog.Debug("cached fail", "method", "GetCards", "error_value", err, "user", uuid)
 		}
 	}
-	slog.Info("cached", "method", "GetCards")
+	slog.Debug("cached", "method", "GetCards", "user", uuid, "user", uuid)
 
 	return cards, nil
 }
@@ -157,10 +157,10 @@ func (c *CachedDatabase) GetArbitraryData(ctx context.Context, uuid string) ([]m
 	if err == nil {
 		err = c.cache.Set(ctx, key, string(data))
 		if err != nil {
-			slog.Info("cached fail", "method", "CreateArbitraryData", "error_value", err)
+			slog.Debug("cached fail", "method", "CreateArbitraryData", "error_value", err, "user", uuid)
 		}
 	}
-	slog.Info("cached", "method", "CreateArbitraryData")
+	slog.Debug("cached", "method", "CreateArbitraryData", "user", uuid)
 
 	return c.next.GetArbitraryData(ctx, uuid)
 }

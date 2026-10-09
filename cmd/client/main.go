@@ -20,111 +20,22 @@ import (
 	pb "github.com/Albert-Ti/go-keeper/pkg/proto"
 )
 
-type tabType int
-
-const (
-	tabProfile tabType = iota
-	tabCards
-	tabData
-)
-
-func (t tabType) String() string {
-	switch t {
-	case tabProfile:
-		return "profile"
-	case tabCards:
-		return "cards"
-	case tabData:
-		return "data"
-	default:
-		return ""
-	}
-}
-
-type cardActionsType int
-
-const (
-	cardActionsUpdate cardActionsType = iota
-	cardActionsDelete
-)
-
-type dataActionsType int
-
-const (
-	dataActionsDownload dataActionsType = iota
-	dataActionsReload
-	dataActionsDelete
-)
-
-type pageType int
-
-const (
-	landingPage pageType = iota
-	registerPage
-	loginPage
-	confirmPage
-	homePage
-	profileFormPage
-	cardFormPage
-	filePickerPage
-	localDataListPage
-)
-
-func (p pageType) String() string {
-	switch p {
-	case landingPage:
-		return "landing"
-	case registerPage:
-		return "registration"
-	case loginPage:
-		return "login"
-	case confirmPage:
-		return "confirm"
-	case homePage:
-		return "home"
-	case profileFormPage:
-		return "profile/update"
-	case cardFormPage:
-		return "cards/create"
-	case filePickerPage:
-		return "files"
-	case localDataListPage:
-		return "uploaded"
-	default:
-		return ""
-	}
-}
-
-type authForm struct {
-	email   textinput.Model
-	confirm textinput.Model
-	pass    textinput.Model
-}
-
-type cardForm struct {
-	number textinput.Model
-	date   textinput.Model
-}
-
-type profileForm struct {
-	passOld textinput.Model
-	passNew textinput.Model
-}
-
-type localUploadedData struct {
-	filename string
-	size     int64
-}
 type model struct {
-	cursor            int
-	activePage        pageType
-	activeTab         tabType
-	history           []pageType
-	choices           []pageType
-	allTabs           []tabType
+	isLoad bool
+
+	cursor        int
+	selectedRowID int
+	activeBtn     int
+
+	activePage pageType
+	activeTab  tabType
+	history    []pageType
+	choices    []pageType
+	allTabs    []tabType
+
+	contentTabProfile []string
 	cardsActions      []cardActionsType
 	dataActions       []dataActionsType
-	contentTabProfile []string
 
 	authForm     authForm
 	cardForm     cardForm
@@ -140,18 +51,13 @@ type model struct {
 	authUser     string
 	accessToken  string
 	refreshToken string
-	profile      map[string]string
 
-	cards         []*pb.CardData
-	selectedRowID int
-	activeBtn     int
-
-	arbitraryData []*pb.ArbitraryData
-
-	isLoad       bool
 	localStorage *FileStorage
 
-	localUploadedDataList []localUploadedData
+	profile            map[string]string
+	cards              []*pb.CardData
+	arbitraryData      []*pb.ArbitraryData
+	localArbitraryData []localUploadedData
 
 	client pb.GoKeeperServiceClient
 }
@@ -195,7 +101,7 @@ func NewModel(client pb.GoKeeperServiceClient, localStorage *FileStorage) (*mode
 		history:           initHistory,
 		activeTab:         tabProfile,
 		choices:           []pageType{loginPage, registerPage},
-		allTabs:           []tabType{tabProfile, tabCards, tabData},
+		allTabs:           []tabType{tabProfile, tabCards, tabData, tabLocalData},
 		contentTabProfile: []string{"email", "create_date"},
 		cardsActions:      []cardActionsType{cardActionsUpdate, cardActionsDelete},
 		dataActions:       []dataActionsType{dataActionsDownload, dataActionsReload, dataActionsDelete},
@@ -313,6 +219,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		return m.navigateTo(loginPage), nil
 
 	case refreshTokenErrorMsg:
+		m.Reset()
 		return m.navigateTo(loginPage), m.handleError(msg.err, "refreshTokenErrorMsg")
 
 		// API result private
@@ -370,6 +277,13 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return m, m.handleError(msg.err, "arbitraryDataResultMsg")
 		}
 		m.arbitraryData = msg.arbitraryData
+		m.isLoad = false
+
+	case localArbitraryDataResultMsg:
+		if msg.err != nil {
+			return m, m.handleError(msg.err, "arbitraryDataResultMsg")
+		}
+		m.localArbitraryData = msg.localArbitraryData
 		m.isLoad = false
 
 	case createArbitraryDataResultMsg:

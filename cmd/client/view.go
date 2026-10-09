@@ -48,14 +48,13 @@ func mainView(m model) string {
 	}
 
 	if m.activePage == landingPage {
-		s += "\n\n"
-		s += "Welcome to the Go Keeper project! version 1.0.0\n\n\n"
+		s += "\n"
+		s += "Welcome to the Go Keeper project!\n\n\n\n"
 		for i, choice := range m.choices {
-			label := choice.String()
 			if i == m.cursor {
-				s += "> " + lipgloss.NewStyle().Render(strings.ToUpper(label))
+				s += "> " + lipgloss.NewStyle().Foreground(colorAccent).Bold(true).Render(choice.String()) + " <"
 			} else {
-				s += "  " + lipgloss.NewStyle().Render(strings.ToUpper(label))
+				s += "  " + lipgloss.NewStyle().Foreground(colorAccent).Bold(true).Render(choice.String()) + "  "
 			}
 			s += "\n\n"
 		}
@@ -96,6 +95,8 @@ func mainView(m model) string {
 			s += contentCardsView(m)
 		case tabData:
 			s += contentDataView(m)
+		case tabLocalData:
+			s += contentLocalDataView(m)
 		}
 	}
 
@@ -124,22 +125,6 @@ func mainView(m model) string {
 		s += "\n" + button("submit", textBtn, disabled) + "\n\n"
 	}
 
-	if m.activePage == localDataListPage {
-		sData := ""
-		sDataTitle := "Local list of uploaded data:"
-
-		if len(m.localUploadedDataList) > 0 {
-			for _, v := range m.localUploadedDataList {
-				sData += " | " + v.filename + "  " + humanize.Bytes(uint64(v.size)) + "\n"
-			}
-		} else {
-			sData += "Empty"
-		}
-
-		s += lipgloss.NewStyle().Width(cardWidth).Align(lipgloss.Left).Foreground(colorAccent).Render(sDataTitle) + "\n\n" +
-			lipgloss.NewStyle().Width(cardWidth).Align(lipgloss.Left).Foreground(colorMuted).Render(sData)
-	}
-
 	if m.textError != "" {
 		s += "\n\n" + errorStyle.Width(cardWidth).Align(lipgloss.Center).Render(m.textError) + "\n"
 	}
@@ -152,13 +137,14 @@ func mainView(m model) string {
 	if currentHeight < minHeight {
 		s += strings.Repeat("\n", minHeight-currentHeight)
 	}
-
+	s += lipgloss.NewStyle().Faint(true).Width(cardWidth).Align(lipgloss.Left).
+		Render("ctrl+c quit· ctrl+q logout · esc back · tab focus") + "\n"
 	return s
 }
 
 func footerView() string {
 	leftRendered := lipgloss.NewStyle().Faint(true).
-		Render("ctrl+c quit· ctrl+q logout · esc back · tab focus")
+		Render("build " + VERSION)
 
 	rightRendered := lipgloss.NewStyle().Foreground(colorAccent).Render("© Albert Taygibov")
 
@@ -188,7 +174,7 @@ func contentProfileView(m model) string {
 		s += "  " + lipgloss.NewStyle().Width(12).Render(v) +
 			": " + m.profile[v] + "\n"
 	}
-	s += "\n" + "  " + button("update", "press enter to update info", false) + "\n"
+	s += "  " + button("update", "press enter to update info", false) + "\n"
 
 	return lipgloss.NewStyle().MarginTop(1).PaddingLeft(3).Width(cardWidth).Align(lipgloss.Left).Render(s)
 }
@@ -197,7 +183,7 @@ func contentCardsView(m model) string {
 	s := ""
 	if len(m.cards) == 0 {
 		textInfo := lipgloss.NewStyle().Faint(true).Render("You have not added a bank card yet, press ctrl+a to ")
-		s = "\n\n" + textInfo + button("add", "", false) + "\n"
+		s = textInfo + button("add", "", false) + "\n"
 
 		return lipgloss.NewStyle().Width(cardWidth).Align(lipgloss.Center).Render(s)
 	} else {
@@ -315,8 +301,7 @@ func contentDataView(m model) string {
 		}
 		s += "\n"
 		s += "  " + button("add", "ctrl+a", false) + "\n"
-		s += "  " + button("select", "enter", false) + "\n"
-		s += "  " + button("local", "ctrl+d local uploaded data", false)
+		s += "  " + button("select", "enter", false)
 
 		return lipgloss.NewStyle().Width(cardWidth).Align(lipgloss.Left).MarginTop(1).Render(s)
 	}
@@ -325,4 +310,24 @@ func contentDataView(m model) string {
 	s = "\n\n" + textInfo + button("add", "", false) + "\n"
 
 	return lipgloss.NewStyle().PaddingLeft(3).Align(lipgloss.Center).Render(s)
+}
+
+func contentLocalDataView(m model) string {
+	s := ""
+	sData := ""
+	title := "Local list of uploaded data:"
+
+	if len(m.localArbitraryData) > 0 {
+		for _, v := range m.localArbitraryData {
+			sData += " | " + v.filename + "  " + humanize.Bytes(uint64(v.size)) + "\n"
+		}
+	} else {
+		sData += "Empty"
+	}
+
+	s += "\n" + lipgloss.NewStyle().Width(cardWidth).Align(lipgloss.Left).Foreground(colorAccent).Render(title) + "\n\n"
+
+	s += lipgloss.NewStyle().Width(cardWidth).Align(lipgloss.Left).Foreground(colorMuted).Render(sData)
+
+	return s
 }

@@ -101,6 +101,9 @@ func loadActiveTab(activeTab tabType, m model) tea.Cmd {
 	case tabData:
 		m.isLoad = true
 		return getArbitraryDataCmd(m.client)
+	case tabLocalData:
+		m.isLoad = true
+		return getLocalArbitraryDataCmd()
 	}
 	return nil
 }
@@ -245,16 +248,13 @@ func homePageUpdate(msg tea.KeyPressMsg, m model) (model, tea.Cmd) {
 			if len(m.arbitraryData) > 0 {
 				m.selectedRowID = m.cursor
 			}
-		case "ctrl+d":
-			list, err := scanDir(DOWNLOAD_PATHNAME)
-			if err != nil {
-				return m, m.handleError(err, "tabData")
-			}
-			m.localUploadedDataList = list
-			return m.navigateTo(localDataListPage), nil
 
 		case "ctrl+a":
 			return m.navigateTo(filePickerPage), nil
+		}
+
+	case tabLocalData:
+		switch msg.String() {
 		}
 	}
 	return m, nil

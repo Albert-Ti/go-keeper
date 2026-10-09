@@ -69,6 +69,12 @@ type arbitraryDataResultMsg struct {
 	err           error
 	arbitraryData []*pb.ArbitraryData
 }
+
+type localArbitraryDataResultMsg struct {
+	err                error
+	localArbitraryData []localUploadedData
+}
+
 type createArbitraryDataResultMsg struct {
 	err error
 }
@@ -419,5 +425,15 @@ func downloadArbitraryDataCmd(client pb.GoKeeperServiceClient, id int64, destDir
 		}
 
 		return downloadArbitraryDataResultMsg{err: err}
+	}
+}
+
+func getLocalArbitraryDataCmd() tea.Cmd {
+	return func() tea.Msg {
+		list, err := scanDir(DOWNLOAD_PATHNAME)
+		if err != nil {
+			return localArbitraryDataResultMsg{err: err}
+		}
+		return localArbitraryDataResultMsg{localArbitraryData: list}
 	}
 }
