@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"log/slog"
 	"os"
-	"strings"
 	"time"
 
 	"charm.land/bubbles/v2/filepicker"
@@ -313,28 +312,12 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 		return m.navigateTo(loginPage), nil
 
-	case refreshTokenResultMsg:
-		if msg.err != nil {
-			m.Reset()
-			return m, m.handleError(msg.err, "refreshTokenResultMsg")
-		}
-		m.accessToken = msg.accessToken
-		m.refreshToken = msg.refreshToken
-		if err := m.localStorage.Set(accessTokenKey, msg.accessToken); err != nil {
-			return m, m.handleError(err, "refreshTokenResultMsg")
-		}
-		if err := m.localStorage.Set(refreshTokenKey, msg.refreshToken); err != nil {
-			return m, m.handleError(err, "refreshTokenResultMsg")
-		}
-		return m, nil
+	case refreshTokenErrorMsg:
+		return m.navigateTo(loginPage), m.handleError(msg.err, "refreshTokenErrorMsg")
 
 		// API result private
 	case profileResultMsg:
 		if msg.err != nil {
-			if strings.Contains(msg.err.Error(), "access token is expired") {
-				return m, refreshTokenCmd(m.client, m.localStorage.Get(refreshTokenKey))
-			}
-			m.Reset()
 			return m, m.handleError(msg.err, "profileResultMsg")
 		}
 		m.profile = msg.profile
@@ -342,10 +325,6 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 	case cardsResultMsg:
 		if msg.err != nil {
-			if strings.Contains(msg.err.Error(), "access token is expired") {
-				return m, refreshTokenCmd(m.client, m.localStorage.Get(refreshTokenKey))
-			}
-			m.Reset()
 			return m, m.handleError(msg.err, "cardsResultMsg")
 		}
 		m.cards = msg.cards
@@ -353,9 +332,6 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 	case createCardResultMsg:
 		if msg.err != nil {
-			if strings.Contains(msg.err.Error(), "access token is expired") {
-				return m, refreshTokenCmd(m.client, m.localStorage.Get(refreshTokenKey))
-			}
 			return m, m.handleError(msg.err, "createCardResultMsg")
 		}
 
@@ -368,9 +344,6 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 	case changePassResultMsg:
 		if msg.err != nil {
-			if strings.Contains(msg.err.Error(), "access token is expired") {
-				return m, refreshTokenCmd(m.client, m.localStorage.Get(refreshTokenKey))
-			}
 			return m, m.handleError(msg.err, "changePassResultMsg")
 		}
 		m.isLoad = false
@@ -378,9 +351,6 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 	case deleteCardResultMsg:
 		if msg.err != nil {
-			if strings.Contains(msg.err.Error(), "access token is expired") {
-				return m, refreshTokenCmd(m.client, m.localStorage.Get(refreshTokenKey))
-			}
 			return m, m.handleError(msg.err, "deleteCardResultMsg")
 		}
 		m.isLoad = false
@@ -389,9 +359,6 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 	case activateCardResultMsg:
 		if msg.err != nil {
-			if strings.Contains(msg.err.Error(), "access token is expired") {
-				return m, refreshTokenCmd(m.client, m.localStorage.Get(refreshTokenKey))
-			}
 			return m, m.handleError(msg.err, "activateCardResultMsg")
 		}
 		m.isLoad = false
@@ -400,9 +367,6 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 	case arbitraryDataResultMsg:
 		if msg.err != nil {
-			if strings.Contains(msg.err.Error(), "access token is expired") {
-				return m, refreshTokenCmd(m.client, m.localStorage.Get(refreshTokenKey))
-			}
 			return m, m.handleError(msg.err, "arbitraryDataResultMsg")
 		}
 		m.arbitraryData = msg.arbitraryData
@@ -410,9 +374,6 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 	case createArbitraryDataResultMsg:
 		if msg.err != nil {
-			if strings.Contains(msg.err.Error(), "access token is expired") {
-				return m, refreshTokenCmd(m.client, m.localStorage.Get(refreshTokenKey))
-			}
 			return m, m.handleError(msg.err, "createArbitraryDataResultMsg")
 		}
 		m.isLoad = false
@@ -421,9 +382,6 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 	case deleteArbitraryDataResultMsg:
 		if msg.err != nil {
-			if strings.Contains(msg.err.Error(), "access token is expired") {
-				return m, refreshTokenCmd(m.client, m.localStorage.Get(refreshTokenKey))
-			}
 			return m, m.handleError(msg.err, "deleteArbitraryDataResultMsg")
 		}
 		m.isLoad = false
@@ -433,9 +391,6 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 	case reloadArbitraryDataResultMsg:
 		if msg.err != nil {
-			if strings.Contains(msg.err.Error(), "access token is expired") {
-				return m, refreshTokenCmd(m.client, m.localStorage.Get(refreshTokenKey))
-			}
 			return m, m.handleError(msg.err, "reloadArbitraryDataResultMsg")
 		}
 		m.isLoad = false
@@ -445,9 +400,6 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 	case downloadArbitraryDataResultMsg:
 		if msg.err != nil {
-			if strings.Contains(msg.err.Error(), "access token is expired") {
-				return m, refreshTokenCmd(m.client, m.localStorage.Get(refreshTokenKey))
-			}
 			return m, m.handleError(msg.err, "downloadArbitraryDataResultMsg")
 		}
 		m.isLoad = false
@@ -632,17 +584,15 @@ func main() {
 		os.Exit(1)
 	}
 	defer closeLog()
-
-	slog.SetDefault(logger) // slog.Info/Error/Debug пишут в файл везде
+	slog.SetDefault(logger)
 
 	localStorage, err := NewFileStorage()
 	if err != nil {
 		panic(err)
 	}
 
-	auth := AuthInterceptor{
-		localStorage: localStorage,
-	}
+	auth := NewAuthInterceptor(localStorage)
+
 	conn, err := grpc.NewClient(
 		"127.0.0.1:8080",
 		grpc.WithTransportCredentials(insecure.NewCredentials()),
@@ -654,9 +604,10 @@ func main() {
 		os.Exit(1)
 	}
 	defer conn.Close()
-	c := pb.NewGoKeeperServiceClient(conn)
 
-	model, err := NewModel(c, localStorage)
+	client := pb.NewGoKeeperServiceClient(conn)
+
+	model, err := NewModel(client, localStorage)
 	if err != nil {
 		panic(err)
 	}

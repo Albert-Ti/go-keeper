@@ -9,13 +9,14 @@ import (
 	"path/filepath"
 	"slices"
 	"strings"
-	"time"
 
 	tea "charm.land/bubbletea/v2"
 	pb "github.com/Albert-Ti/go-keeper/pkg/proto"
 	"github.com/aws/smithy-go/ptr"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/metadata"
+	"google.golang.org/grpc/status"
 )
 
 type registerResultMsg struct {
@@ -34,10 +35,8 @@ type loginResultMsg struct {
 	refreshToken string
 }
 
-type refreshTokenResultMsg struct {
-	err          error
-	accessToken  string
-	refreshToken string
+type refreshTokenErrorMsg struct {
+	err error
 }
 
 type changePassResultMsg struct {
@@ -139,24 +138,6 @@ func loginCmd(client pb.GoKeeperServiceClient, email, pass string) tea.Cmd {
 	}
 }
 
-func refreshTokenCmd(client pb.GoKeeperServiceClient, token string) tea.Cmd {
-	return func() tea.Msg {
-		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-		defer cancel()
-
-		resp, err := client.RefreshToken(ctx, pb.TokenRequest_builder{
-			RefreshToken: token,
-		}.Build())
-		if err != nil {
-			return refreshTokenResultMsg{err: err}
-		}
-		return refreshTokenResultMsg{
-			accessToken:  resp.GetAccessToken(),
-			refreshToken: resp.GetRefreshToken(),
-		}
-	}
-}
-
 func changePassCmd(client pb.GoKeeperServiceClient, passOld, passNew string) tea.Cmd {
 	return func() tea.Msg {
 		_, err := client.ChangePass(context.Background(), pb.PassRequest_builder{
@@ -171,6 +152,10 @@ func getProfileCmd(client pb.GoKeeperServiceClient) tea.Cmd {
 	return func() tea.Msg {
 		resp, err := client.GetProfile(context.Background(), &pb.ProfileRequest{})
 		if err != nil {
+			st, _ := status.FromError(err)
+			if st.Code() == codes.Unauthenticated {
+				return refreshTokenErrorMsg{err: err}
+			}
 			return profileResultMsg{err: err}
 		}
 		return profileResultMsg{err: err, profile: map[string]string{
@@ -185,6 +170,10 @@ func getCardsCmd(client pb.GoKeeperServiceClient) tea.Cmd {
 	return func() tea.Msg {
 		resp, err := client.GetCards(context.Background(), &pb.CardsRequest{})
 		if err != nil {
+			st, _ := status.FromError(err)
+			if st.Code() == codes.Unauthenticated {
+				return refreshTokenErrorMsg{err: err}
+			}
 			return cardsResultMsg{err: err}
 		}
 
@@ -210,7 +199,10 @@ func createCardCmd(client pb.GoKeeperServiceClient, number, expiry string) tea.C
 			CardNumber: number,
 			ExpiryDate: expiry,
 		}.Build())
-
+		st, _ := status.FromError(err)
+		if st.Code() == codes.Unauthenticated {
+			return refreshTokenErrorMsg{err: err}
+		}
 		return createCardResultMsg{err: err}
 	}
 }
@@ -220,7 +212,10 @@ func deleteCardCmd(client pb.GoKeeperServiceClient, id int64) tea.Cmd {
 		_, err := client.DeleteCard(context.Background(), pb.DeleteCardRequest_builder{
 			Id: id,
 		}.Build())
-
+		st, _ := status.FromError(err)
+		if st.Code() == codes.Unauthenticated {
+			return refreshTokenErrorMsg{err: err}
+		}
 		return deleteCardResultMsg{err: err}
 	}
 }
@@ -230,7 +225,10 @@ func activateCardCmd(client pb.GoKeeperServiceClient, id int64) tea.Cmd {
 		_, err := client.ActivateCard(context.Background(), pb.ActiveCardRequest_builder{
 			Id: id,
 		}.Build())
-
+		st, _ := status.FromError(err)
+		if st.Code() == codes.Unauthenticated {
+			return refreshTokenErrorMsg{err: err}
+		}
 		return activateCardResultMsg{err: err}
 	}
 }
@@ -253,6 +251,10 @@ func createArbitraryDataCmd(client pb.GoKeeperServiceClient, path string) tea.Cm
 
 		stream, err := client.CreateArbitraryData(context.Background())
 		if err != nil {
+			st, _ := status.FromError(err)
+			if st.Code() == codes.Unauthenticated {
+				return refreshTokenErrorMsg{err: err}
+			}
 			return createArbitraryDataResultMsg{err: err}
 		}
 
@@ -305,9 +307,12 @@ func getArbitraryDataCmd(client pb.GoKeeperServiceClient) tea.Cmd {
 	return func() tea.Msg {
 		resp, err := client.GetArbitraryData(context.Background(), &pb.ListArbitraryDataRequest{})
 		if err != nil {
+			st, _ := status.FromError(err)
+			if st.Code() == codes.Unauthenticated {
+				return refreshTokenErrorMsg{err: err}
+			}
 			return cardsResultMsg{err: err}
 		}
-
 		return arbitraryDataResultMsg{err: err, arbitraryData: resp.GetArbitraryData()}
 	}
 }
@@ -317,7 +322,10 @@ func deleteArbitraryDataCmd(client pb.GoKeeperServiceClient, id int64) tea.Cmd {
 		_, err := client.DeleteArbitraryData(context.Background(), pb.DeleteArbitraryDataRequest_builder{
 			Id: id,
 		}.Build())
-
+		st, _ := status.FromError(err)
+		if st.Code() == codes.Unauthenticated {
+			return refreshTokenErrorMsg{err: err}
+		}
 		return deleteArbitraryDataResultMsg{err: err}
 	}
 }
@@ -332,6 +340,10 @@ func reloadArbitraryDataCmd(client pb.GoKeeperServiceClient, id int64, filepath 
 
 		stream, err := client.ReloadArbitraryData(context.Background())
 		if err != nil {
+			st, _ := status.FromError(err)
+			if st.Code() == codes.Unauthenticated {
+				return refreshTokenErrorMsg{err: err}
+			}
 			return reloadArbitraryDataResultMsg{err: err}
 		}
 
@@ -391,6 +403,10 @@ func downloadArbitraryDataCmd(client pb.GoKeeperServiceClient, id int64, destDir
 
 		for {
 			resp, err := stream.Recv()
+			st, _ := status.FromError(err)
+			if st.Code() == codes.Unauthenticated {
+				return refreshTokenErrorMsg{err: err}
+			}
 			if err == io.EOF {
 				break
 			}
