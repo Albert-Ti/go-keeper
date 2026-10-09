@@ -1,0 +1,66 @@
+syntax = "proto3";
+
+package gokeeper;
+
+option go_package = "github.com/Albert-Ti/go-keeper/pkg/proto";
+
+import "google/protobuf/timestamp.proto";
+
+message ArbitraryData {
+  int64 id = 1;
+  string name = 2;
+  string type = 3;
+  string os_path = 4;
+  string object_key = 5;
+  int64 status = 6;
+  int64 client_size = 7;
+  int64 total_size = 8;
+  google.protobuf.Timestamp created_at = 9;
+}
+
+message ListArbitraryDataRequest {}
+
+message ListArbitraryDataResponse {
+  repeated ArbitraryData arbitrary_data = 1;
+}
+
+message DownloadArbitraryDataRequest {
+  int64 id = 1;
+}
+
+message DownloadArbitraryDataResponse {
+  bytes chunk = 1;
+}
+
+message FileMetadata {
+  string filename = 1;
+  string type = 2;
+  int64 size = 3;
+  string os_path = 4;
+}
+
+message CreateArbitraryDataRequest {
+  oneof data {
+    FileMetadata metadata = 1;
+    bytes chunk = 2;
+  }
+}
+
+message CreateArbitraryDataResponse {
+  int64 id = 1;
+}
+
+message DeleteArbitraryDataRequest {
+  int64 id = 1;
+}
+
+message DeleteArbitraryDataResponse {}
+
+message ReloadArbitraryDataRequest {
+  oneof data {
+    int64 id = 1;
+    bytes chunk = 2;
+  }
+}
+
+message ReloadArbitraryDataResponse {}

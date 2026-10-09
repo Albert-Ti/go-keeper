@@ -2,25 +2,17 @@ package utils
 
 import (
 	"crypto/rand"
-	"encoding/base64"
+	"math/big"
 )
 
-var GenerateUUID = func() string {
-	key := make([]byte, 9)
-	rand.Read(key)
-	return base64.RawURLEncoding.EncodeToString(key)
-}
+var GenerateCodeEmail = func() string {
+	const letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+	const length = 5
 
-func GenerateMockUUID() func() {
-	original := GenerateUUID
-	counter := 0
-
-	GenerateUUID = func() string {
-		counter++
-		return "key_" + string(rune('0'+counter))
+	result := make([]byte, length)
+	for i := range result {
+		n, _ := rand.Int(rand.Reader, big.NewInt(int64(len(letters))))
+		result[i] = letters[n.Int64()]
 	}
-
-	return func() {
-		GenerateUUID = original
-	}
+	return string(result)
 }

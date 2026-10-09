@@ -1,0 +1,22 @@
+syntax = "proto3";
+
+package gokeeper;
+
+option go_package = "github.com/Albert-Ti/go-keeper/pkg/proto";
+
+import "google/protobuf/timestamp.proto";
+
+
+message ProfileRequest {}
+
+message ProfileResponse {
+  string email = 1;
+  google.protobuf.Timestamp created_at = 3;
+}
+
+message PassRequest {
+  string pass_old = 1;
+  string pass_new = 2;
+}
+
+message PassResponse {}
