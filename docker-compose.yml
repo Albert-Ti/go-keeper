@@ -28,7 +28,7 @@ services:
   seaweedfs-s3:
     container_name: seaweedfs-s3
     image: chrislusf/seaweedfs:latest
-    restart: unless-stopped
+    restart: always
     ports:
       - 8333:8333
       - 9333:9333

@@ -17,9 +17,9 @@ func (g *GrpcServer) ChangePass(ctx context.Context, in *pb.PassRequest) (*pb.Pa
 		return nil, status.Error(codes.Unauthenticated, "failed to get user")
 	}
 
-	if err := g.Svc.ChangePass(ctx, uuid, in.GetPassOld(), in.GetPassNew()); err != nil {
+	if err := g.Svc.ChangePass(ctx, uuid, in.GetPassCurr(), in.GetPassNew()); err != nil {
 		if errors.Is(err, service.ErrInvalidPassword) {
-			return nil, status.Error(codes.FailedPrecondition, "old password is incorrect")
+			return nil, status.Error(codes.FailedPrecondition, "current password is incorrect")
 		}
 		if errors.Is(err, service.ErrPasswordReused) {
 			return nil, status.Error(codes.FailedPrecondition, "password was used before")

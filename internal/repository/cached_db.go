@@ -63,8 +63,8 @@ func (c *CachedDatabase) UpdateUser(ctx context.Context, p models.UpdateUserPara
 	return c.next.UpdateUser(ctx, p)
 }
 
-func (c *CachedDatabase) ChangePass(ctx context.Context, uuid, passOld, passNew string) error {
-	return c.next.ChangePass(ctx, uuid, passOld, passNew)
+func (c *CachedDatabase) ChangePass(ctx context.Context, uuid, passCurr, passNew string) error {
+	return c.next.ChangePass(ctx, uuid, passCurr, passNew)
 }
 
 func (c *CachedDatabase) GetCards(ctx context.Context, uuid string) ([]models.Card, error) {
@@ -128,8 +128,8 @@ func (c *CachedDatabase) DeleteCard(ctx context.Context, uuid string, cardID int
 	return nil
 }
 
-func (c *CachedDatabase) GetPassList(ctx context.Context, uuid string) ([]string, error) {
-	return c.next.GetPassList(ctx, uuid)
+func (c *CachedDatabase) GetOldPassList(ctx context.Context, uuid string) ([]string, error) {
+	return c.next.GetOldPassList(ctx, uuid)
 }
 
 func (c *CachedDatabase) CreateArbitraryData(

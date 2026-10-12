@@ -144,11 +144,11 @@ func loginCmd(client pb.GoKeeperServiceClient, email, pass string) tea.Cmd {
 	}
 }
 
-func changePassCmd(client pb.GoKeeperServiceClient, passOld, passNew string) tea.Cmd {
+func changePassCmd(client pb.GoKeeperServiceClient, passCurr, passNew string) tea.Cmd {
 	return func() tea.Msg {
 		_, err := client.ChangePass(context.Background(), pb.PassRequest_builder{
-			PassOld: passOld,
-			PassNew: passNew,
+			PassCurr: passCurr,
+			PassNew:  passNew,
 		}.Build())
 		return changePassResultMsg{err: err}
 	}
@@ -390,7 +390,7 @@ func reloadArbitraryDataCmd(client pb.GoKeeperServiceClient, id int64, filepath 
 	}
 }
 
-func downloadArbitraryDataCmd(client pb.GoKeeperServiceClient, id int64, destDir, filename string) tea.Cmd {
+func downloadArbitraryDataCmd(client pb.GoKeeperServiceClient, id int64, filename, destDir string) tea.Cmd {
 	return func() tea.Msg {
 		stream, err := client.DownloadArbitraryData(context.Background(), pb.DownloadArbitraryDataRequest_builder{
 			Id: id,

@@ -72,17 +72,17 @@ func (mr *MockDatabaseMockRecorder) AddUser(ctx, email, code, pass any) *gomock.
 }
 
 // ChangePass mocks base method.
-func (m *MockDatabase) ChangePass(ctx context.Context, uuid, passOld, passNew string) error {
+func (m *MockDatabase) ChangePass(ctx context.Context, uuid, passCurr, passNew string) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ChangePass", ctx, uuid, passOld, passNew)
+	ret := m.ctrl.Call(m, "ChangePass", ctx, uuid, passCurr, passNew)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // ChangePass indicates an expected call of ChangePass.
-func (mr *MockDatabaseMockRecorder) ChangePass(ctx, uuid, passOld, passNew any) *gomock.Call {
+func (mr *MockDatabaseMockRecorder) ChangePass(ctx, uuid, passCurr, passNew any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ChangePass", reflect.TypeOf((*MockDatabase)(nil).ChangePass), ctx, uuid, passOld, passNew)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ChangePass", reflect.TypeOf((*MockDatabase)(nil).ChangePass), ctx, uuid, passCurr, passNew)
 }
 
 // CreateArbitraryData mocks base method.
@@ -187,19 +187,19 @@ func (mr *MockDatabaseMockRecorder) GetCards(ctx, uuid any) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetCards", reflect.TypeOf((*MockDatabase)(nil).GetCards), ctx, uuid)
 }
 
-// GetPassList mocks base method.
-func (m *MockDatabase) GetPassList(ctx context.Context, uuid string) ([]string, error) {
+// GetOldPassList mocks base method.
+func (m *MockDatabase) GetOldPassList(ctx context.Context, uuid string) ([]string, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetPassList", ctx, uuid)
+	ret := m.ctrl.Call(m, "GetOldPassList", ctx, uuid)
 	ret0, _ := ret[0].([]string)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// GetPassList indicates an expected call of GetPassList.
-func (mr *MockDatabaseMockRecorder) GetPassList(ctx, uuid any) *gomock.Call {
+// GetOldPassList indicates an expected call of GetOldPassList.
+func (mr *MockDatabaseMockRecorder) GetOldPassList(ctx, uuid any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetPassList", reflect.TypeOf((*MockDatabase)(nil).GetPassList), ctx, uuid)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetOldPassList", reflect.TypeOf((*MockDatabase)(nil).GetOldPassList), ctx, uuid)
 }
 
 // GetProfile mocks base method.

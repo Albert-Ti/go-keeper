@@ -25,11 +25,13 @@ func (g *GrpcServer) Login(ctx context.Context, in *pb.LoginRequest) (*pb.LoginR
 		}
 		return nil, status.Error(codes.Internal, "failed to login")
 	}
+
 	accessToken, err := mytoken.CreateAccessToken(user.UUID, g.Opts.JWTSecret)
 	refreshToken, err := mytoken.CreateRefreshToken(user.UUID, g.Opts.JWTSecret)
 	if err != nil {
 		return nil, status.Error(codes.Internal, "failed to create token")
 	}
+
 	response := pb.LoginResponse_builder{
 		AccessToken:  accessToken,
 		RefreshToken: refreshToken,

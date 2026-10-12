@@ -52,7 +52,7 @@ func mainView(m model) string {
 		s += "Welcome to the Go Keeper project!\n\n\n\n"
 		for i, choice := range m.choices {
 			if i == m.cursor {
-				s += "> " + lipgloss.NewStyle().Foreground(colorAccent).Bold(true).Render(choice.String()) + " <"
+				s += "❯ " + lipgloss.NewStyle().Foreground(colorAccent).Bold(true).Render(choice.String()) + " ❮"
 			} else {
 				s += "  " + lipgloss.NewStyle().Foreground(colorAccent).Bold(true).Render(choice.String()) + "  "
 			}
@@ -106,7 +106,7 @@ func mainView(m model) string {
 	}
 
 	if m.activePage == profileFormPage {
-		s += "\n\n" + fieldView("Old pass", m.profileForm.passOld) + "\n"
+		s += "\n\n" + fieldView("Old pass", m.profileForm.passCurr) + "\n"
 		s += fieldView("New pass", m.profileForm.passNew) + "\n"
 	}
 
@@ -138,7 +138,8 @@ func mainView(m model) string {
 		s += strings.Repeat("\n", minHeight-currentHeight)
 	}
 	s += lipgloss.NewStyle().Faint(true).Width(cardWidth).Align(lipgloss.Left).
-		Render("ctrl+c quit· ctrl+q logout · esc back · tab focus") + "\n"
+		Render(strings.Join(m.keyPressInfo, " · ")) + "\n"
+
 	return s
 }
 
@@ -174,7 +175,7 @@ func contentProfileView(m model) string {
 		s += "  " + lipgloss.NewStyle().Width(12).Render(v) +
 			": " + m.profile[v] + "\n"
 	}
-	s += "  " + button("update", "press enter to update info", false) + "\n"
+	s += "\n" + "  " + button("update", "press enter to update info", false) + "\n"
 
 	return lipgloss.NewStyle().MarginTop(1).PaddingLeft(3).Width(cardWidth).Align(lipgloss.Left).Render(s)
 }
@@ -283,21 +284,13 @@ func contentDataView(m model) string {
 				btns += active + " "
 			}
 
-			btnsOrStatus := ""
-			if btns == "" {
-				btnsOrStatus = lipgloss.NewStyle().Width(dateWidth).
-					Render(v.GetCreatedAt().AsTime().Format("02.01.2006")) +
-					lipgloss.NewStyle().Width(statusWidth).Render(status)
-			} else {
-
-				btnsOrStatus = btns
-			}
-
 			s += prefix +
 				lipgloss.NewStyle().Width(nameWidth).Foreground(colorAccent).Render(strconv.Itoa(i+1)+". "+filename) +
 				lipgloss.NewStyle().Width(typeWidth).Render(v.GetType()) +
 				lipgloss.NewStyle().Width(sizeWidth).Render(size) +
-				btnsOrStatus + "\n"
+				lipgloss.NewStyle().Width(dateWidth).Render(v.GetCreatedAt().AsTime().Format("02.01.2006")) +
+				lipgloss.NewStyle().Width(statusWidth).Render(status) +
+				btns + "\n"
 		}
 		s += "\n"
 		s += "  " + button("add", "ctrl+a", false) + "\n"
@@ -309,7 +302,7 @@ func contentDataView(m model) string {
 	textInfo := lipgloss.NewStyle().Faint(true).Render("You have not added a files yet, press ctrl+a to ")
 	s = "\n\n" + textInfo + button("add", "", false) + "\n"
 
-	return lipgloss.NewStyle().PaddingLeft(3).Align(lipgloss.Center).Render(s)
+	return lipgloss.NewStyle().PaddingLeft(4).Align(lipgloss.Center).Render(s)
 }
 
 func contentLocalDataView(m model) string {
@@ -325,9 +318,9 @@ func contentLocalDataView(m model) string {
 		sData += "Empty"
 	}
 
-	s += "\n" + lipgloss.NewStyle().Width(cardWidth).Align(lipgloss.Left).Foreground(colorAccent).Render(title) + "\n\n"
+	s += "\n" + lipgloss.NewStyle().PaddingLeft(2).Width(cardWidth).Align(lipgloss.Left).Foreground(colorAccent).Render(title) + "\n\n"
 
-	s += lipgloss.NewStyle().Width(cardWidth).Align(lipgloss.Left).Foreground(colorMuted).Render(sData)
+	s += lipgloss.NewStyle().PaddingLeft(2).Width(cardWidth).Align(lipgloss.Left).Foreground(colorMuted).Render(sData)
 
 	return s
 }

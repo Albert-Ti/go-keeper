@@ -141,7 +141,7 @@ func (pg *Postgres) UpdateUser(ctx context.Context, p models.UpdateUserParams) e
 	return err
 }
 
-func (pg *Postgres) ChangePass(ctx context.Context, uuid, passOld, passNew string) error {
+func (pg *Postgres) ChangePass(ctx context.Context, uuid, passCurr, passNew string) error {
 	tx, err := pg.pool.Begin(ctx)
 	if err != nil {
 		return err
@@ -153,7 +153,7 @@ func (pg *Postgres) ChangePass(ctx context.Context, uuid, passOld, passNew strin
 		return err
 	}
 
-	_, err = tx.Exec(ctx, `INSERT INTO pass_list (old_pass, user_uuid) VALUES ($1, $2)`, passOld, uuid)
+	_, err = tx.Exec(ctx, `INSERT INTO pass_list (old_pass, user_uuid) VALUES ($1, $2)`, passCurr, uuid)
 	if err != nil {
 		return err
 	}
@@ -161,7 +161,7 @@ func (pg *Postgres) ChangePass(ctx context.Context, uuid, passOld, passNew strin
 	return tx.Commit(ctx)
 }
 
-func (pg *Postgres) GetPassList(ctx context.Context, uuid string) ([]string, error) {
+func (pg *Postgres) GetOldPassList(ctx context.Context, uuid string) ([]string, error) {
 	rows, err := pg.pool.Query(ctx, `SELECT old_pass FROM pass_list WHERE user_uuid = $1`, uuid)
 
 	if err != nil {

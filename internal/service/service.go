@@ -62,10 +62,10 @@ func (s *Service) Register(ctx context.Context, email, pass string) error {
 		return err
 	}
 
-	hash := utils.HashString(salt, pass)
+	hashPass := utils.HashString(salt, pass)
 	code := utils.GenerateCodeEmail()
 
-	if err := s.db.AddUser(ctx, email, code, hash); err != nil {
+	if err := s.db.AddUser(ctx, email, code, hashPass); err != nil {
 		if errors.As(err, &pgErr) && pgerrcode.IsIntegrityConstraintViolation(pgErr.Code) {
 			return ErrAlreadyExists
 		}
@@ -89,6 +89,10 @@ func (s *Service) Login(ctx context.Context, email string, pass string) (models.
 
 	if !user.IsConfirmEmail {
 		code := utils.GenerateCodeEmail()
+		params := models.UpdateUserParams{Email: email, EmailCode: &code}
+		if err := s.db.UpdateUser(ctx, params); err != nil {
+			return models.User{}, err
+		}
 		if err := s.sendEmailCode(ctx, email, code); err != nil {
 			return models.User{}, err
 		}
@@ -132,24 +136,25 @@ func (s *Service) GetProfile(ctx context.Context, uuid string) (models.Profile, 
 	return user, nil
 }
 
-func (s *Service) ChangePass(ctx context.Context, uuid, passOld, passNew string) error {
+func (s *Service) ChangePass(ctx context.Context, uuid, passCurr, passNew string) error {
 	user, err := s.db.GetProfile(ctx, uuid)
 	if err != nil {
 		return err
 	}
 
 	// 1. действующий пароль введён верно
-	if !utils.CheckPass(user.Pass, passOld) {
+	if !utils.CheckPass(user.Pass, passCurr) {
 		return ErrInvalidPassword
 	}
 
-	// 2. новый пароль не совпадает ни с текущим, ни с прошлыми
-	listHistory, err := s.db.GetPassList(ctx, uuid)
+	passList, err := s.db.GetOldPassList(ctx, uuid)
 	if err != nil {
 		return err
 	}
-	for _, h := range append([]string{user.Pass}, listHistory...) {
-		if utils.CheckPass(h, passNew) {
+
+	for _, pass := range append([]string{user.Pass}, passList...) {
+		// 2. новый пароль не совпадает ни с текущим, ни с прошлыми
+		if utils.CheckPass(pass, passNew) {
 			return ErrPasswordReused
 		}
 	}
@@ -180,27 +185,13 @@ func (s *Service) DeleteCard(ctx context.Context, uuid string, cardID int64) err
 }
 
 func (s *Service) ActivateCard(ctx context.Context, uuid string, cardID int64) error {
-	return s.db.ActivateCard(ctx, uuid, cardID)
-}
-
-func (s *Service) sendEmailCode(ctx context.Context, email, code string) error {
-	if s.sender != nil {
-		if err := s.sender.SendConfirmationCode(email, code); err != nil {
-			return err
-		}
-		return nil
-	}
-
-	params := models.UpdateUserParams{Email: email, EmailCode: &code}
-	err := grpc.SetHeader(ctx, metadata.Pairs("email_code", code))
+	err := s.db.ActivateCard(ctx, uuid, cardID)
 	if err != nil {
+		if errors.Is(err, repository.ErrRowAffected) {
+			return ErrNotFound
+		}
 		return err
 	}
-
-	if err := s.db.UpdateUser(ctx, params); err != nil {
-		return err
-	}
-
 	return nil
 }
 
@@ -290,4 +281,20 @@ func (s *Service) DownloadArbitraryData(ctx context.Context, uuid string, dataID
 	}
 
 	return obj, nil
+}
+
+func (s *Service) sendEmailCode(ctx context.Context, email, code string) error {
+	if s.sender != nil {
+		if err := s.sender.SendConfirmationCode(email, code); err != nil {
+			return err
+		}
+		return nil
+	}
+
+	err := grpc.SetHeader(ctx, metadata.Pairs("email_code", code))
+	if err != nil {
+		return err
+	}
+
+	return nil
 }

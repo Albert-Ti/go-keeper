@@ -149,11 +149,14 @@ func homePageUpdate(msg tea.KeyPressMsg, m model) (model, tea.Cmd) {
 			case "enter":
 				if m.activeBtn == int(dataActionsDownload) {
 					m.isLoad = true
+					userLocalPath := DOWNLOAD_PATHNAME + "/" + m.profile["email"]
+
 					return m, downloadArbitraryDataCmd(
 						m.client,
 						m.arbitraryData[m.selectedRowID].GetId(),
-						DOWNLOAD_PATHNAME,
-						m.arbitraryData[m.selectedRowID].GetName())
+						m.arbitraryData[m.selectedRowID].GetName(),
+						userLocalPath,
+					)
 				}
 
 				if m.activeBtn == int(dataActionsReload) {
@@ -201,9 +204,9 @@ func homePageUpdate(msg tea.KeyPressMsg, m model) (model, tea.Cmd) {
 				m.cursor++
 			}
 		case "enter":
-			m.profileForm.passOld.Focus()
+			m.profileForm.passCurr.Focus()
 			m.profileForm.passNew.Blur()
-			m.profileForm.passOld.SetValue("")
+			m.profileForm.passCurr.SetValue("")
 			m.profileForm.passNew.SetValue("")
 			return m.navigateTo(profileFormPage), nil
 		}
@@ -226,9 +229,6 @@ func homePageUpdate(msg tea.KeyPressMsg, m model) (model, tea.Cmd) {
 			}
 		case "ctrl+a":
 			m.cardForm.number.Focus()
-			// Для теста
-			m.cardForm.number.SetValue("5555640328235487")
-			m.cardForm.date.SetValue("01/27")
 			return m.navigateTo(cardFormPage), nil
 		}
 
@@ -264,24 +264,24 @@ func profileFormPageUpdate(msg tea.KeyPressMsg, m model) (model, tea.Cmd) {
 	switch msg.String() {
 	case "tab":
 		var cmd tea.Cmd
-		if m.profileForm.passOld.Focused() {
-			m.profileForm.passOld.Blur()
+		if m.profileForm.passCurr.Focused() {
+			m.profileForm.passCurr.Blur()
 			cmd = m.profileForm.passNew.Focus()
 		} else {
 			m.profileForm.passNew.Blur()
-			cmd = m.profileForm.passOld.Focus()
+			cmd = m.profileForm.passCurr.Focus()
 		}
 		return m, cmd
 	case "enter":
 		m.isLoad = true
-		return m, changePassCmd(m.client, m.profileForm.passOld.Value(), m.profileForm.passNew.Value())
+		return m, changePassCmd(m.client, m.profileForm.passCurr.Value(), m.profileForm.passNew.Value())
 
 	}
 
 	var cmd tea.Cmd
 	switch {
-	case m.profileForm.passOld.Focused():
-		m.profileForm.passOld, cmd = m.profileForm.passOld.Update(msg)
+	case m.profileForm.passCurr.Focused():
+		m.profileForm.passCurr, cmd = m.profileForm.passCurr.Update(msg)
 	case m.profileForm.passNew.Focused():
 		m.profileForm.passNew, cmd = m.profileForm.passNew.Update(msg)
 	}

@@ -15,7 +15,7 @@ message ProfileResponse {
 }
 
 message PassRequest {
-  string pass_old = 1;
+  string pass_curr = 1;
   string pass_new = 2;
 }
 

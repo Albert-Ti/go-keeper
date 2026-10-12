@@ -7,6 +7,7 @@ import (
 
 	"github.com/Albert-Ti/go-keeper/internal/config"
 	"github.com/Albert-Ti/go-keeper/internal/handler"
+	"github.com/Albert-Ti/go-keeper/internal/interceptor"
 	"github.com/Albert-Ti/go-keeper/internal/service"
 	pb "github.com/Albert-Ti/go-keeper/pkg/proto"
 	"github.com/stretchr/testify/require"
@@ -22,7 +23,9 @@ func NewTestGRPCServer(t *testing.T, svc *service.Service, opts *config.Options)
 
 	lis := bufconn.Listen(bufSize)
 
-	srv := grpc.NewServer()
+	srv := grpc.NewServer(
+		grpc.ChainUnaryInterceptor(interceptor.AuthUnary(opts.JWTSecret)),
+	)
 
 	gs := &handler.GrpcServer{Srv: srv, Svc: svc, Opts: opts}
 	pb.RegisterGoKeeperServiceServer(srv, gs)

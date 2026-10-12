@@ -7,10 +7,10 @@ import (
 	"charm.land/lipgloss/v2"
 )
 
-const cardWidth = 80
+const cardWidth = 105
 
 // Устанавливаем минимальную высоту для контента
-const minHeight = 18
+const minHeight = 20
 
 // Color
 var (
@@ -44,6 +44,7 @@ var (
 
 	tabInactiveStyle = lipgloss.NewStyle().
 				Bold(true).
+				Underline(true).
 				Foreground(colorMuted).
 				Padding(0, 2)
 )

@@ -59,6 +59,8 @@ type model struct {
 	arbitraryData      []*pb.ArbitraryData
 	localArbitraryData []localUploadedData
 
+	keyPressInfo []string
+
 	client pb.GoKeeperServiceClient
 }
 
@@ -68,7 +70,7 @@ func NewModel(client pb.GoKeeperServiceClient, localStorage *FileStorage) (*mode
 	email.Focus()
 
 	pass := newStyledInput("password", true)
-	passOld := newStyledInput("old password", true)
+	passCurr := newStyledInput("current password", true)
 	passNew := newStyledInput("new password", true)
 	confirm := newStyledInput("confirmation code", false)
 
@@ -115,8 +117,8 @@ func NewModel(client pb.GoKeeperServiceClient, localStorage *FileStorage) (*mode
 			date:   date,
 		},
 		profileForm: profileForm{
-			passOld: passOld,
-			passNew: passNew,
+			passCurr: passCurr,
+			passNew:  passNew,
 		},
 		spinner:    s,
 		filepicker: fp,
@@ -128,6 +130,14 @@ func NewModel(client pb.GoKeeperServiceClient, localStorage *FileStorage) (*mode
 		authUser:      localStorage.Get(emailKey),
 		accessToken:   localStorage.Get(accessTokenKey),
 		refreshToken:  localStorage.Get(refreshTokenKey),
+		keyPressInfo: []string{
+			"ctrl+c quit",
+			"ctrl+q logout",
+			"esc back",
+			"tab focus",
+			"enter select",
+			"↑↓←→ navigation",
+		},
 	}, nil
 }
 
@@ -225,6 +235,10 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		// API result private
 	case profileResultMsg:
 		if msg.err != nil {
+			st, _ := status.FromError(msg.err)
+			if st.Code() == codes.Unavailable {
+				m.Reset()
+			}
 			return m, m.handleError(msg.err, "profileResultMsg")
 		}
 		m.profile = msg.profile
@@ -395,8 +409,8 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case m.cardForm.date.Focused():
 			m.cardForm.date, cmd = m.cardForm.date.Update(msg)
 
-		case m.profileForm.passOld.Focused():
-			m.profileForm.passOld, cmd = m.profileForm.passOld.Update(msg)
+		case m.profileForm.passCurr.Focused():
+			m.profileForm.passCurr, cmd = m.profileForm.passCurr.Update(msg)
 		case m.profileForm.passNew.Focused():
 			m.profileForm.passNew, cmd = m.profileForm.passNew.Update(msg)
 		}

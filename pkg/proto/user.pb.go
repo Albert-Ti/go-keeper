@@ -147,11 +147,11 @@ func (b0 ProfileResponse_builder) Build() *ProfileResponse {
 }
 
 type PassRequest struct {
-	state              protoimpl.MessageState `protogen:"opaque.v1"`
-	xxx_hidden_PassOld string                 `protobuf:"bytes,1,opt,name=pass_old,json=passOld,proto3"`
-	xxx_hidden_PassNew string                 `protobuf:"bytes,2,opt,name=pass_new,json=passNew,proto3"`
-	unknownFields      protoimpl.UnknownFields
-	sizeCache          protoimpl.SizeCache
+	state               protoimpl.MessageState `protogen:"opaque.v1"`
+	xxx_hidden_PassCurr string                 `protobuf:"bytes,1,opt,name=pass_curr,json=passCurr,proto3"`
+	xxx_hidden_PassNew  string                 `protobuf:"bytes,2,opt,name=pass_new,json=passNew,proto3"`
+	unknownFields       protoimpl.UnknownFields
+	sizeCache           protoimpl.SizeCache
 }
 
 func (x *PassRequest) Reset() {
@@ -179,9 +179,9 @@ func (x *PassRequest) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-func (x *PassRequest) GetPassOld() string {
+func (x *PassRequest) GetPassCurr() string {
 	if x != nil {
-		return x.xxx_hidden_PassOld
+		return x.xxx_hidden_PassCurr
 	}
 	return ""
 }
@@ -193,8 +193,8 @@ func (x *PassRequest) GetPassNew() string {
 	return ""
 }
 
-func (x *PassRequest) SetPassOld(v string) {
-	x.xxx_hidden_PassOld = v
+func (x *PassRequest) SetPassCurr(v string) {
+	x.xxx_hidden_PassCurr = v
 }
 
 func (x *PassRequest) SetPassNew(v string) {
@@ -204,15 +204,15 @@ func (x *PassRequest) SetPassNew(v string) {
 type PassRequest_builder struct {
 	_ [0]func() // Prevents comparability and use of unkeyed literals for the builder.
 
-	PassOld string
-	PassNew string
+	PassCurr string
+	PassNew  string
 }
 
 func (b0 PassRequest_builder) Build() *PassRequest {
 	m0 := &PassRequest{}
 	b, x := &b0, m0
 	_, _ = b, x
-	x.xxx_hidden_PassOld = b.PassOld
+	x.xxx_hidden_PassCurr = b.PassCurr
 	x.xxx_hidden_PassNew = b.PassNew
 	return m0
 }
@@ -270,9 +270,9 @@ const file_user_proto_rawDesc = "" +
 	"\x0fProfileResponse\x12\x14\n" +
 	"\x05email\x18\x01 \x01(\tR\x05email\x129\n" +
 	"\n" +
-	"created_at\x18\x03 \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedAt\"C\n" +
-	"\vPassRequest\x12\x19\n" +
-	"\bpass_old\x18\x01 \x01(\tR\apassOld\x12\x19\n" +
+	"created_at\x18\x03 \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedAt\"E\n" +
+	"\vPassRequest\x12\x1b\n" +
+	"\tpass_curr\x18\x01 \x01(\tR\bpassCurr\x12\x19\n" +
 	"\bpass_new\x18\x02 \x01(\tR\apassNew\"\x0e\n" +
 	"\fPassResponseB*Z(github.com/Albert-Ti/go-keeper/pkg/protob\x06proto3"
 

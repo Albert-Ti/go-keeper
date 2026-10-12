@@ -17,10 +17,9 @@ import (
 func TestRegister(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
+
 	mockRepo := mocks.NewMockDatabase(ctrl)
-
 	opts := config.NewOptions()
-
 	svc := service.NewService(mockRepo, opts, nil, nil)
 
 	client := NewTestGRPCServer(t, svc, opts)
@@ -28,34 +27,46 @@ func TestRegister(t *testing.T) {
 	tests := []struct {
 		name      string
 		wantCode  codes.Code
+		pass      string
 		setupMock func(mock *mocks.MockDatabase)
 	}{
 		{
-			name:     "Registration success",
+			name:     "success",
 			wantCode: codes.OK,
+			pass:     "12345",
 			setupMock: func(mock *mocks.MockDatabase) {
 				mock.EXPECT().
 					AddUser(gomock.Any(), "example@mail.com", gomock.Any(), gomock.Any()).
-					Return("some-user-id", nil)
+					Return(nil)
+
 			},
 		},
 
 		{
-			name:     "User already exist",
+			name:     "user already exist",
 			wantCode: codes.AlreadyExists,
+			pass:     "12345",
 			setupMock: func(mock *mocks.MockDatabase) {
 				mock.EXPECT().
 					AddUser(gomock.Any(), "example@mail.com", gomock.Any(), gomock.Any()).
-					Return("", service.ErrAlreadyExists)
+					Return(service.ErrAlreadyExists)
 			},
+		},
+
+		{
+			name:     "pass is too short",
+			wantCode: codes.InvalidArgument,
+			pass:     "12",
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			tt.setupMock(mockRepo)
+			if tt.setupMock != nil {
+				tt.setupMock(mockRepo)
+			}
 
-			req := pb.RegisterRequest_builder{Email: "example@mail.com", Pass: "12345"}.Build()
+			req := pb.RegisterRequest_builder{Email: "example@mail.com", Pass: tt.pass}.Build()
 			_, err := client.Register(context.Background(), req)
 
 			st, ok := status.FromError(err)

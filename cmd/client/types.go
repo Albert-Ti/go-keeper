@@ -89,8 +89,8 @@ type cardForm struct {
 }
 
 type profileForm struct {
-	passOld textinput.Model
-	passNew textinput.Model
+	passCurr textinput.Model
+	passNew  textinput.Model
 }
 
 type localUploadedData struct {

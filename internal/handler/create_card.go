@@ -11,6 +11,11 @@ import (
 )
 
 func (g *GrpcServer) CreateCard(ctx context.Context, in *pb.CreateCardRequest) (*pb.CreateCardResponse, error) {
+	uuid, err := interceptor.GetAuthUserID(ctx)
+	if err != nil {
+		return nil, status.Error(codes.Unauthenticated, "failed to get user")
+	}
+
 	if len(in.GetCardNumber()) != 16 {
 		return nil, status.Error(codes.InvalidArgument, "invalid card number, must be 16 digits")
 	}
@@ -28,11 +33,6 @@ func (g *GrpcServer) CreateCard(ctx context.Context, in *pb.CreateCardRequest) (
 
 	if expiry.Before(time.Now().UTC()) {
 		return nil, status.Error(codes.InvalidArgument, "card expiry date has already passed")
-	}
-
-	uuid, err := interceptor.GetAuthUserID(ctx)
-	if err != nil {
-		return nil, status.Error(codes.Unauthenticated, "failed to get user")
 	}
 
 	if err := g.Svc.CreateCard(ctx, uuid, in.GetCardNumber(), expiry); err != nil {
