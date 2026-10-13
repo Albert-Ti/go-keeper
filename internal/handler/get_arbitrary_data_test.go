@@ -28,7 +28,7 @@ func TestGetArbitraryData(t *testing.T) {
 
 	client := NewTestGRPCServer(t, svc, opts)
 
-	token, err := token.CreateAccessToken("user-1", opts.JWTSecret)
+	accessToken, err := token.CreateAccessToken("user-1", opts.JWTSecret)
 	require.NoError(t, err)
 
 	tests := []struct {
@@ -40,7 +40,7 @@ func TestGetArbitraryData(t *testing.T) {
 		{
 			name:     "success",
 			wantCode: codes.OK,
-			ctx:      metadata.AppendToOutgoingContext(context.Background(), "authorization", token),
+			ctx:      metadata.AppendToOutgoingContext(context.Background(), "authorization", accessToken),
 			setupMock: func(mock *mocks.MockDatabase) {
 				mock.EXPECT().GetArbitraryData(gomock.Any(), gomock.Any()).
 					Return([]models.ArbitraryData{}, nil)

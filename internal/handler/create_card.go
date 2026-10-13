@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/Albert-Ti/go-keeper/internal/interceptor"
+	"github.com/Albert-Ti/go-keeper/internal/utils"
 	pb "github.com/Albert-Ti/go-keeper/pkg/proto"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -14,6 +15,10 @@ func (g *GrpcServer) CreateCard(ctx context.Context, in *pb.CreateCardRequest) (
 	uuid, err := interceptor.GetAuthUserID(ctx)
 	if err != nil {
 		return nil, status.Error(codes.Unauthenticated, "failed to get user")
+	}
+
+	if !utils.AlgoLuna(in.GetCardNumber()) {
+		return nil, status.Error(codes.InvalidArgument, "invalid card number")
 	}
 
 	if len(in.GetCardNumber()) != 16 {

@@ -25,6 +25,7 @@ func NewTestGRPCServer(t *testing.T, svc *service.Service, opts *config.Options)
 
 	srv := grpc.NewServer(
 		grpc.ChainUnaryInterceptor(interceptor.AuthUnary(opts.JWTSecret)),
+		grpc.ChainStreamInterceptor(interceptor.AuthStream(opts.JWTSecret)),
 	)
 
 	gs := &handler.GrpcServer{Srv: srv, Svc: svc, Opts: opts}

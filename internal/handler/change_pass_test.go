@@ -30,7 +30,7 @@ func TestChangePass(t *testing.T) {
 
 	client := NewTestGRPCServer(t, svc, opts)
 
-	token, err := token.CreateAccessToken("user-1", opts.JWTSecret)
+	accessToken, err := token.CreateAccessToken("user-1", opts.JWTSecret)
 	require.NoError(t, err)
 
 	salt := "salt"
@@ -48,7 +48,7 @@ func TestChangePass(t *testing.T) {
 	}{
 		{
 			name:     "success",
-			ctx:      metadata.AppendToOutgoingContext(context.Background(), "authorization", token),
+			ctx:      metadata.AppendToOutgoingContext(context.Background(), "authorization", accessToken),
 			passCurr: "12345",
 			passNew:  "54321",
 			wantCode: codes.OK,
@@ -65,7 +65,7 @@ func TestChangePass(t *testing.T) {
 		},
 		{
 			name:     "current password is incorrect",
-			ctx:      metadata.AppendToOutgoingContext(context.Background(), "authorization", token),
+			ctx:      metadata.AppendToOutgoingContext(context.Background(), "authorization", accessToken),
 			passCurr: "1234",
 			passNew:  "54321",
 			wantCode: codes.FailedPrecondition,
@@ -76,7 +76,7 @@ func TestChangePass(t *testing.T) {
 		},
 		{
 			name:     "password was used before",
-			ctx:      metadata.AppendToOutgoingContext(context.Background(), "authorization", token),
+			ctx:      metadata.AppendToOutgoingContext(context.Background(), "authorization", accessToken),
 			passCurr: "12345",
 			passNew:  "qwerty",
 			wantCode: codes.FailedPrecondition,

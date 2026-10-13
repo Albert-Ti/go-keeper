@@ -27,7 +27,7 @@ func TestCreateCard(t *testing.T) {
 
 	client := NewTestGRPCServer(t, svc, opts)
 
-	token, err := token.CreateAccessToken("user-1", opts.JWTSecret)
+	accessToken, err := token.CreateAccessToken("user-1", opts.JWTSecret)
 	require.NoError(t, err)
 
 	tests := []struct {
@@ -42,7 +42,7 @@ func TestCreateCard(t *testing.T) {
 			name:       "success",
 			cardNumber: "5555640328235487",
 			expireDate: "01/27",
-			ctx:        metadata.AppendToOutgoingContext(context.Background(), "authorization", token),
+			ctx:        metadata.AppendToOutgoingContext(context.Background(), "authorization", accessToken),
 			wantCode:   codes.OK,
 			setupMock: func(mock *mocks.MockDatabase) {
 				mock.EXPECT().CreateCard(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).
@@ -50,10 +50,17 @@ func TestCreateCard(t *testing.T) {
 			},
 		},
 		{
+			name:       "invalid card number, algoLuna",
+			cardNumber: "5555640328235481",
+			expireDate: "01/27",
+			ctx:        metadata.AppendToOutgoingContext(context.Background(), "authorization", accessToken),
+			wantCode:   codes.InvalidArgument,
+		},
+		{
 			name:       "invalid card number, must be 16 digits",
 			cardNumber: "55556403",
 			expireDate: "01/27",
-			ctx:        metadata.AppendToOutgoingContext(context.Background(), "authorization", token),
+			ctx:        metadata.AppendToOutgoingContext(context.Background(), "authorization", accessToken),
 			wantCode:   codes.InvalidArgument,
 		},
 		{
@@ -61,14 +68,14 @@ func TestCreateCard(t *testing.T) {
 			cardNumber: "5555640328235487",
 			expireDate: "01127",
 			wantCode:   codes.InvalidArgument,
-			ctx:        metadata.AppendToOutgoingContext(context.Background(), "authorization", token),
+			ctx:        metadata.AppendToOutgoingContext(context.Background(), "authorization", accessToken),
 		},
 		{
 			name:       "card expiry date has already passed",
 			cardNumber: "5555640328235487",
 			expireDate: "01/20",
 			wantCode:   codes.InvalidArgument,
-			ctx:        metadata.AppendToOutgoingContext(context.Background(), "authorization", token),
+			ctx:        metadata.AppendToOutgoingContext(context.Background(), "authorization", accessToken),
 		},
 		{
 			name:     "unauthenticated",

@@ -27,7 +27,7 @@ func TestDeleteCard(t *testing.T) {
 
 	client := NewTestGRPCServer(t, svc, opts)
 
-	token, err := token.CreateAccessToken("user-1", opts.JWTSecret)
+	accessToken, err := token.CreateAccessToken("user-1", opts.JWTSecret)
 	require.NoError(t, err)
 
 	tests := []struct {
@@ -39,7 +39,7 @@ func TestDeleteCard(t *testing.T) {
 		{
 			name:     "success",
 			wantCode: codes.OK,
-			ctx:      metadata.AppendToOutgoingContext(context.Background(), "authorization", token),
+			ctx:      metadata.AppendToOutgoingContext(context.Background(), "authorization", accessToken),
 			setupMock: func(mock *mocks.MockDatabase) {
 				mock.EXPECT().DeleteCard(gomock.Any(), gomock.Any(), gomock.Any()).
 					Return(nil)
@@ -48,7 +48,7 @@ func TestDeleteCard(t *testing.T) {
 		{
 			name:     "not found",
 			wantCode: codes.NotFound,
-			ctx:      metadata.AppendToOutgoingContext(context.Background(), "authorization", token),
+			ctx:      metadata.AppendToOutgoingContext(context.Background(), "authorization", accessToken),
 			setupMock: func(mock *mocks.MockDatabase) {
 				mock.EXPECT().DeleteCard(gomock.Any(), gomock.Any(), gomock.Any()).
 					Return(service.ErrNotFound)
