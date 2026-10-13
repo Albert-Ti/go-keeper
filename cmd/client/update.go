@@ -126,6 +126,9 @@ func homePageUpdate(msg tea.KeyPressMsg, m model) (model, tea.Cmd) {
 			case "enter":
 				if m.activeBtn == int(cardActionsUpdate) {
 					m.isLoad = true
+					if m.cards[m.selectedRowID].GetActive() {
+						return m, m.handleInfo("card is already active", "")
+					}
 					return m, activateCardCmd(m.client, m.cards[m.selectedRowID].GetId())
 				}
 
@@ -181,12 +184,14 @@ func homePageUpdate(msg tea.KeyPressMsg, m model) (model, tea.Cmd) {
 			if m.activeTab > 0 {
 				m.activeTab--
 				m.cursor = 0
+				m.activeBtn = 0
 				return m, loadActiveTab(m.activeTab, m)
 			}
 		case "right":
 			if int(m.activeTab) < len(m.allTabs)-1 {
 				m.activeTab++
 				m.cursor = 0
+				m.activeBtn = 0
 				return m, loadActiveTab(m.activeTab, m)
 			}
 		}
