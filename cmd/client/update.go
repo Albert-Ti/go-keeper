@@ -6,7 +6,7 @@ import (
 	tea "charm.land/bubbletea/v2"
 )
 
-func landingPageUpdate(msg tea.KeyPressMsg, m model) (model, tea.Cmd) {
+func (m model) landingPageUpdate(msg tea.KeyPressMsg) (model, tea.Cmd) {
 	switch msg.String() {
 	case "up", "k":
 		if m.cursor > 0 {
@@ -24,7 +24,7 @@ func landingPageUpdate(msg tea.KeyPressMsg, m model) (model, tea.Cmd) {
 	return m, nil
 }
 
-func registerPageUpdate(msg tea.KeyPressMsg, m model) (model, tea.Cmd) {
+func (m model) registerPageUpdate(msg tea.KeyPressMsg) (model, tea.Cmd) {
 	switch msg.String() {
 	case "tab":
 		if m.authForm.email.Focused() {
@@ -49,7 +49,7 @@ func registerPageUpdate(msg tea.KeyPressMsg, m model) (model, tea.Cmd) {
 	return m, cmd
 }
 
-func confirmPageUpdate(msg tea.KeyPressMsg, m model) (model, tea.Cmd) {
+func (m model) confirmPageUpdate(msg tea.KeyPressMsg) (model, tea.Cmd) {
 	m.authForm.pass.Blur()
 	m.authForm.email.Blur()
 	m.authForm.confirm.Focus()
@@ -65,7 +65,7 @@ func confirmPageUpdate(msg tea.KeyPressMsg, m model) (model, tea.Cmd) {
 	return m, cmd
 }
 
-func loginPageUpdate(msg tea.KeyPressMsg, m model) (model, tea.Cmd) {
+func (m model) loginPageUpdate(msg tea.KeyPressMsg) (model, tea.Cmd) {
 	switch msg.String() {
 	case "tab":
 		if m.authForm.email.Focused() {
@@ -90,7 +90,7 @@ func loginPageUpdate(msg tea.KeyPressMsg, m model) (model, tea.Cmd) {
 	return m, cmd
 }
 
-func loadActiveTab(activeTab tabType, m model) tea.Cmd {
+func (m model) loadActiveTab(activeTab tabType) tea.Cmd {
 	switch activeTab {
 	case tabProfile:
 		m.isLoad = true
@@ -108,7 +108,7 @@ func loadActiveTab(activeTab tabType, m model) tea.Cmd {
 	return nil
 }
 
-func homePageUpdate(msg tea.KeyPressMsg, m model) (model, tea.Cmd) {
+func (m model) homePageUpdate(msg tea.KeyPressMsg) (model, tea.Cmd) {
 	if m.selectedRowID >= 0 {
 		switch m.activeTab {
 		case tabCards:
@@ -154,11 +154,15 @@ func homePageUpdate(msg tea.KeyPressMsg, m model) (model, tea.Cmd) {
 					m.isLoad = true
 					userLocalPath := DOWNLOAD_PATHNAME + "/" + m.profile["email"]
 
-					return m, downloadArbitraryDataCmd(
-						m.client,
-						m.arbitraryData[m.selectedRowID].GetId(),
-						m.arbitraryData[m.selectedRowID].GetName(),
-						userLocalPath,
+					return m, tea.Batch(
+						downloadArbitraryDataCmd(
+							m.client,
+							m.arbitraryData[m.selectedRowID].GetId(),
+							m.arbitraryData[m.selectedRowID].GetName(),
+							userLocalPath,
+							m.progressCh,
+						),
+						waitUploadProgress(m.progressCh),
 					)
 				}
 
@@ -169,7 +173,11 @@ func homePageUpdate(msg tea.KeyPressMsg, m model) (model, tea.Cmd) {
 					}
 					id := m.arbitraryData[m.selectedRowID].GetId()
 					filepath := m.arbitraryData[m.selectedRowID].GetOsPath()
-					return m, reloadArbitraryDataCmd(m.client, id, filepath)
+
+					return m, tea.Batch(
+						reloadArbitraryDataCmd(m.client, id, filepath, m.progressCh),
+						waitUploadProgress(m.progressCh),
+					)
 				}
 
 				if m.activeBtn == int(dataActionsDelete) {
@@ -185,14 +193,14 @@ func homePageUpdate(msg tea.KeyPressMsg, m model) (model, tea.Cmd) {
 				m.activeTab--
 				m.cursor = 0
 				m.activeBtn = 0
-				return m, loadActiveTab(m.activeTab, m)
+				return m, m.loadActiveTab(m.activeTab)
 			}
 		case "right":
 			if int(m.activeTab) < len(m.allTabs)-1 {
 				m.activeTab++
 				m.cursor = 0
 				m.activeBtn = 0
-				return m, loadActiveTab(m.activeTab, m)
+				return m, m.loadActiveTab(m.activeTab)
 			}
 		}
 	}
@@ -266,7 +274,7 @@ func homePageUpdate(msg tea.KeyPressMsg, m model) (model, tea.Cmd) {
 	return m, nil
 }
 
-func profileFormPageUpdate(msg tea.KeyPressMsg, m model) (model, tea.Cmd) {
+func (m model) profileFormPageUpdate(msg tea.KeyPressMsg) (model, tea.Cmd) {
 	switch msg.String() {
 	case "tab":
 		var cmd tea.Cmd
@@ -294,7 +302,7 @@ func profileFormPageUpdate(msg tea.KeyPressMsg, m model) (model, tea.Cmd) {
 	return m, cmd
 }
 
-func cardFormPageUpdate(msg tea.KeyPressMsg, m model) (model, tea.Cmd) {
+func (m model) cardFormPageUpdate(msg tea.KeyPressMsg) (model, tea.Cmd) {
 	switch msg.String() {
 	case "tab":
 		var cmd tea.Cmd
@@ -321,7 +329,7 @@ func cardFormPageUpdate(msg tea.KeyPressMsg, m model) (model, tea.Cmd) {
 	return m, cmd
 }
 
-func filePickerPageUpdate(msg tea.KeyPressMsg, m model) (model, tea.Cmd) {
+func (m model) filePickerPageUpdate(msg tea.KeyPressMsg) (model, tea.Cmd) {
 	var cmd tea.Cmd
 	m.filepicker, cmd = m.filepicker.Update(msg)
 

@@ -344,13 +344,17 @@ func deleteArbitraryDataCmd(client pb.GoKeeperServiceClient, id int64) tea.Cmd {
 	}
 }
 
-func reloadArbitraryDataCmd(client pb.GoKeeperServiceClient, id int64, filepath string) tea.Cmd {
+func reloadArbitraryDataCmd(client pb.GoKeeperServiceClient, id int64, filepath string, ch chan<- uploadProgressMsg) tea.Cmd {
 	return func() tea.Msg {
 		file, err := os.Open(filepath)
 		if err != nil {
 			return reloadArbitraryDataResultMsg{err: fmt.Errorf("failed to open: %w", err)}
 		}
 		defer file.Close()
+		info, err := file.Stat()
+		if err != nil {
+			return reloadArbitraryDataResultMsg{err: err}
+		}
 
 		stream, err := client.ReloadArbitraryData(context.Background())
 		if err != nil {
@@ -374,6 +378,8 @@ func reloadArbitraryDataCmd(client pb.GoKeeperServiceClient, id int64, filepath 
 		}
 
 		buf := make([]byte, 1024*1024)
+		var sent int64
+
 		for {
 			n, readErr := file.Read(buf)
 			if n > 0 {
@@ -382,6 +388,9 @@ func reloadArbitraryDataCmd(client pb.GoKeeperServiceClient, id int64, filepath 
 				}.Build()); err != nil {
 					return sendErr(err)
 				}
+
+				sent += int64(n)
+				ch <- uploadProgressMsg{sent: sent, total: info.Size()}
 			}
 			if readErr == io.EOF {
 				break
@@ -398,7 +407,7 @@ func reloadArbitraryDataCmd(client pb.GoKeeperServiceClient, id int64, filepath 
 	}
 }
 
-func downloadArbitraryDataCmd(client pb.GoKeeperServiceClient, id int64, filename, destDir string) tea.Cmd {
+func downloadArbitraryDataCmd(client pb.GoKeeperServiceClient, id int64, filename, destDir string, ch chan<- uploadProgressMsg) tea.Cmd {
 	return func() tea.Msg {
 		stream, err := client.DownloadArbitraryData(context.Background(), pb.DownloadArbitraryDataRequest_builder{
 			Id: id,
@@ -414,7 +423,12 @@ func downloadArbitraryDataCmd(client pb.GoKeeperServiceClient, id int64, filenam
 			return downloadArbitraryDataResultMsg{err: err}
 		}
 		defer file.Close()
+		var sent int64
 
+		info, err := file.Stat()
+		if err != nil {
+			return reloadArbitraryDataResultMsg{err: err}
+		}
 		for {
 			resp, err := stream.Recv()
 			st, _ := status.FromError(err)
@@ -430,6 +444,9 @@ func downloadArbitraryDataCmd(client pb.GoKeeperServiceClient, id int64, filenam
 			if _, err := file.Write(resp.GetChunk()); err != nil {
 				return downloadArbitraryDataResultMsg{err: err}
 			}
+
+			sent += int64(len(resp.GetChunk()))
+			ch <- uploadProgressMsg{sent: sent, total: info.Size()}
 		}
 
 		return downloadArbitraryDataResultMsg{err: err}

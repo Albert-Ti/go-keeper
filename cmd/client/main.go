@@ -46,8 +46,8 @@ type model struct {
 	filepicker filepicker.Model
 
 	progress      progress.Model
-	uploadedFile  int64
-	totalSizeFile int64
+	uploadedBytes int64
+	totalBytes    int64
 	progressCh    chan uploadProgressMsg
 
 	selectedFile string
@@ -350,8 +350,8 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		return m, nil
 
 	case uploadProgressMsg:
-		m.uploadedFile = msg.sent
-		m.totalSizeFile = msg.total
+		m.uploadedBytes = msg.sent
+		m.totalBytes = msg.total
 
 		return m, waitUploadProgress(m.progressCh)
 		// Обработка нажатия клавиш
@@ -387,21 +387,21 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 		switch m.activePage {
 		case registerPage:
-			return registerPageUpdate(msg, m)
+			return m.registerPageUpdate(msg)
 		case confirmPage:
-			return confirmPageUpdate(msg, m)
+			return m.confirmPageUpdate(msg)
 		case loginPage:
-			return loginPageUpdate(msg, m)
+			return m.loginPageUpdate(msg)
 		case landingPage:
-			return landingPageUpdate(msg, m)
+			return m.landingPageUpdate(msg)
 		case homePage:
-			return homePageUpdate(msg, m)
+			return m.homePageUpdate(msg)
 		case cardFormPage:
-			return cardFormPageUpdate(msg, m)
+			return m.cardFormPageUpdate(msg)
 		case profileFormPage:
-			return profileFormPageUpdate(msg, m)
+			return m.profileFormPageUpdate(msg)
 		case filePickerPage:
-			return filePickerPageUpdate(msg, m)
+			return m.filePickerPageUpdate(msg)
 		}
 
 	default:
@@ -443,10 +443,10 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 func (m model) View() tea.View {
 	var content string
-	s := headerView(m) + "\n"
+	s := m.headerView() + "\n"
 	s += dividerView() + lipgloss.NewStyle().Render("\n")
 
-	s += mainView(m)
+	s += m.mainView()
 
 	s += dividerView() + "\n"
 	s += footerView()

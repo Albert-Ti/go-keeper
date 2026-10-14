@@ -9,7 +9,7 @@ import (
 	"github.com/dustin/go-humanize"
 )
 
-func headerView(m model) string {
+func (m model) headerView() string {
 	spinner := ""
 	if m.isLoad {
 		spinner = m.spinner.View()
@@ -34,7 +34,7 @@ func headerView(m model) string {
 	return lipgloss.JoinHorizontal(lipgloss.Top, leftRendered, gap, rightRendered)
 }
 
-func mainView(m model) string {
+func (m model) mainView() string {
 	s := ""
 
 	if len(m.history) > 1 {
@@ -90,13 +90,16 @@ func mainView(m model) string {
 		s += "\n\n"
 		switch m.activeTab {
 		case tabProfile:
-			s += contentProfileView(m)
+			s += m.contentProfileView()
 		case tabCards:
-			s += contentCardsView(m)
+			s += m.contentCardsView()
 		case tabData:
-			s += contentDataView(m)
+			s += m.contentDataView()
+			if m.isLoad {
+				s += m.progressView()
+			}
 		case tabLocalData:
-			s += contentLocalDataView(m)
+			s += m.contentLocalDataView()
 		}
 	}
 
@@ -173,7 +176,7 @@ func fieldView(label string, input textinput.Model) string {
 	return labelStyle.Render(label) + "\n" + box.Render(input.View())
 }
 
-func contentProfileView(m model) string {
+func (m model) contentProfileView() string {
 	s := ""
 	for _, v := range m.contentTabProfile {
 		s += "  " + lipgloss.NewStyle().Width(12).Render(v) +
@@ -184,7 +187,7 @@ func contentProfileView(m model) string {
 	return lipgloss.NewStyle().MarginTop(1).PaddingLeft(3).Width(maxWidth).Align(lipgloss.Left).Render(s)
 }
 
-func contentCardsView(m model) string {
+func (m model) contentCardsView() string {
 	s := ""
 	if len(m.cards) == 0 {
 		textInfo := lipgloss.NewStyle().MarginTop(4).Faint(true).Render("You have not added a bank card yet, press ctrl+a to ")
@@ -232,7 +235,7 @@ func contentCardsView(m model) string {
 	return lipgloss.NewStyle().MarginTop(1).PaddingLeft(3).Width(maxWidth).Align(lipgloss.Left).Render(s)
 }
 
-func contentDataView(m model) string {
+func (m model) contentDataView() string {
 	var (
 		nameWidth   = 28
 		typeWidth   = 8
@@ -309,7 +312,7 @@ func contentDataView(m model) string {
 	return lipgloss.NewStyle().PaddingLeft(4).Align(lipgloss.Center).Render(s)
 }
 
-func contentLocalDataView(m model) string {
+func (m model) contentLocalDataView() string {
 	s := ""
 	sData := ""
 	title := "Local list of uploaded data:"
@@ -330,7 +333,7 @@ func contentLocalDataView(m model) string {
 }
 
 func (m model) progressView() string {
-	percent := float64(m.uploadedFile) / float64(m.totalSizeFile)
+	percent := float64(m.uploadedBytes) / float64(m.totalBytes)
 
 	s := ""
 	pad := strings.Repeat(" ", padding)
