@@ -91,8 +91,8 @@ type downloadArbitraryDataResultMsg struct {
 }
 
 type uploadProgressMsg struct {
-	sent  int
-	total int
+	sent  int64
+	total int64
 }
 
 func registerCmd(client pb.GoKeeperServiceClient, email, pass string) tea.Cmd {
@@ -290,7 +290,7 @@ func createArbitraryDataCmd(client pb.GoKeeperServiceClient, path string, ch cha
 		}
 
 		buf := make([]byte, 1024*1024)
-		var sent int
+		var sent int64
 		for {
 			n, readErr := file.Read(buf)
 			if n > 0 {
@@ -299,8 +299,8 @@ func createArbitraryDataCmd(client pb.GoKeeperServiceClient, path string, ch cha
 				}.Build()); err != nil {
 					return sendErr(err)
 				}
-
-				ch <- uploadProgressMsg{sent: sent, total: int(info.Size())}
+				sent += int64(n)
+				ch <- uploadProgressMsg{sent: sent, total: info.Size()}
 			}
 			if readErr == io.EOF {
 				break

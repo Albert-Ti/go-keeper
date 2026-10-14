@@ -342,7 +342,14 @@ func filePickerPageUpdate(msg tea.KeyPressMsg, m model) (model, tea.Cmd) {
 			return m, m.handleError(errors.New("file is not selected"), "filePickerPageUpdate")
 		}
 		m.isLoad = true
-		return m, createArbitraryDataCmd(m.client, m.filepicker.Path, m.progressCh)
+		return m, tea.Batch(
+			createArbitraryDataCmd(
+				m.client,
+				m.filepicker.Path,
+				m.progressCh,
+			),
+			waitUploadProgress(m.progressCh),
+		)
 	}
 
 	return m, cmd

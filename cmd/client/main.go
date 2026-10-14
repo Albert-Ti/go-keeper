@@ -21,14 +21,6 @@ import (
 	pb "github.com/Albert-Ti/go-keeper/pkg/proto"
 )
 
-type tickMsg time.Time
-
-func tickCmd() tea.Cmd {
-	return tea.Tick(time.Second, func(t time.Time) tea.Msg {
-		return tickMsg(t)
-	})
-}
-
 type model struct {
 	isLoad bool
 
@@ -53,10 +45,10 @@ type model struct {
 	spinner    spinner.Model
 	filepicker filepicker.Model
 
-	progress   progress.Model
-	uploaded   int64
-	totalSize  int64
-	progressCh chan uploadProgressMsg
+	progress      progress.Model
+	uploadedFile  int64
+	totalSizeFile int64
+	progressCh    chan uploadProgressMsg
 
 	selectedFile string
 	width        int
@@ -140,7 +132,7 @@ func NewModel(client pb.GoKeeperServiceClient, localStorage *FileStorage) (*mode
 		spinner:    s,
 		filepicker: fp,
 		progress:   prog,
-		progressCh: make(chan uploadProgressMsg),
+		progressCh: make(chan uploadProgressMsg, 10),
 
 		cards:         []*pb.CardData{},
 		client:        client,
@@ -358,7 +350,10 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		return m, nil
 
 	case uploadProgressMsg:
+		m.uploadedFile = msg.sent
+		m.totalSizeFile = msg.total
 
+		return m, waitUploadProgress(m.progressCh)
 		// Обработка нажатия клавиш
 	case tea.KeyPressMsg:
 		switch msg.String() {
@@ -518,6 +513,12 @@ func clearErrorAfter() tea.Cmd {
 	return tea.Tick(3*time.Second, func(t time.Time) tea.Msg {
 		return clearErrorMsg{}
 	})
+}
+
+func waitUploadProgress(ch <-chan uploadProgressMsg) tea.Cmd {
+	return func() tea.Msg {
+		return <-ch
+	}
 }
 
 func (m model) navigateTo(activePage pageType) model {

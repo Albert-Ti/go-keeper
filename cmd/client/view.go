@@ -330,7 +330,7 @@ func contentLocalDataView(m model) string {
 }
 
 func (m model) progressView() string {
-	percent := float64(m.uploaded) / float64(m.totalSize)
+	percent := float64(m.uploadedFile) / float64(m.totalSizeFile)
 
 	s := ""
 	pad := strings.Repeat(" ", padding)
