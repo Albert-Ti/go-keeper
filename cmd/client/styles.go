@@ -7,7 +7,8 @@ import (
 	"charm.land/lipgloss/v2"
 )
 
-const cardWidth = 105
+const maxWidth = 105
+const padding = 2
 
 // Устанавливаем минимальную высоту для контента
 const minHeight = 20
@@ -47,6 +48,10 @@ var (
 				Underline(true).
 				Foreground(colorMuted).
 				Padding(0, 2)
+
+	helpStyle = lipgloss.NewStyle().Foreground(lipgloss.Color("#626262")).Render
+	yellow    = lipgloss.Color("#FDFF8C")
+	pink      = lipgloss.Color("#FF7CCB")
 )
 
 func newStyledInput(placeholder string, isPass bool) textinput.Model {

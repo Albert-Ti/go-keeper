@@ -260,6 +260,7 @@ func homePageUpdate(msg tea.KeyPressMsg, m model) (model, tea.Cmd) {
 
 	case tabLocalData:
 		switch msg.String() {
+		case "enter":
 		}
 	}
 	return m, nil
@@ -341,7 +342,7 @@ func filePickerPageUpdate(msg tea.KeyPressMsg, m model) (model, tea.Cmd) {
 			return m, m.handleError(errors.New("file is not selected"), "filePickerPageUpdate")
 		}
 		m.isLoad = true
-		return m, createArbitraryDataCmd(m.client, m.filepicker.Path)
+		return m, createArbitraryDataCmd(m.client, m.filepicker.Path, m.progressCh)
 	}
 
 	return m, cmd

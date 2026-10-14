@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"charm.land/bubbles/v2/filepicker"
+	"charm.land/bubbles/v2/progress"
 	"charm.land/bubbles/v2/spinner"
 	"charm.land/bubbles/v2/textinput"
 	tea "charm.land/bubbletea/v2"
@@ -19,6 +20,14 @@ import (
 
 	pb "github.com/Albert-Ti/go-keeper/pkg/proto"
 )
+
+type tickMsg time.Time
+
+func tickCmd() tea.Cmd {
+	return tea.Tick(time.Second, func(t time.Time) tea.Msg {
+		return tickMsg(t)
+	})
+}
 
 type model struct {
 	isLoad bool
@@ -37,11 +46,18 @@ type model struct {
 	cardsActions      []cardActionsType
 	dataActions       []dataActionsType
 
-	authForm     authForm
-	cardForm     cardForm
-	profileForm  profileForm
-	spinner      spinner.Model
-	filepicker   filepicker.Model
+	authForm    authForm
+	cardForm    cardForm
+	profileForm profileForm
+
+	spinner    spinner.Model
+	filepicker filepicker.Model
+
+	progress   progress.Model
+	uploaded   int64
+	totalSize  int64
+	progressCh chan uploadProgressMsg
+
 	selectedFile string
 	width        int
 	height       int
@@ -77,6 +93,7 @@ func NewModel(client pb.GoKeeperServiceClient, localStorage *FileStorage) (*mode
 	s := spinner.New()
 	s.Spinner = spinner.Dot
 	s.Style = lipgloss.NewStyle().Foreground(colorAccent)
+	prog := progress.New(progress.WithScaled(true), progress.WithColors(pink, yellow))
 
 	number := newStyledInput("card number", false)
 	date := newStyledInput("09/26", false)
@@ -122,6 +139,8 @@ func NewModel(client pb.GoKeeperServiceClient, localStorage *FileStorage) (*mode
 		},
 		spinner:    s,
 		filepicker: fp,
+		progress:   prog,
+		progressCh: make(chan uploadProgressMsg),
 
 		cards:         []*pb.CardData{},
 		client:        client,
@@ -161,6 +180,10 @@ func (m model) Init() tea.Cmd {
 func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.WindowSizeMsg:
+		m.progress.SetWidth(60)
+		if m.progress.Width() > maxWidth {
+			m.progress.SetWidth(maxWidth)
+		}
 		m.width = msg.Width
 		m.height = msg.Height
 		var cmd tea.Cmd
@@ -333,6 +356,8 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.isLoad = false
 		m.selectedRowID = -1
 		return m, nil
+
+	case uploadProgressMsg:
 
 		// Обработка нажатия клавиш
 	case tea.KeyPressMsg:

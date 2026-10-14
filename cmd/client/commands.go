@@ -90,6 +90,11 @@ type downloadArbitraryDataResultMsg struct {
 	err error
 }
 
+type uploadProgressMsg struct {
+	sent  int
+	total int
+}
+
 func registerCmd(client pb.GoKeeperServiceClient, email, pass string) tea.Cmd {
 	return func() tea.Msg {
 		var header metadata.MD
@@ -239,7 +244,7 @@ func activateCardCmd(client pb.GoKeeperServiceClient, id int64) tea.Cmd {
 	}
 }
 
-func createArbitraryDataCmd(client pb.GoKeeperServiceClient, path string) tea.Cmd {
+func createArbitraryDataCmd(client pb.GoKeeperServiceClient, path string, ch chan<- uploadProgressMsg) tea.Cmd {
 	return func() tea.Msg {
 		filename := filepath.Base(path)
 		filetype := strings.TrimPrefix(filepath.Ext(filename), ".")
@@ -285,6 +290,7 @@ func createArbitraryDataCmd(client pb.GoKeeperServiceClient, path string) tea.Cm
 		}
 
 		buf := make([]byte, 1024*1024)
+		var sent int
 		for {
 			n, readErr := file.Read(buf)
 			if n > 0 {
@@ -293,6 +299,8 @@ func createArbitraryDataCmd(client pb.GoKeeperServiceClient, path string) tea.Cm
 				}.Build()); err != nil {
 					return sendErr(err)
 				}
+
+				ch <- uploadProgressMsg{sent: sent, total: int(info.Size())}
 			}
 			if readErr == io.EOF {
 				break

@@ -26,7 +26,7 @@ func headerView(m model) string {
 	}
 	rightRendered := page
 
-	gapWidth := cardWidth - lipgloss.Width(leftRendered) - lipgloss.Width(rightRendered)
+	gapWidth := maxWidth - lipgloss.Width(leftRendered) - lipgloss.Width(rightRendered)
 	if gapWidth < 0 {
 		gapWidth = 0
 	}
@@ -39,7 +39,7 @@ func mainView(m model) string {
 
 	if len(m.history) > 1 {
 		s += lipgloss.NewStyle().
-			Width(cardWidth).     // Устанавливаем ширину как у карточки
+			Width(maxWidth).      // Устанавливаем ширину как у карточки
 			Align(lipgloss.Left). // Прижимаем к левому краю
 			Faint(true).
 			Render("← "+m.history[len(m.history)-2].String()) + "\n\n"
@@ -123,13 +123,17 @@ func mainView(m model) string {
 			textBtn = "ctrl+s submit to server"
 		}
 		s += "\n" + button("submit", textBtn, disabled) + "\n\n"
+
+		if m.isLoad {
+			s += m.progressView()
+		}
 	}
 
 	if m.textError != "" {
-		s += "\n\n" + errorStyle.Width(cardWidth).Align(lipgloss.Center).Render(m.textError) + "\n"
+		s += "\n\n" + errorStyle.Width(maxWidth).Align(lipgloss.Center).Render(m.textError) + "\n"
 	}
 	if m.textInfo != "" {
-		s += "\n\n" + infoStyle.Width(cardWidth).Align(lipgloss.Center).Render(m.textInfo) + "\n"
+		s += "\n\n" + infoStyle.Width(maxWidth).Align(lipgloss.Center).Render(m.textInfo) + "\n"
 	}
 
 	// Добавляем пустые строки, чтобы заполнить пространство
@@ -137,7 +141,7 @@ func mainView(m model) string {
 	if currentHeight < minHeight {
 		s += strings.Repeat("\n", minHeight-currentHeight)
 	}
-	s += lipgloss.NewStyle().Faint(true).Width(cardWidth).Align(lipgloss.Left).
+	s += lipgloss.NewStyle().Faint(true).Width(maxWidth).Align(lipgloss.Left).
 		Render(strings.Join(m.keyPressInfo, " · ")) + "\n"
 
 	return s
@@ -149,7 +153,7 @@ func footerView() string {
 
 	rightRendered := lipgloss.NewStyle().Foreground(colorAccent).Render("© Albert Taygibov")
 
-	gapWidth := cardWidth - lipgloss.Width(leftRendered) - lipgloss.Width(rightRendered)
+	gapWidth := maxWidth - lipgloss.Width(leftRendered) - lipgloss.Width(rightRendered)
 	if gapWidth < 0 {
 		gapWidth = 0
 	}
@@ -158,7 +162,7 @@ func footerView() string {
 }
 
 func dividerView() string {
-	return lipgloss.NewStyle().Faint(true).Render(strings.Repeat("─", cardWidth))
+	return lipgloss.NewStyle().Faint(true).Render(strings.Repeat("─", maxWidth))
 }
 
 func fieldView(label string, input textinput.Model) string {
@@ -177,16 +181,16 @@ func contentProfileView(m model) string {
 	}
 	s += "\n" + "  " + button("update", "press enter to update info", false) + "\n"
 
-	return lipgloss.NewStyle().MarginTop(1).PaddingLeft(3).Width(cardWidth).Align(lipgloss.Left).Render(s)
+	return lipgloss.NewStyle().MarginTop(1).PaddingLeft(3).Width(maxWidth).Align(lipgloss.Left).Render(s)
 }
 
 func contentCardsView(m model) string {
 	s := ""
 	if len(m.cards) == 0 {
-		textInfo := lipgloss.NewStyle().Faint(true).Render("You have not added a bank card yet, press ctrl+a to ")
+		textInfo := lipgloss.NewStyle().MarginTop(4).Faint(true).Render("You have not added a bank card yet, press ctrl+a to ")
 		s = textInfo + button("add", "", false) + "\n"
 
-		return lipgloss.NewStyle().Width(cardWidth).Align(lipgloss.Center).Render(s)
+		return lipgloss.NewStyle().Width(maxWidth).Align(lipgloss.Center).Render(s)
 	} else {
 		for i, card := range m.cards {
 			isActive := lipgloss.NewStyle().Faint(true).Render("inactive")
@@ -225,7 +229,7 @@ func contentCardsView(m model) string {
 		s += "  " + button("select", "enter", false) + "\n"
 	}
 
-	return lipgloss.NewStyle().MarginTop(1).PaddingLeft(3).Width(cardWidth).Align(lipgloss.Left).Render(s)
+	return lipgloss.NewStyle().MarginTop(1).PaddingLeft(3).Width(maxWidth).Align(lipgloss.Left).Render(s)
 }
 
 func contentDataView(m model) string {
@@ -296,7 +300,7 @@ func contentDataView(m model) string {
 		s += "  " + button("add", "ctrl+a", false) + "\n"
 		s += "  " + button("select", "enter", false)
 
-		return lipgloss.NewStyle().Width(cardWidth).Align(lipgloss.Left).MarginTop(1).Render(s)
+		return lipgloss.NewStyle().Width(maxWidth).Align(lipgloss.Left).MarginTop(1).Render(s)
 	}
 
 	textInfo := lipgloss.NewStyle().Faint(true).Render("You have not added a files yet, press ctrl+a to ")
@@ -318,9 +322,19 @@ func contentLocalDataView(m model) string {
 		sData += "Empty"
 	}
 
-	s += "\n" + lipgloss.NewStyle().PaddingLeft(2).Width(cardWidth).Align(lipgloss.Left).Foreground(colorAccent).Render(title) + "\n\n"
+	s += "\n" + lipgloss.NewStyle().PaddingLeft(2).Width(maxWidth).Align(lipgloss.Left).Foreground(colorAccent).Render(title) + "\n\n"
 
-	s += lipgloss.NewStyle().PaddingLeft(2).Width(cardWidth).Align(lipgloss.Left).Foreground(colorMuted).Render(sData)
+	s += lipgloss.NewStyle().PaddingLeft(2).Width(maxWidth).Align(lipgloss.Left).Foreground(colorMuted).Render(sData)
 
 	return s
+}
+
+func (m model) progressView() string {
+	percent := float64(m.uploaded) / float64(m.totalSize)
+
+	s := ""
+	pad := strings.Repeat(" ", padding)
+	return s + "\n" +
+
+		pad + m.progress.ViewAs(percent) + "\n\n"
 }
