@@ -125,6 +125,11 @@ func (m model) mainView() string {
 		if !disabled {
 			textBtn = "ctrl+s submit to server"
 		}
+		textCheck := " "
+		if m.privateData {
+			textCheck = "✔"
+		}
+		s += "\n" + button(textCheck, "press ctrl+p the data will be private (a master key is required)", !m.privateData)
 		s += "\n" + button("submit", textBtn, disabled) + "\n\n"
 
 		if m.isLoad {
@@ -210,7 +215,7 @@ func (m model) contentCardsView() string {
 				if m.selectedRowID == i {
 					cardsBtns = []string{"[ ]", "[ delete ]"}
 					if card.GetActive() {
-						cardsBtns = []string{"[X]", "[ delete ]"}
+						cardsBtns = []string{"[✔]", "[ delete ]"}
 					}
 				}
 			}
@@ -306,8 +311,8 @@ func (m model) contentDataView() string {
 		return lipgloss.NewStyle().Width(maxWidth).Align(lipgloss.Left).MarginTop(1).Render(s)
 	}
 
-	textInfo := lipgloss.NewStyle().Faint(true).Render("You have not added a files yet, press ctrl+a to ")
-	s = "\n\n" + textInfo + button("add", "", false) + "\n"
+	textInfo := lipgloss.NewStyle().MarginTop(4).Faint(true).Render("You have not added a files yet, press ctrl+a to ")
+	s = textInfo + button("add", "", false) + "\n"
 
 	return lipgloss.NewStyle().PaddingLeft(4).Align(lipgloss.Center).Render(s)
 }

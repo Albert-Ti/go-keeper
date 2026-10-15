@@ -66,6 +66,7 @@ type model struct {
 	cards              []*pb.CardData
 	arbitraryData      []*pb.ArbitraryData
 	localArbitraryData []localUploadedData
+	privateData        bool
 
 	keyPressInfo []string
 
@@ -75,20 +76,18 @@ type model struct {
 func NewModel(client pb.GoKeeperServiceClient, localStorage *FileStorage) (*model, error) {
 	email := newStyledInput("email@example.com", false)
 	email.SetValue(localStorage.Get(emailKey))
-	email.Focus()
 
 	pass := newStyledInput("password", true)
 	passCurr := newStyledInput("current password", true)
 	passNew := newStyledInput("new password", true)
 	confirm := newStyledInput("confirmation code", false)
+	number := newStyledInput("card number", false)
+	date := newStyledInput("09/26", false)
 
 	s := spinner.New()
 	s.Spinner = spinner.Dot
 	s.Style = lipgloss.NewStyle().Foreground(colorAccent)
 	prog := progress.New(progress.WithScaled(true), progress.WithColors(pink, yellow))
-
-	number := newStyledInput("card number", false)
-	date := newStyledInput("09/26", false)
 
 	fp := filepicker.New()
 	fp.AllowedTypes = []string{".html", ".txt", ".jpg", ".png", ".mp4", ".mkv", ".mov"}
@@ -196,10 +195,6 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 		m.codeEmail = msg.emailCode
 		m.activePage = confirmPage
-
-		m.authForm.email.Blur()
-		m.authForm.pass.Blur()
-		m.authForm.confirm.Focus()
 		m.isLoad = false
 
 	case loginResultMsg:
@@ -208,9 +203,6 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			if st.Code() == codes.PermissionDenied {
 				m.codeEmail = msg.emailCode
 				m.activePage = confirmPage
-				m.authForm.email.Blur()
-				m.authForm.pass.Blur()
-				m.authForm.confirm.Focus()
 			}
 			return m, m.handleError(msg.err, "loginResultMsg")
 		}
@@ -226,9 +218,6 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		if err := m.localStorage.Set(refreshTokenKey, msg.refreshToken); err != nil {
 			return m, m.handleError(err, "loginResultMsg")
 		}
-		m.authForm.email.Blur()
-		m.authForm.pass.Blur()
-		m.authForm.confirm.Blur()
 		return m.navigateTo(homePage), getProfileCmd(m.client)
 
 	case confirmResultMsg:
@@ -253,6 +242,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			st, _ := status.FromError(msg.err)
 			if st.Code() == codes.Unavailable {
 				m.Reset()
+				return m, m.authForm.email.Focus()
 			}
 			return m, m.handleError(msg.err, "profileResultMsg")
 		}
@@ -361,7 +351,8 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return m, tea.Quit
 		case "ctrl+q":
 			m.Reset()
-			return m, nil
+			cmd := m.authForm.email.Focus()
+			return m, cmd
 		case "esc":
 			if m.selectedFile != "" {
 				m.selectedFile = ""
@@ -386,14 +377,14 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 
 		switch m.activePage {
-		case registerPage:
-			return m.registerPageUpdate(msg)
-		case confirmPage:
-			return m.confirmPageUpdate(msg)
-		case loginPage:
-			return m.loginPageUpdate(msg)
 		case landingPage:
 			return m.landingPageUpdate(msg)
+		case registerPage:
+			return m.registerPageUpdate(msg)
+		case loginPage:
+			return m.loginPageUpdate(msg)
+		case confirmPage:
+			return m.confirmPageUpdate(msg)
 		case homePage:
 			return m.homePageUpdate(msg)
 		case cardFormPage:
@@ -404,41 +395,9 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return m.filePickerPageUpdate(msg)
 		}
 
-	default:
-		var (
-			cmd  tea.Cmd
-			cmds []tea.Cmd
-		)
-		m.spinner, cmd = m.spinner.Update(msg)
-		cmds = append(cmds, cmd)
-
-		m.filepicker, cmd = m.filepicker.Update(msg)
-		cmds = append(cmds, cmd)
-
-		// курсор в полях чтобы мигал
-		switch {
-		case m.authForm.email.Focused():
-			m.authForm.email, cmd = m.authForm.email.Update(msg)
-		case m.authForm.pass.Focused():
-			m.authForm.pass, cmd = m.authForm.pass.Update(msg)
-		case m.authForm.confirm.Focused():
-			m.authForm.confirm, cmd = m.authForm.confirm.Update(msg)
-
-		case m.cardForm.number.Focused():
-			m.cardForm.number, cmd = m.cardForm.number.Update(msg)
-		case m.cardForm.date.Focused():
-			m.cardForm.date, cmd = m.cardForm.date.Update(msg)
-
-		case m.profileForm.passCurr.Focused():
-			m.profileForm.passCurr, cmd = m.profileForm.passCurr.Update(msg)
-		case m.profileForm.passNew.Focused():
-			m.profileForm.passNew, cmd = m.profileForm.passNew.Update(msg)
-		}
-
-		cmds = append(cmds, cmd)
-		return m, tea.Batch(cmds...)
 	}
-	return m, nil
+	m, cmd := m.updateNonKeyComponents(msg)
+	return m, cmd
 }
 
 func (m model) View() tea.View {
@@ -492,18 +451,13 @@ func (m *model) Reset() {
 	m.selectedRowID = -1
 	m.activeBtn = 0
 
-	m.authForm.email.Focus()
-	m.authForm.pass.Blur()
-	m.authForm.confirm.Blur()
 	m.authForm.email.SetValue(m.localStorage.Get(emailKey))
 	m.authForm.pass.SetValue("")
 	m.authForm.confirm.SetValue("")
-
-	m.cardForm.number.Focus()
-	m.cardForm.number.Blur()
-	m.cardForm.date.Blur()
 	m.cardForm.number.SetValue("")
 	m.cardForm.date.SetValue("")
+	m.profileForm.passCurr.SetValue("")
+	m.profileForm.passNew.SetValue("")
 }
 
 type clearErrorMsg struct {

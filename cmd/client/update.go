@@ -18,8 +18,10 @@ func (m model) landingPageUpdate(msg tea.KeyPressMsg) (model, tea.Cmd) {
 			m.cursor++
 		}
 		return m, nil
-	case "enter", "space":
-		return m.navigateTo(m.choices[m.cursor]), nil
+	case "enter":
+		cmd := m.authForm.email.Focus()
+		m.authForm.pass.Blur()
+		return m.navigateTo(m.choices[m.cursor]), cmd
 	}
 	return m, nil
 }
@@ -29,13 +31,12 @@ func (m model) registerPageUpdate(msg tea.KeyPressMsg) (model, tea.Cmd) {
 	case "tab":
 		if m.authForm.email.Focused() {
 			m.authForm.email.Blur()
-			m.authForm.pass.Focus()
+			return m, m.authForm.pass.Focus()
 		} else {
 			m.authForm.pass.Blur()
-			m.authForm.email.Focus()
+			return m, m.authForm.email.Focus()
 		}
-		return m, nil
-	case "enter", "space":
+	case "enter":
 		m.isLoad = true
 		return m, registerCmd(m.client, m.authForm.email.Value(), m.authForm.pass.Value())
 	}
@@ -50,14 +51,12 @@ func (m model) registerPageUpdate(msg tea.KeyPressMsg) (model, tea.Cmd) {
 }
 
 func (m model) confirmPageUpdate(msg tea.KeyPressMsg) (model, tea.Cmd) {
-	m.authForm.pass.Blur()
-	m.authForm.email.Blur()
-	m.authForm.confirm.Focus()
-
 	switch msg.String() {
 	case "enter":
 		m.isLoad = true
-		return m, confirmEmailCmd(m.client, m.authForm.email.Value(), m.authForm.confirm.Value())
+		return m, tea.Batch(
+			confirmEmailCmd(m.client, m.authForm.email.Value(), m.authForm.confirm.Value()),
+		)
 	}
 
 	var cmd tea.Cmd
@@ -70,12 +69,12 @@ func (m model) loginPageUpdate(msg tea.KeyPressMsg) (model, tea.Cmd) {
 	case "tab":
 		if m.authForm.email.Focused() {
 			m.authForm.email.Blur()
-			m.authForm.pass.Focus()
+			return m, m.authForm.pass.Focus()
 		} else {
 			m.authForm.pass.Blur()
-			m.authForm.email.Focus()
+			return m, m.authForm.email.Focus()
 		}
-		return m, nil
+
 	case "enter":
 		m.isLoad = true
 		return m, loginCmd(m.client, m.authForm.email.Value(), m.authForm.pass.Value())
@@ -187,6 +186,9 @@ func (m model) homePageUpdate(msg tea.KeyPressMsg) (model, tea.Cmd) {
 			}
 		}
 	} else {
+		m.authForm.pass.Blur()
+		m.authForm.email.Blur()
+		m.authForm.confirm.Blur()
 		switch msg.String() {
 		case "left":
 			if m.activeTab > 0 {
@@ -217,11 +219,11 @@ func (m model) homePageUpdate(msg tea.KeyPressMsg) (model, tea.Cmd) {
 				m.cursor++
 			}
 		case "enter":
-			m.profileForm.passCurr.Focus()
+			cmd := m.profileForm.passCurr.Focus()
 			m.profileForm.passNew.Blur()
 			m.profileForm.passCurr.SetValue("")
 			m.profileForm.passNew.SetValue("")
-			return m.navigateTo(profileFormPage), nil
+			return m.navigateTo(profileFormPage), cmd
 		}
 
 	case tabCards:
@@ -241,8 +243,8 @@ func (m model) homePageUpdate(msg tea.KeyPressMsg) (model, tea.Cmd) {
 				m.selectedRowID = m.cursor
 			}
 		case "ctrl+a":
-			m.cardForm.number.Focus()
-			return m.navigateTo(cardFormPage), nil
+			cmd := m.cardForm.number.Focus()
+			return m.navigateTo(cardFormPage), cmd
 		}
 
 	case tabData:
@@ -358,7 +360,58 @@ func (m model) filePickerPageUpdate(msg tea.KeyPressMsg) (model, tea.Cmd) {
 			),
 			waitUploadProgress(m.progressCh),
 		)
+	case "ctrl+p":
+		if m.privateData {
+			m.privateData = false
+			return m, cmd
+
+		}
+		m.privateData = true
+		return m, cmd
 	}
 
 	return m, cmd
+}
+
+func (m model) updateNonKeyComponents(msg tea.Msg) (model, tea.Cmd) {
+	var cmds []tea.Cmd
+	var cmd tea.Cmd
+
+	m.spinner, cmd = m.spinner.Update(msg)
+	cmds = append(cmds, cmd)
+
+	m.filepicker, cmd = m.filepicker.Update(msg)
+	cmds = append(cmds, cmd)
+
+	switch {
+	case m.authForm.email.Focused():
+		m.authForm.email, cmd = m.authForm.email.Update(msg)
+		cmds = append(cmds, cmd)
+
+	case m.authForm.pass.Focused():
+		m.authForm.pass, cmd = m.authForm.pass.Update(msg)
+		cmds = append(cmds, cmd)
+
+	case m.authForm.confirm.Focused():
+		m.authForm.confirm, cmd = m.authForm.confirm.Update(msg)
+		cmds = append(cmds, cmd)
+
+	case m.cardForm.number.Focused():
+		m.cardForm.number, cmd = m.cardForm.number.Update(msg)
+		cmds = append(cmds, cmd)
+
+	case m.cardForm.date.Focused():
+		m.cardForm.date, cmd = m.cardForm.date.Update(msg)
+		cmds = append(cmds, cmd)
+
+	case m.profileForm.passCurr.Focused():
+		m.profileForm.passCurr, cmd = m.profileForm.passCurr.Update(msg)
+		cmds = append(cmds, cmd)
+
+	case m.profileForm.passNew.Focused():
+		m.profileForm.passNew, cmd = m.profileForm.passNew.Update(msg)
+		cmds = append(cmds, cmd)
+	}
+
+	return m, tea.Batch(cmds...)
 }

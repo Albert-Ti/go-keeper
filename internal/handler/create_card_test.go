@@ -40,7 +40,18 @@ func TestCreateCard(t *testing.T) {
 	}{
 		{
 			name:       "success",
-			cardNumber: "5555640328235487",
+			cardNumber: "2200000000000053",
+			expireDate: "01/27",
+			ctx:        metadata.AppendToOutgoingContext(context.Background(), "authorization", accessToken),
+			wantCode:   codes.OK,
+			setupMock: func(mock *mocks.MockDatabase) {
+				mock.EXPECT().CreateCard(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).
+					Return(nil)
+			},
+		},
+		{
+			name:       "success another card",
+			cardNumber: "6011111111111117",
 			expireDate: "01/27",
 			ctx:        metadata.AppendToOutgoingContext(context.Background(), "authorization", accessToken),
 			wantCode:   codes.OK,

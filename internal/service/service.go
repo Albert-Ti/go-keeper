@@ -56,8 +56,6 @@ func NewService(
 
 func (s *Service) Register(ctx context.Context, email, pass string) error {
 	salt, err := utils.RandomHash(8)
-
-	var pgErr *pgconn.PgError
 	if err != nil {
 		return err
 	}
@@ -65,6 +63,7 @@ func (s *Service) Register(ctx context.Context, email, pass string) error {
 	hashPass := utils.HashString(salt, pass)
 	code := utils.GenerateCodeEmail()
 
+	var pgErr *pgconn.PgError
 	if err := s.db.AddUser(ctx, email, code, hashPass); err != nil {
 		if errors.As(err, &pgErr) && pgerrcode.IsIntegrityConstraintViolation(pgErr.Code) {
 			return ErrAlreadyExists
