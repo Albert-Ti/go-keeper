@@ -413,6 +413,16 @@ func downloadArbitraryDataCmd(client pb.GoKeeperServiceClient, id int64, filenam
 			Id: id,
 		}.Build())
 
+		req, err := stream.Recv()
+		if err != nil {
+			return downloadArbitraryDataResultMsg{err: err}
+		}
+
+		var totalSize int64
+		if req.GetMetadata() != nil {
+			totalSize = req.GetMetadata().GetSize()
+		}
+
 		// создаём директорию, если её нет (если есть, ничего не делает)
 		if err := os.MkdirAll(destDir, 0o755); err != nil {
 			return downloadArbitraryDataResultMsg{err: err}
@@ -425,10 +435,6 @@ func downloadArbitraryDataCmd(client pb.GoKeeperServiceClient, id int64, filenam
 		defer file.Close()
 		var sent int64
 
-		info, err := file.Stat()
-		if err != nil {
-			return reloadArbitraryDataResultMsg{err: err}
-		}
 		for {
 			resp, err := stream.Recv()
 			st, _ := status.FromError(err)
@@ -446,7 +452,7 @@ func downloadArbitraryDataCmd(client pb.GoKeeperServiceClient, id int64, filenam
 			}
 
 			sent += int64(len(resp.GetChunk()))
-			ch <- uploadProgressMsg{sent: sent, total: info.Size()}
+			ch <- uploadProgressMsg{sent: sent, total: totalSize}
 		}
 
 		return downloadArbitraryDataResultMsg{err: err}

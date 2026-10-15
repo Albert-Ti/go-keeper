@@ -29,7 +29,10 @@ message DownloadArbitraryDataRequest {
 }
 
 message DownloadArbitraryDataResponse {
-  bytes chunk = 1;
+  oneof data {
+    FileMetadata metadata = 1;
+    bytes chunk = 2;
+  }
 }
 
 message FileMetadata {

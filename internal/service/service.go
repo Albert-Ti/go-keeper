@@ -269,18 +269,18 @@ func (s *Service) ReloadArbitraryData(ctx context.Context, uuid string, dataID i
 	return nil
 }
 
-func (s *Service) DownloadArbitraryData(ctx context.Context, uuid string, dataID int64) (io.ReadCloser, error) {
+func (s *Service) DownloadArbitraryData(ctx context.Context, uuid string, dataID int64) (io.ReadCloser, int64, error) {
 	data, err := s.db.GetArbitraryDataByID(ctx, uuid, dataID)
 	if err != nil {
-		return nil, err
+		return nil, 0, err
 	}
 
 	obj, err := s.objStorage.Get(ctx, data.ObjectKey)
 	if err != nil {
-		return nil, err
+		return nil, 0, err
 	}
 
-	return obj, nil
+	return obj, data.TotalSize, nil
 }
 
 func (s *Service) sendEmailCode(ctx context.Context, email, code string) error {

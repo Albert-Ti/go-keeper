@@ -322,7 +322,7 @@ func (pg *Postgres) GetArbitraryData(ctx context.Context, uuid string) ([]models
 
 func (pg *Postgres) GetArbitraryDataByID(ctx context.Context, uuid string, dataID int64) (models.ArbitraryData, error) {
 	sql := `
-	SELECT status, object_key
+	SELECT status, object_key, total_size
 	FROM arbitrary_data 
 	WHERE user_uuid = $1 AND id = $2
 	`
@@ -332,6 +332,7 @@ func (pg *Postgres) GetArbitraryDataByID(ctx context.Context, uuid string, dataI
 	err := row.Scan(
 		&data.Status,
 		&data.ObjectKey,
+		&data.TotalSize,
 	)
 	if err != nil {
 		return models.ArbitraryData{}, err

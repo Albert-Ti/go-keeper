@@ -361,10 +361,10 @@ func (b0 DownloadArbitraryDataRequest_builder) Build() *DownloadArbitraryDataReq
 }
 
 type DownloadArbitraryDataResponse struct {
-	state            protoimpl.MessageState `protogen:"opaque.v1"`
-	xxx_hidden_Chunk []byte                 `protobuf:"bytes,1,opt,name=chunk,proto3"`
-	unknownFields    protoimpl.UnknownFields
-	sizeCache        protoimpl.SizeCache
+	state           protoimpl.MessageState               `protogen:"opaque.v1"`
+	xxx_hidden_Data isDownloadArbitraryDataResponse_Data `protobuf_oneof:"data"`
+	unknownFields   protoimpl.UnknownFields
+	sizeCache       protoimpl.SizeCache
 }
 
 func (x *DownloadArbitraryDataResponse) Reset() {
@@ -392,33 +392,143 @@ func (x *DownloadArbitraryDataResponse) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-func (x *DownloadArbitraryDataResponse) GetChunk() []byte {
+func (x *DownloadArbitraryDataResponse) GetMetadata() *FileMetadata {
 	if x != nil {
-		return x.xxx_hidden_Chunk
+		if x, ok := x.xxx_hidden_Data.(*downloadArbitraryDataResponse_Metadata); ok {
+			return x.Metadata
+		}
 	}
 	return nil
+}
+
+func (x *DownloadArbitraryDataResponse) GetChunk() []byte {
+	if x != nil {
+		if x, ok := x.xxx_hidden_Data.(*downloadArbitraryDataResponse_Chunk); ok {
+			return x.Chunk
+		}
+	}
+	return nil
+}
+
+func (x *DownloadArbitraryDataResponse) SetMetadata(v *FileMetadata) {
+	if v == nil {
+		x.xxx_hidden_Data = nil
+		return
+	}
+	x.xxx_hidden_Data = &downloadArbitraryDataResponse_Metadata{v}
 }
 
 func (x *DownloadArbitraryDataResponse) SetChunk(v []byte) {
 	if v == nil {
 		v = []byte{}
 	}
-	x.xxx_hidden_Chunk = v
+	x.xxx_hidden_Data = &downloadArbitraryDataResponse_Chunk{v}
+}
+
+func (x *DownloadArbitraryDataResponse) HasData() bool {
+	if x == nil {
+		return false
+	}
+	return x.xxx_hidden_Data != nil
+}
+
+func (x *DownloadArbitraryDataResponse) HasMetadata() bool {
+	if x == nil {
+		return false
+	}
+	_, ok := x.xxx_hidden_Data.(*downloadArbitraryDataResponse_Metadata)
+	return ok
+}
+
+func (x *DownloadArbitraryDataResponse) HasChunk() bool {
+	if x == nil {
+		return false
+	}
+	_, ok := x.xxx_hidden_Data.(*downloadArbitraryDataResponse_Chunk)
+	return ok
+}
+
+func (x *DownloadArbitraryDataResponse) ClearData() {
+	x.xxx_hidden_Data = nil
+}
+
+func (x *DownloadArbitraryDataResponse) ClearMetadata() {
+	if _, ok := x.xxx_hidden_Data.(*downloadArbitraryDataResponse_Metadata); ok {
+		x.xxx_hidden_Data = nil
+	}
+}
+
+func (x *DownloadArbitraryDataResponse) ClearChunk() {
+	if _, ok := x.xxx_hidden_Data.(*downloadArbitraryDataResponse_Chunk); ok {
+		x.xxx_hidden_Data = nil
+	}
+}
+
+const DownloadArbitraryDataResponse_Data_not_set_case case_DownloadArbitraryDataResponse_Data = 0
+const DownloadArbitraryDataResponse_Metadata_case case_DownloadArbitraryDataResponse_Data = 1
+const DownloadArbitraryDataResponse_Chunk_case case_DownloadArbitraryDataResponse_Data = 2
+
+func (x *DownloadArbitraryDataResponse) WhichData() case_DownloadArbitraryDataResponse_Data {
+	if x == nil {
+		return DownloadArbitraryDataResponse_Data_not_set_case
+	}
+	switch x.xxx_hidden_Data.(type) {
+	case *downloadArbitraryDataResponse_Metadata:
+		return DownloadArbitraryDataResponse_Metadata_case
+	case *downloadArbitraryDataResponse_Chunk:
+		return DownloadArbitraryDataResponse_Chunk_case
+	default:
+		return DownloadArbitraryDataResponse_Data_not_set_case
+	}
 }
 
 type DownloadArbitraryDataResponse_builder struct {
 	_ [0]func() // Prevents comparability and use of unkeyed literals for the builder.
 
-	Chunk []byte
+	// Fields of oneof xxx_hidden_Data:
+	Metadata *FileMetadata
+	Chunk    []byte
+	// -- end of xxx_hidden_Data
 }
 
 func (b0 DownloadArbitraryDataResponse_builder) Build() *DownloadArbitraryDataResponse {
 	m0 := &DownloadArbitraryDataResponse{}
 	b, x := &b0, m0
 	_, _ = b, x
-	x.xxx_hidden_Chunk = b.Chunk
+	if b.Metadata != nil {
+		x.xxx_hidden_Data = &downloadArbitraryDataResponse_Metadata{b.Metadata}
+	}
+	if b.Chunk != nil {
+		x.xxx_hidden_Data = &downloadArbitraryDataResponse_Chunk{b.Chunk}
+	}
 	return m0
 }
+
+type case_DownloadArbitraryDataResponse_Data protoreflect.FieldNumber
+
+func (x case_DownloadArbitraryDataResponse_Data) String() string {
+	md := file_arbitrary_data_proto_msgTypes[4].Descriptor()
+	if x == 0 {
+		return "not set"
+	}
+	return protoimpl.X.MessageFieldStringOf(md, protoreflect.FieldNumber(x))
+}
+
+type isDownloadArbitraryDataResponse_Data interface {
+	isDownloadArbitraryDataResponse_Data()
+}
+
+type downloadArbitraryDataResponse_Metadata struct {
+	Metadata *FileMetadata `protobuf:"bytes,1,opt,name=metadata,proto3,oneof"`
+}
+
+type downloadArbitraryDataResponse_Chunk struct {
+	Chunk []byte `protobuf:"bytes,2,opt,name=chunk,proto3,oneof"`
+}
+
+func (*downloadArbitraryDataResponse_Metadata) isDownloadArbitraryDataResponse_Data() {}
+
+func (*downloadArbitraryDataResponse_Chunk) isDownloadArbitraryDataResponse_Data() {}
 
 type FileMetadata struct {
 	state               protoimpl.MessageState `protogen:"opaque.v1"`
@@ -1078,9 +1188,11 @@ const file_arbitrary_data_proto_rawDesc = "" +
 	"\x19ListArbitraryDataResponse\x12>\n" +
 	"\x0earbitrary_data\x18\x01 \x03(\v2\x17.gokeeper.ArbitraryDataR\rarbitraryData\".\n" +
 	"\x1cDownloadArbitraryDataRequest\x12\x0e\n" +
-	"\x02id\x18\x01 \x01(\x03R\x02id\"5\n" +
-	"\x1dDownloadArbitraryDataResponse\x12\x14\n" +
-	"\x05chunk\x18\x01 \x01(\fR\x05chunk\"k\n" +
+	"\x02id\x18\x01 \x01(\x03R\x02id\"u\n" +
+	"\x1dDownloadArbitraryDataResponse\x124\n" +
+	"\bmetadata\x18\x01 \x01(\v2\x16.gokeeper.FileMetadataH\x00R\bmetadata\x12\x16\n" +
+	"\x05chunk\x18\x02 \x01(\fH\x00R\x05chunkB\x06\n" +
+	"\x04data\"k\n" +
 	"\fFileMetadata\x12\x1a\n" +
 	"\bfilename\x18\x01 \x01(\tR\bfilename\x12\x12\n" +
 	"\x04type\x18\x02 \x01(\tR\x04type\x12\x12\n" +
@@ -1120,18 +1232,23 @@ var file_arbitrary_data_proto_goTypes = []any{
 var file_arbitrary_data_proto_depIdxs = []int32{
 	12, // 0: gokeeper.ArbitraryData.created_at:type_name -> google.protobuf.Timestamp
 	0,  // 1: gokeeper.ListArbitraryDataResponse.arbitrary_data:type_name -> gokeeper.ArbitraryData
-	5,  // 2: gokeeper.CreateArbitraryDataRequest.metadata:type_name -> gokeeper.FileMetadata
-	3,  // [3:3] is the sub-list for method output_type
-	3,  // [3:3] is the sub-list for method input_type
-	3,  // [3:3] is the sub-list for extension type_name
-	3,  // [3:3] is the sub-list for extension extendee
-	0,  // [0:3] is the sub-list for field type_name
+	5,  // 2: gokeeper.DownloadArbitraryDataResponse.metadata:type_name -> gokeeper.FileMetadata
+	5,  // 3: gokeeper.CreateArbitraryDataRequest.metadata:type_name -> gokeeper.FileMetadata
+	4,  // [4:4] is the sub-list for method output_type
+	4,  // [4:4] is the sub-list for method input_type
+	4,  // [4:4] is the sub-list for extension type_name
+	4,  // [4:4] is the sub-list for extension extendee
+	0,  // [0:4] is the sub-list for field type_name
 }
 
 func init() { file_arbitrary_data_proto_init() }
 func file_arbitrary_data_proto_init() {
 	if File_arbitrary_data_proto != nil {
 		return
+	}
+	file_arbitrary_data_proto_msgTypes[4].OneofWrappers = []any{
+		(*downloadArbitraryDataResponse_Metadata)(nil),
+		(*downloadArbitraryDataResponse_Chunk)(nil),
 	}
 	file_arbitrary_data_proto_msgTypes[6].OneofWrappers = []any{
 		(*createArbitraryDataRequest_Metadata)(nil),

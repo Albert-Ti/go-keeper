@@ -17,12 +17,21 @@ func (g *GrpcServer) DownloadArbitraryData(in *pb.DownloadArbitraryDataRequest, 
 	}
 
 	buf := make([]byte, 1024*1024)
-	reader, err := g.Svc.DownloadArbitraryData(ctx, uuid, in.GetId())
+	reader, totalSize, err := g.Svc.DownloadArbitraryData(ctx, uuid, in.GetId())
 	if err != nil {
 		return status.Error(codes.Internal, "failed to download file")
 	}
 
 	defer reader.Close()
+
+	errSend := stream.Send(pb.DownloadArbitraryDataResponse_builder{
+		Metadata: pb.FileMetadata_builder{
+			Size: totalSize,
+		}.Build(),
+	}.Build())
+	if errSend != nil {
+		return status.Error(codes.Internal, "failed to download file")
+	}
 
 	for {
 		n, err := reader.Read(buf)
