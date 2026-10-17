@@ -86,22 +86,22 @@ func (mr *MockDatabaseMockRecorder) ChangePass(ctx, uuid, passCurr, passNew any)
 }
 
 // CreateArbitraryData mocks base method.
-func (m *MockDatabase) CreateArbitraryData(ctx context.Context, uuid, filename, filetype, osPath, objectKey string, status uint, clientSize int64) (int64, error) {
+func (m *MockDatabase) CreateArbitraryData(ctx context.Context, uuid string, filename, osPath []byte, filetype, objectKey string, status uint, clientSize int64) (int64, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CreateArbitraryData", ctx, uuid, filename, filetype, osPath, objectKey, status, clientSize)
+	ret := m.ctrl.Call(m, "CreateArbitraryData", ctx, uuid, filename, osPath, filetype, objectKey, status, clientSize)
 	ret0, _ := ret[0].(int64)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // CreateArbitraryData indicates an expected call of CreateArbitraryData.
-func (mr *MockDatabaseMockRecorder) CreateArbitraryData(ctx, uuid, filename, filetype, osPath, objectKey, status, clientSize any) *gomock.Call {
+func (mr *MockDatabaseMockRecorder) CreateArbitraryData(ctx, uuid, filename, osPath, filetype, objectKey, status, clientSize any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateArbitraryData", reflect.TypeOf((*MockDatabase)(nil).CreateArbitraryData), ctx, uuid, filename, filetype, osPath, objectKey, status, clientSize)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateArbitraryData", reflect.TypeOf((*MockDatabase)(nil).CreateArbitraryData), ctx, uuid, filename, osPath, filetype, objectKey, status, clientSize)
 }
 
 // CreateCard mocks base method.
-func (m *MockDatabase) CreateCard(ctx context.Context, uuid, number string, expiry time.Time) error {
+func (m *MockDatabase) CreateCard(ctx context.Context, uuid string, number []byte, expiry time.Time) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "CreateCard", ctx, uuid, number, expiry)
 	ret0, _ := ret[0].(error)
@@ -331,17 +331,17 @@ func (mr *MockCacheMockRecorder) Ping(ctx any) *gomock.Call {
 }
 
 // Set mocks base method.
-func (m *MockCache) Set(ctx context.Context, key, value string, expiration time.Duration) error {
+func (m *MockCache) Set(ctx context.Context, key, value string) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Set", ctx, key, value, expiration)
+	ret := m.ctrl.Call(m, "Set", ctx, key, value)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // Set indicates an expected call of Set.
-func (mr *MockCacheMockRecorder) Set(ctx, key, value, expiration any) *gomock.Call {
+func (mr *MockCacheMockRecorder) Set(ctx, key, value any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Set", reflect.TypeOf((*MockCache)(nil).Set), ctx, key, value, expiration)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Set", reflect.TypeOf((*MockCache)(nil).Set), ctx, key, value)
 }
 
 // MockObjStorage is a mock of ObjStorage interface.

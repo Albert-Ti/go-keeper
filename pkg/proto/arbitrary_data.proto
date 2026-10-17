@@ -8,9 +8,9 @@ import "google/protobuf/timestamp.proto";
 
 message ArbitraryData {
   int64 id = 1;
-  string name = 2;
+  bytes name = 2;
   string type = 3;
-  string os_path = 4;
+  bytes os_path = 4;
   string object_key = 5;
   int64 status = 6;
   int64 client_size = 7;
@@ -36,10 +36,10 @@ message DownloadArbitraryDataResponse {
 }
 
 message FileMetadata {
-  string filename = 1;
+  bytes filename = 1;
   string type = 2;
   int64 size = 3;
-  string os_path = 4;
+  bytes os_path = 4;
 }
 
 message CreateArbitraryDataRequest {

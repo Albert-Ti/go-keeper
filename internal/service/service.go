@@ -3,6 +3,7 @@ package service
 import (
 	"context"
 	"database/sql"
+	"encoding/base64"
 	"errors"
 	"io"
 	"strings"
@@ -168,7 +169,7 @@ func (s *Service) GetCards(ctx context.Context, uuid string) ([]models.Card, err
 	return s.db.GetCards(ctx, uuid)
 }
 
-func (s *Service) CreateCard(ctx context.Context, uuid string, number string, expiry time.Time) error {
+func (s *Service) CreateCard(ctx context.Context, uuid string, number []byte, expiry time.Time) error {
 	return s.db.CreateCard(ctx, uuid, number, expiry)
 }
 
@@ -195,17 +196,16 @@ func (s *Service) ActivateCard(ctx context.Context, uuid string, cardID int64) e
 }
 
 func (s *Service) SaveArbitraryData(
-	ctx context.Context, uuid, filename, filetype, osPath string, clientSize int64, reader *utils.GoKeeperStream[*pb.CreateArbitraryDataRequest]) (int64, error) {
+	ctx context.Context, uuid string, filename, osPath []byte, filetype string, clientSize int64, reader *utils.GoKeeperStream[*pb.CreateArbitraryDataRequest]) (int64, error) {
 
-	key := uuid + "/" + filename
+	objectKey := uuid + "/" + base64.StdEncoding.EncodeToString(filename) + "." + filetype
 
-	id, err := s.db.CreateArbitraryData(
-		ctx, uuid, filename, filetype, osPath, key, UPLOADING, clientSize)
+	id, err := s.db.CreateArbitraryData(ctx, uuid, filename, osPath, filetype, objectKey, UPLOADING, clientSize)
 	if err != nil {
 		return -1, err
 	}
 
-	if err := s.objStorage.Put(ctx, key, reader); err != nil {
+	if err := s.objStorage.Put(ctx, objectKey, reader); err != nil {
 		if updErr := s.db.UpdateArbitraryData(ctx, uuid, id, models.UpdateArbitraryDataParams{
 			Status:    ptr.Uint(FAILED),
 			TotalSize: &reader.Total,

@@ -206,7 +206,7 @@ func (pg *Postgres) GetCards(ctx context.Context, uuid string) ([]models.Card, e
 	return list, nil
 }
 
-func (pg *Postgres) CreateCard(ctx context.Context, uuid string, number string, expiry time.Time) error {
+func (pg *Postgres) CreateCard(ctx context.Context, uuid string, number []byte, expiry time.Time) error {
 	tx, err := pg.pool.Begin(ctx)
 	if err != nil {
 		return err
@@ -271,7 +271,7 @@ func (pg *Postgres) DeleteCard(ctx context.Context, uuid string, cardID int64) e
 }
 
 func (pg *Postgres) CreateArbitraryData(
-	ctx context.Context, uuid, filename, filetype, osPath, objectKey string, status uint, clientSize int64) (int64, error) {
+	ctx context.Context, uuid string, filename, osPath []byte, filetype, objectKey string, status uint, clientSize int64) (int64, error) {
 	row := pg.pool.QueryRow(ctx,
 		`INSERT INTO 
 		arbitrary_data (user_uuid, name, type, status, os_path, object_key, client_size)

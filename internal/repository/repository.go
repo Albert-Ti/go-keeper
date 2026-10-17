@@ -17,14 +17,14 @@ type Database interface {
 	GetOldPassList(ctx context.Context, uuid string) ([]string, error)
 
 	GetCards(ctx context.Context, uuid string) ([]models.Card, error)
-	CreateCard(ctx context.Context, uuid string, number string, expiry time.Time) error
+	CreateCard(ctx context.Context, uuid string, number []byte, expiry time.Time) error
 	DeleteCard(ctx context.Context, uuid string, cardID int64) error
 	ActivateCard(ctx context.Context, uuid string, cardID int64) error
 
 	GetArbitraryData(ctx context.Context, uuid string) ([]models.ArbitraryData, error)
 	GetArbitraryDataByID(ctx context.Context, uuid string, dataID int64) (models.ArbitraryData, error)
 	CreateArbitraryData(
-		ctx context.Context, uuid, filename, filetype, osPath, objectKey string, status uint, clientSize int64) (int64, error)
+		ctx context.Context, uuid string, filename, osPath []byte, filetype, objectKey string, status uint, clientSize int64) (int64, error)
 	UpdateArbitraryData(ctx context.Context, uuid string, dataID int64, params models.UpdateArbitraryDataParams) error
 	DeleteArbitraryData(ctx context.Context, uuid string, dataID int64) error
 }

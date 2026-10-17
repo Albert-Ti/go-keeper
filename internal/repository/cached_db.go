@@ -96,7 +96,7 @@ func (c *CachedDatabase) GetCards(ctx context.Context, uuid string) ([]models.Ca
 	return cards, nil
 }
 
-func (c *CachedDatabase) CreateCard(ctx context.Context, uuid string, number string, expiry time.Time) error {
+func (c *CachedDatabase) CreateCard(ctx context.Context, uuid string, number []byte, expiry time.Time) error {
 	key := fmt.Sprintf("user:%s:%s", uuid, "cards")
 
 	err := c.cache.Delete(ctx, key)
@@ -133,8 +133,8 @@ func (c *CachedDatabase) GetOldPassList(ctx context.Context, uuid string) ([]str
 }
 
 func (c *CachedDatabase) CreateArbitraryData(
-	ctx context.Context, uuid, filename, filetype, osPath, objectKey string, status uint, clientSize int64) (int64, error) {
-	return c.next.CreateArbitraryData(ctx, uuid, filename, filetype, osPath, objectKey, status, clientSize)
+	ctx context.Context, uuid string, filename, osPath []byte, filetype, objectKey string, status uint, clientSize int64) (int64, error) {
+	return c.next.CreateArbitraryData(ctx, uuid, filename, osPath, filetype, objectKey, status, clientSize)
 }
 
 func (c *CachedDatabase) GetArbitraryData(ctx context.Context, uuid string) ([]models.ArbitraryData, error) {

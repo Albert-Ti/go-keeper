@@ -125,11 +125,7 @@ func (m model) mainView() string {
 		if !disabled {
 			textBtn = "ctrl+s submit to server"
 		}
-		textCheck := " "
-		if m.privateData {
-			textCheck = "✔"
-		}
-		s += "\n" + button(textCheck, "press ctrl+p the data will be private (a master key is required)", !m.privateData)
+
 		s += "\n" + button("submit", textBtn, disabled) + "\n\n"
 
 		if m.isLoad {
@@ -183,11 +179,24 @@ func fieldView(label string, input textinput.Model) string {
 
 func (m model) contentProfileView() string {
 	s := ""
-	for _, v := range m.contentTabProfile {
-		s += "  " + lipgloss.NewStyle().Width(12).Render(v) +
-			": " + m.profile[v] + "\n"
+
+	textCheck := " "
+	masterKey := lipgloss.NewStyle().Faint(true).Render("create a master password to encrypt your private data")
+	if m.privateData {
+		masterKey = lipgloss.NewStyle().Foreground(colorAccent).Render("configured")
+		textCheck = "✔"
 	}
-	s += "\n" + "  " + button("update", "press enter to update info", false) + "\n"
+
+	s += lipgloss.NewStyle().Width(20).Render("email") +
+		lipgloss.NewStyle().Foreground(colorAccent).Render(m.profile.email) + "\n"
+	s += lipgloss.NewStyle().Width(20).Render("create date") +
+		lipgloss.NewStyle().Foreground(colorAccent).Render(m.profile.createdAt) + "\n"
+	s += lipgloss.NewStyle().Width(20).Render("master key") + masterKey + "\n"
+
+	s += "\n" + button(textCheck, "private data encrypt OS path, filename (master password is required)", !m.privateData)
+
+	s += "\n\n" + button("update", "press enter to change pass", false) + "\n"
+	s += button("create", "press ctrl+a to generate master key", false) + "\n"
 
 	return lipgloss.NewStyle().MarginTop(1).PaddingLeft(3).Width(maxWidth).Align(lipgloss.Left).Render(s)
 }
@@ -220,7 +229,9 @@ func (m model) contentCardsView() string {
 				}
 			}
 			card := prefix + strconv.Itoa(i+1) + ". " +
-				lipgloss.NewStyle().Faint(true).Render("**** **** **** ") + card.GetCardNumber() + "  " + card.GetExpiryDate().AsTime().Format("01/06") + "  " + isActive
+				lipgloss.NewStyle().Faint(true).Render("**** **** **** ") +
+				string(card.GetCardNumber()) +
+				"  " + card.GetExpiryDate().AsTime().Format("01/06") + "  " + isActive
 
 			btns := ""
 			for i, v := range cardsBtns {
@@ -261,15 +272,15 @@ func (m model) contentDataView() string {
 
 		// Строки
 		for i, v := range m.arbitraryData {
-			filename := v.GetName()
+			filename := v.filename
 			if len(filename) > 25 {
-				filename = v.GetName()[:20] + "..."
+				filename = v.filename[:20] + "..."
 			}
 
 			var status string
 
-			var size = humanize.Bytes(uint64(v.GetClientSize())) + " → " + humanize.Bytes(uint64(v.GetTotalSize()))
-			switch v.GetStatus() {
+			var size = humanize.Bytes(uint64(v.clientSize)) + " → " + humanize.Bytes(uint64(v.totalSize))
+			switch v.status {
 			case 0:
 				status = lipgloss.NewStyle().Faint(true).Render("uploading")
 			case 1:
@@ -298,9 +309,9 @@ func (m model) contentDataView() string {
 
 			s += prefix +
 				lipgloss.NewStyle().Width(nameWidth).Foreground(colorAccent).Render(strconv.Itoa(i+1)+". "+filename) +
-				lipgloss.NewStyle().Width(typeWidth).Render(v.GetType()) +
+				lipgloss.NewStyle().Width(typeWidth).Render(v.filetype) +
 				lipgloss.NewStyle().Width(sizeWidth).Render(size) +
-				lipgloss.NewStyle().Width(dateWidth).Render(v.GetCreatedAt().AsTime().Format("02.01.2006")) +
+				lipgloss.NewStyle().Width(dateWidth).Render(v.createdAt.Format("02.01.2006")) +
 				lipgloss.NewStyle().Width(statusWidth).Render(status) +
 				btns + "\n"
 		}

@@ -5,10 +5,12 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"log/slog"
 	"os"
 	"path/filepath"
 	"slices"
 	"strings"
+	"time"
 
 	tea "charm.land/bubbletea/v2"
 	pb "github.com/Albert-Ti/go-keeper/pkg/proto"
@@ -45,7 +47,7 @@ type changePassResultMsg struct {
 
 type profileResultMsg struct {
 	err     error
-	profile map[string]string
+	profile profileUser
 }
 
 type cardsResultMsg struct {
@@ -67,7 +69,7 @@ type activateCardResultMsg struct {
 
 type arbitraryDataResultMsg struct {
 	err           error
-	arbitraryData []*pb.ArbitraryData
+	arbitraryData []arbitraryData
 }
 
 type localArbitraryDataResultMsg struct {
@@ -169,10 +171,10 @@ func getProfileCmd(client pb.GoKeeperServiceClient) tea.Cmd {
 			}
 			return profileResultMsg{err: err}
 		}
-		return profileResultMsg{err: err, profile: map[string]string{
-			"email":       resp.GetEmail(),
-			"pass":        "*******",
-			"create_date": resp.GetCreatedAt().AsTime().Format("02 Jan 2006, 15:04"),
+		return profileResultMsg{err: err, profile: profileUser{
+			email:     resp.GetEmail(),
+			pass:      "*******",
+			createdAt: resp.GetCreatedAt().AsTime().Format("02 Jan 2006, 15:04"),
 		}}
 	}
 }
@@ -207,7 +209,7 @@ func getCardsCmd(client pb.GoKeeperServiceClient) tea.Cmd {
 func createCardCmd(client pb.GoKeeperServiceClient, number, expiry string) tea.Cmd {
 	return func() tea.Msg {
 		_, err := client.CreateCard(context.Background(), pb.CreateCardRequest_builder{
-			CardNumber: number,
+			CardNumber: []byte(number),
 			ExpiryDate: expiry,
 		}.Build())
 		st, _ := status.FromError(err)
@@ -244,10 +246,13 @@ func activateCardCmd(client pb.GoKeeperServiceClient, id int64) tea.Cmd {
 	}
 }
 
-func createArbitraryDataCmd(client pb.GoKeeperServiceClient, path string, ch chan<- uploadProgressMsg) tea.Cmd {
+func createArbitraryDataCmd(
+	client pb.GoKeeperServiceClient, path string, masterKey string, ch chan<- uploadProgressMsg) tea.Cmd {
 	return func() tea.Msg {
-		filename := filepath.Base(path)
-		filetype := strings.TrimPrefix(filepath.Ext(filename), ".")
+		filename := filepath.Base(path)                             // "photo.jpg"
+		filetype := strings.TrimPrefix(filepath.Ext(filename), ".") // "jpg"
+		// Имя без расширения:
+		nameOnly := strings.TrimSuffix(filename, filepath.Ext(filename)) // "photo"
 
 		file, err := os.Open(path)
 		if err != nil {
@@ -277,12 +282,21 @@ func createArbitraryDataCmd(client pb.GoKeeperServiceClient, path string, ch cha
 			return createArbitraryDataResultMsg{err: err}
 		}
 
+		encryptName, err := encrypt([]byte(nameOnly), []byte(masterKey))
+		if err != nil {
+			return createArbitraryDataResultMsg{err: err}
+		}
+		encryptOsPath, err := encrypt([]byte(path), []byte(masterKey))
+		if err != nil {
+			return createArbitraryDataResultMsg{err: err}
+		}
+
 		err = stream.Send(pb.CreateArbitraryDataRequest_builder{
 			Metadata: pb.FileMetadata_builder{
-				Filename: filename,
+				Filename: encryptName,
 				Type:     filetype,
 				Size:     info.Size(),
-				OsPath:   path,
+				OsPath:   encryptOsPath,
 			}.Build(),
 		}.Build())
 		if err != nil {
@@ -317,7 +331,19 @@ func createArbitraryDataCmd(client pb.GoKeeperServiceClient, path string, ch cha
 	}
 }
 
-func getArbitraryDataCmd(client pb.GoKeeperServiceClient) tea.Cmd {
+type arbitraryData struct {
+	id         int64
+	filename   string
+	filetype   string
+	status     int64
+	objectKey  string
+	osPath     string
+	clientSize int64
+	totalSize  int64
+	createdAt  time.Time
+}
+
+func getArbitraryDataCmd(client pb.GoKeeperServiceClient, masterKey string) tea.Cmd {
 	return func() tea.Msg {
 		resp, err := client.GetArbitraryData(context.Background(), &pb.ListArbitraryDataRequest{})
 		if err != nil {
@@ -327,7 +353,40 @@ func getArbitraryDataCmd(client pb.GoKeeperServiceClient) tea.Cmd {
 			}
 			return cardsResultMsg{err: err}
 		}
-		return arbitraryDataResultMsg{err: err, arbitraryData: resp.GetArbitraryData()}
+
+		decodingList := make([]arbitraryData, 0, len(resp.GetArbitraryData()))
+
+		for _, v := range resp.GetArbitraryData() {
+			var (
+				decFilename []byte
+				decOsPath   []byte
+				err         error
+			)
+			if len(v.GetName()) > 0 || len(v.GetOsPath()) > 0 {
+				decFilename, err = decrypt(v.GetName(), []byte(masterKey))
+				decOsPath, err = decrypt(v.GetOsPath(), []byte(masterKey))
+			}
+
+			if err != nil {
+				return cardsResultMsg{err: err}
+			}
+
+			newStruct := arbitraryData{
+				id:         v.GetId(),
+				filename:   string(decFilename),
+				filetype:   v.GetType(),
+				status:     v.GetStatus(),
+				objectKey:  v.GetObjectKey(),
+				osPath:     string(decOsPath),
+				clientSize: v.GetClientSize(),
+				totalSize:  v.GetTotalSize(),
+				createdAt:  v.GetCreatedAt().AsTime(),
+			}
+
+			decodingList = append(decodingList, newStruct)
+		}
+		slog.Error("decodingList", "", decodingList)
+		return arbitraryDataResultMsg{err: err, arbitraryData: decodingList}
 	}
 }
 
@@ -407,7 +466,8 @@ func reloadArbitraryDataCmd(client pb.GoKeeperServiceClient, id int64, filepath 
 	}
 }
 
-func downloadArbitraryDataCmd(client pb.GoKeeperServiceClient, id int64, filename, destDir string, ch chan<- uploadProgressMsg) tea.Cmd {
+func downloadArbitraryDataCmd(
+	client pb.GoKeeperServiceClient, id int64, filename, filetype, destDir string, ch chan<- uploadProgressMsg) tea.Cmd {
 	return func() tea.Msg {
 		stream, err := client.DownloadArbitraryData(context.Background(), pb.DownloadArbitraryDataRequest_builder{
 			Id: id,
@@ -427,7 +487,7 @@ func downloadArbitraryDataCmd(client pb.GoKeeperServiceClient, id int64, filenam
 		if err := os.MkdirAll(destDir, 0o755); err != nil {
 			return downloadArbitraryDataResultMsg{err: err}
 		}
-		fullPath := filepath.Join(destDir, filepath.Base(filename))
+		fullPath := filepath.Join(destDir, filepath.Base(filename+"."+filetype))
 		file, err := os.Create(fullPath)
 		if err != nil {
 			return downloadArbitraryDataResultMsg{err: err}

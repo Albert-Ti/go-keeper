@@ -1,6 +1,7 @@
 package main
 
 import (
+	"crypto/aes"
 	"errors"
 
 	tea "charm.land/bubbletea/v2"
@@ -99,7 +100,7 @@ func (m model) loadActiveTab(activeTab tabType) tea.Cmd {
 		return getCardsCmd(m.client)
 	case tabData:
 		m.isLoad = true
-		return getArbitraryDataCmd(m.client)
+		return getArbitraryDataCmd(m.client, m.localStorage.Get(masterKeyKey))
 	case tabLocalData:
 		m.isLoad = true
 		return getLocalArbitraryDataCmd()
@@ -151,13 +152,14 @@ func (m model) homePageUpdate(msg tea.KeyPressMsg) (model, tea.Cmd) {
 			case "enter":
 				if m.activeBtn == int(dataActionsDownload) {
 					m.isLoad = true
-					userLocalPath := DOWNLOAD_PATHNAME + "/" + m.profile["email"]
+					userLocalPath := DOWNLOAD_PATHNAME + "/" + m.profile.email
 
 					return m, tea.Batch(
 						downloadArbitraryDataCmd(
 							m.client,
-							m.arbitraryData[m.selectedRowID].GetId(),
-							m.arbitraryData[m.selectedRowID].GetName(),
+							m.arbitraryData[m.selectedRowID].id,
+							m.arbitraryData[m.selectedRowID].filename,
+							m.arbitraryData[m.selectedRowID].filetype,
 							userLocalPath,
 							m.progressCh,
 						),
@@ -167,11 +169,11 @@ func (m model) homePageUpdate(msg tea.KeyPressMsg) (model, tea.Cmd) {
 
 				if m.activeBtn == int(dataActionsReload) {
 					m.isLoad = true
-					if m.arbitraryData[m.selectedRowID].GetStatus() == 1 {
+					if m.arbitraryData[m.selectedRowID].status == 1 {
 						return m, m.handleInfo("file has been successfully uploaded", "tabData")
 					}
-					id := m.arbitraryData[m.selectedRowID].GetId()
-					filepath := m.arbitraryData[m.selectedRowID].GetOsPath()
+					id := m.arbitraryData[m.selectedRowID].id
+					filepath := m.arbitraryData[m.selectedRowID].osPath
 
 					return m, tea.Batch(
 						reloadArbitraryDataCmd(m.client, id, filepath, m.progressCh),
@@ -181,7 +183,7 @@ func (m model) homePageUpdate(msg tea.KeyPressMsg) (model, tea.Cmd) {
 
 				if m.activeBtn == int(dataActionsDelete) {
 					m.isLoad = true
-					return m, deleteArbitraryDataCmd(m.client, m.arbitraryData[m.selectedRowID].GetId())
+					return m, deleteArbitraryDataCmd(m.client, m.arbitraryData[m.selectedRowID].id)
 				}
 			}
 		}
@@ -210,20 +212,27 @@ func (m model) homePageUpdate(msg tea.KeyPressMsg) (model, tea.Cmd) {
 	switch m.activeTab {
 	case tabProfile:
 		switch msg.String() {
-		case "up":
-			if m.cursor > 0 {
-				m.cursor--
-			}
-		case "down":
-			if m.cursor < len(m.contentTabProfile)-1 {
-				m.cursor++
-			}
 		case "enter":
 			cmd := m.profileForm.passCurr.Focus()
 			m.profileForm.passNew.Blur()
 			m.profileForm.passCurr.SetValue("")
 			m.profileForm.passNew.SetValue("")
 			return m.navigateTo(profileFormPage), cmd
+
+		case "ctrl+a":
+			if m.localStorage.Get(masterKeyKey) == "" {
+				masterKeyValue, err := generateRandom(aes.BlockSize)
+
+				if err != nil {
+					return m, m.handleError(err, "generateRandom")
+				}
+
+				if err := m.localStorage.Set(masterKeyKey, string(masterKeyValue)); err != nil {
+					return m, m.handleError(err, "localStorageSet")
+				}
+				return m, nil
+			}
+			return m, m.handleInfo("you already have a master pass", "")
 		}
 
 	case tabCards:
@@ -351,23 +360,20 @@ func (m model) filePickerPageUpdate(msg tea.KeyPressMsg) (model, tea.Cmd) {
 		if m.selectedFile == "" {
 			return m, m.handleError(errors.New("file is not selected"), "filePickerPageUpdate")
 		}
+
+		if !m.privateData {
+			return m, m.handleInfo("you need used master key", "filePickerPageUpdate")
+		}
 		m.isLoad = true
 		return m, tea.Batch(
 			createArbitraryDataCmd(
 				m.client,
 				m.filepicker.Path,
+				m.localStorage.Get(masterKeyKey),
 				m.progressCh,
 			),
 			waitUploadProgress(m.progressCh),
 		)
-	case "ctrl+p":
-		if m.privateData {
-			m.privateData = false
-			return m, cmd
-
-		}
-		m.privateData = true
-		return m, cmd
 	}
 
 	return m, cmd

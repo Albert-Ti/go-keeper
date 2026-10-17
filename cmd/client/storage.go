@@ -14,12 +14,14 @@ const (
 	emailKey        storageKey = "email"
 	accessTokenKey  storageKey = "access_token"
 	refreshTokenKey storageKey = "refresh_token"
+	masterKeyKey    storageKey = "master_pass"
 )
 
 type fileRecord struct {
 	Email        string `json:"email"`
 	AccessToken  string `json:"access_token"`
 	RefreshToken string `json:"refresh_token"`
+	MasterKey    string `json:"master_key"`
 }
 
 type FileStorage struct {
@@ -74,7 +76,10 @@ func (f *FileStorage) Get(key storageKey) string {
 		return f.record.AccessToken
 	case "refresh_token":
 		return f.record.RefreshToken
+	case "master_pass":
+		return f.record.MasterKey
 	}
+
 	return ""
 }
 
@@ -89,6 +94,8 @@ func (f *FileStorage) Set(key storageKey, value string) error {
 		f.record.AccessToken = value
 	case "refresh_token":
 		f.record.RefreshToken = value
+	case "master_pass":
+		f.record.MasterKey = value
 	default:
 		return errors.New("unknown key: " + string(key))
 	}

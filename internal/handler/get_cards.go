@@ -25,7 +25,7 @@ func (g *GrpcServer) GetCards(ctx context.Context, in *pb.CardsRequest) (*pb.Car
 		list = append(list, pb.CardData_builder{
 			Id:         v.ID,
 			Active:     v.Active,
-			CardNumber: string(v.CardNumber[12:]),
+			CardNumber: v.CardNumber[12:],
 			ExpiryDate: timestamppb.New(v.ExpiryDate),
 		}.Build())
 	}

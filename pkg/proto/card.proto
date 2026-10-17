@@ -9,7 +9,7 @@ import "google/protobuf/timestamp.proto";
 
 message CardData {
   int64 id = 1;
-  string card_number = 2;
+  bytes card_number = 2;
   bool active = 3;
   google.protobuf.Timestamp expiry_date = 4;
 }
@@ -21,7 +21,7 @@ message CardsResponse {
 }
 
 message CreateCardRequest {
-  string card_number = 1;
+  bytes card_number = 1;
   string expiry_date = 2;
 }
 

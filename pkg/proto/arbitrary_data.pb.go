@@ -24,9 +24,9 @@ const (
 type ArbitraryData struct {
 	state                 protoimpl.MessageState `protogen:"opaque.v1"`
 	xxx_hidden_Id         int64                  `protobuf:"varint,1,opt,name=id,proto3"`
-	xxx_hidden_Name       string                 `protobuf:"bytes,2,opt,name=name,proto3"`
+	xxx_hidden_Name       []byte                 `protobuf:"bytes,2,opt,name=name,proto3"`
 	xxx_hidden_Type       string                 `protobuf:"bytes,3,opt,name=type,proto3"`
-	xxx_hidden_OsPath     string                 `protobuf:"bytes,4,opt,name=os_path,json=osPath,proto3"`
+	xxx_hidden_OsPath     []byte                 `protobuf:"bytes,4,opt,name=os_path,json=osPath,proto3"`
 	xxx_hidden_ObjectKey  string                 `protobuf:"bytes,5,opt,name=object_key,json=objectKey,proto3"`
 	xxx_hidden_Status     int64                  `protobuf:"varint,6,opt,name=status,proto3"`
 	xxx_hidden_ClientSize int64                  `protobuf:"varint,7,opt,name=client_size,json=clientSize,proto3"`
@@ -68,11 +68,11 @@ func (x *ArbitraryData) GetId() int64 {
 	return 0
 }
 
-func (x *ArbitraryData) GetName() string {
+func (x *ArbitraryData) GetName() []byte {
 	if x != nil {
 		return x.xxx_hidden_Name
 	}
-	return ""
+	return nil
 }
 
 func (x *ArbitraryData) GetType() string {
@@ -82,11 +82,11 @@ func (x *ArbitraryData) GetType() string {
 	return ""
 }
 
-func (x *ArbitraryData) GetOsPath() string {
+func (x *ArbitraryData) GetOsPath() []byte {
 	if x != nil {
 		return x.xxx_hidden_OsPath
 	}
-	return ""
+	return nil
 }
 
 func (x *ArbitraryData) GetObjectKey() string {
@@ -128,7 +128,10 @@ func (x *ArbitraryData) SetId(v int64) {
 	x.xxx_hidden_Id = v
 }
 
-func (x *ArbitraryData) SetName(v string) {
+func (x *ArbitraryData) SetName(v []byte) {
+	if v == nil {
+		v = []byte{}
+	}
 	x.xxx_hidden_Name = v
 }
 
@@ -136,7 +139,10 @@ func (x *ArbitraryData) SetType(v string) {
 	x.xxx_hidden_Type = v
 }
 
-func (x *ArbitraryData) SetOsPath(v string) {
+func (x *ArbitraryData) SetOsPath(v []byte) {
+	if v == nil {
+		v = []byte{}
+	}
 	x.xxx_hidden_OsPath = v
 }
 
@@ -175,9 +181,9 @@ type ArbitraryData_builder struct {
 	_ [0]func() // Prevents comparability and use of unkeyed literals for the builder.
 
 	Id         int64
-	Name       string
+	Name       []byte
 	Type       string
-	OsPath     string
+	OsPath     []byte
 	ObjectKey  string
 	Status     int64
 	ClientSize int64
@@ -532,10 +538,10 @@ func (*downloadArbitraryDataResponse_Chunk) isDownloadArbitraryDataResponse_Data
 
 type FileMetadata struct {
 	state               protoimpl.MessageState `protogen:"opaque.v1"`
-	xxx_hidden_Filename string                 `protobuf:"bytes,1,opt,name=filename,proto3"`
+	xxx_hidden_Filename []byte                 `protobuf:"bytes,1,opt,name=filename,proto3"`
 	xxx_hidden_Type     string                 `protobuf:"bytes,2,opt,name=type,proto3"`
 	xxx_hidden_Size     int64                  `protobuf:"varint,3,opt,name=size,proto3"`
-	xxx_hidden_OsPath   string                 `protobuf:"bytes,4,opt,name=os_path,json=osPath,proto3"`
+	xxx_hidden_OsPath   []byte                 `protobuf:"bytes,4,opt,name=os_path,json=osPath,proto3"`
 	unknownFields       protoimpl.UnknownFields
 	sizeCache           protoimpl.SizeCache
 }
@@ -565,11 +571,11 @@ func (x *FileMetadata) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-func (x *FileMetadata) GetFilename() string {
+func (x *FileMetadata) GetFilename() []byte {
 	if x != nil {
 		return x.xxx_hidden_Filename
 	}
-	return ""
+	return nil
 }
 
 func (x *FileMetadata) GetType() string {
@@ -586,14 +592,17 @@ func (x *FileMetadata) GetSize() int64 {
 	return 0
 }
 
-func (x *FileMetadata) GetOsPath() string {
+func (x *FileMetadata) GetOsPath() []byte {
 	if x != nil {
 		return x.xxx_hidden_OsPath
 	}
-	return ""
+	return nil
 }
 
-func (x *FileMetadata) SetFilename(v string) {
+func (x *FileMetadata) SetFilename(v []byte) {
+	if v == nil {
+		v = []byte{}
+	}
 	x.xxx_hidden_Filename = v
 }
 
@@ -605,17 +614,20 @@ func (x *FileMetadata) SetSize(v int64) {
 	x.xxx_hidden_Size = v
 }
 
-func (x *FileMetadata) SetOsPath(v string) {
+func (x *FileMetadata) SetOsPath(v []byte) {
+	if v == nil {
+		v = []byte{}
+	}
 	x.xxx_hidden_OsPath = v
 }
 
 type FileMetadata_builder struct {
 	_ [0]func() // Prevents comparability and use of unkeyed literals for the builder.
 
-	Filename string
+	Filename []byte
 	Type     string
 	Size     int64
-	OsPath   string
+	OsPath   []byte
 }
 
 func (b0 FileMetadata_builder) Build() *FileMetadata {
@@ -1172,9 +1184,9 @@ const file_arbitrary_data_proto_rawDesc = "" +
 	"\x14arbitrary_data.proto\x12\bgokeeper\x1a\x1fgoogle/protobuf/timestamp.proto\"\x92\x02\n" +
 	"\rArbitraryData\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\x03R\x02id\x12\x12\n" +
-	"\x04name\x18\x02 \x01(\tR\x04name\x12\x12\n" +
+	"\x04name\x18\x02 \x01(\fR\x04name\x12\x12\n" +
 	"\x04type\x18\x03 \x01(\tR\x04type\x12\x17\n" +
-	"\aos_path\x18\x04 \x01(\tR\x06osPath\x12\x1d\n" +
+	"\aos_path\x18\x04 \x01(\fR\x06osPath\x12\x1d\n" +
 	"\n" +
 	"object_key\x18\x05 \x01(\tR\tobjectKey\x12\x16\n" +
 	"\x06status\x18\x06 \x01(\x03R\x06status\x12\x1f\n" +
@@ -1194,10 +1206,10 @@ const file_arbitrary_data_proto_rawDesc = "" +
 	"\x05chunk\x18\x02 \x01(\fH\x00R\x05chunkB\x06\n" +
 	"\x04data\"k\n" +
 	"\fFileMetadata\x12\x1a\n" +
-	"\bfilename\x18\x01 \x01(\tR\bfilename\x12\x12\n" +
+	"\bfilename\x18\x01 \x01(\fR\bfilename\x12\x12\n" +
 	"\x04type\x18\x02 \x01(\tR\x04type\x12\x12\n" +
 	"\x04size\x18\x03 \x01(\x03R\x04size\x12\x17\n" +
-	"\aos_path\x18\x04 \x01(\tR\x06osPath\"r\n" +
+	"\aos_path\x18\x04 \x01(\fR\x06osPath\"r\n" +
 	"\x1aCreateArbitraryDataRequest\x124\n" +
 	"\bmetadata\x18\x01 \x01(\v2\x16.gokeeper.FileMetadataH\x00R\bmetadata\x12\x16\n" +
 	"\x05chunk\x18\x02 \x01(\fH\x00R\x05chunkB\x06\n" +

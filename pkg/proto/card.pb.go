@@ -24,7 +24,7 @@ const (
 type CardData struct {
 	state                 protoimpl.MessageState `protogen:"opaque.v1"`
 	xxx_hidden_Id         int64                  `protobuf:"varint,1,opt,name=id,proto3"`
-	xxx_hidden_CardNumber string                 `protobuf:"bytes,2,opt,name=card_number,json=cardNumber,proto3"`
+	xxx_hidden_CardNumber []byte                 `protobuf:"bytes,2,opt,name=card_number,json=cardNumber,proto3"`
 	xxx_hidden_Active     bool                   `protobuf:"varint,3,opt,name=active,proto3"`
 	xxx_hidden_ExpiryDate *timestamppb.Timestamp `protobuf:"bytes,4,opt,name=expiry_date,json=expiryDate,proto3"`
 	unknownFields         protoimpl.UnknownFields
@@ -63,11 +63,11 @@ func (x *CardData) GetId() int64 {
 	return 0
 }
 
-func (x *CardData) GetCardNumber() string {
+func (x *CardData) GetCardNumber() []byte {
 	if x != nil {
 		return x.xxx_hidden_CardNumber
 	}
-	return ""
+	return nil
 }
 
 func (x *CardData) GetActive() bool {
@@ -88,7 +88,10 @@ func (x *CardData) SetId(v int64) {
 	x.xxx_hidden_Id = v
 }
 
-func (x *CardData) SetCardNumber(v string) {
+func (x *CardData) SetCardNumber(v []byte) {
+	if v == nil {
+		v = []byte{}
+	}
 	x.xxx_hidden_CardNumber = v
 }
 
@@ -115,7 +118,7 @@ type CardData_builder struct {
 	_ [0]func() // Prevents comparability and use of unkeyed literals for the builder.
 
 	Id         int64
-	CardNumber string
+	CardNumber []byte
 	Active     bool
 	ExpiryDate *timestamppb.Timestamp
 }
@@ -235,7 +238,7 @@ func (b0 CardsResponse_builder) Build() *CardsResponse {
 
 type CreateCardRequest struct {
 	state                 protoimpl.MessageState `protogen:"opaque.v1"`
-	xxx_hidden_CardNumber string                 `protobuf:"bytes,1,opt,name=card_number,json=cardNumber,proto3"`
+	xxx_hidden_CardNumber []byte                 `protobuf:"bytes,1,opt,name=card_number,json=cardNumber,proto3"`
 	xxx_hidden_ExpiryDate string                 `protobuf:"bytes,2,opt,name=expiry_date,json=expiryDate,proto3"`
 	unknownFields         protoimpl.UnknownFields
 	sizeCache             protoimpl.SizeCache
@@ -266,11 +269,11 @@ func (x *CreateCardRequest) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-func (x *CreateCardRequest) GetCardNumber() string {
+func (x *CreateCardRequest) GetCardNumber() []byte {
 	if x != nil {
 		return x.xxx_hidden_CardNumber
 	}
-	return ""
+	return nil
 }
 
 func (x *CreateCardRequest) GetExpiryDate() string {
@@ -280,7 +283,10 @@ func (x *CreateCardRequest) GetExpiryDate() string {
 	return ""
 }
 
-func (x *CreateCardRequest) SetCardNumber(v string) {
+func (x *CreateCardRequest) SetCardNumber(v []byte) {
+	if v == nil {
+		v = []byte{}
+	}
 	x.xxx_hidden_CardNumber = v
 }
 
@@ -291,7 +297,7 @@ func (x *CreateCardRequest) SetExpiryDate(v string) {
 type CreateCardRequest_builder struct {
 	_ [0]func() // Prevents comparability and use of unkeyed literals for the builder.
 
-	CardNumber string
+	CardNumber []byte
 	ExpiryDate string
 }
 
@@ -555,7 +561,7 @@ const file_card_proto_rawDesc = "" +
 	"card.proto\x12\bgokeeper\x1a\x1fgoogle/protobuf/timestamp.proto\"\x90\x01\n" +
 	"\bCardData\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\x03R\x02id\x12\x1f\n" +
-	"\vcard_number\x18\x02 \x01(\tR\n" +
+	"\vcard_number\x18\x02 \x01(\fR\n" +
 	"cardNumber\x12\x16\n" +
 	"\x06active\x18\x03 \x01(\bR\x06active\x12;\n" +
 	"\vexpiry_date\x18\x04 \x01(\v2\x1a.google.protobuf.TimestampR\n" +
@@ -564,7 +570,7 @@ const file_card_proto_rawDesc = "" +
 	"\rCardsResponse\x12(\n" +
 	"\x05cards\x18\x01 \x03(\v2\x12.gokeeper.CardDataR\x05cards\"U\n" +
 	"\x11CreateCardRequest\x12\x1f\n" +
-	"\vcard_number\x18\x01 \x01(\tR\n" +
+	"\vcard_number\x18\x01 \x01(\fR\n" +
 	"cardNumber\x12\x1f\n" +
 	"\vexpiry_date\x18\x02 \x01(\tR\n" +
 	"expiryDate\"\x14\n" +

@@ -34,9 +34,8 @@ type model struct {
 	choices    []pageType
 	allTabs    []tabType
 
-	contentTabProfile []string
-	cardsActions      []cardActionsType
-	dataActions       []dataActionsType
+	cardsActions []cardActionsType
+	dataActions  []dataActionsType
 
 	authForm    authForm
 	cardForm    cardForm
@@ -62,9 +61,9 @@ type model struct {
 
 	localStorage *FileStorage
 
-	profile            map[string]string
+	profile            profileUser
 	cards              []*pb.CardData
-	arbitraryData      []*pb.ArbitraryData
+	arbitraryData      []arbitraryData
 	localArbitraryData []localUploadedData
 	privateData        bool
 
@@ -107,14 +106,14 @@ func NewModel(client pb.GoKeeperServiceClient, localStorage *FileStorage) (*mode
 	}
 
 	return &model{
-		activePage:        initPage,
-		history:           initHistory,
-		activeTab:         tabProfile,
-		choices:           []pageType{loginPage, registerPage},
-		allTabs:           []tabType{tabProfile, tabCards, tabData, tabLocalData},
-		contentTabProfile: []string{"email", "create_date"},
-		cardsActions:      []cardActionsType{cardActionsUpdate, cardActionsDelete},
-		dataActions:       []dataActionsType{dataActionsDownload, dataActionsReload, dataActionsDelete},
+		activePage:   initPage,
+		history:      initHistory,
+		activeTab:    tabProfile,
+		choices:      []pageType{loginPage, registerPage},
+		allTabs:      []tabType{tabProfile, tabCards, tabData, tabLocalData},
+		cardsActions: []cardActionsType{cardActionsUpdate, cardActionsDelete},
+		dataActions:  []dataActionsType{dataActionsDownload, dataActionsReload, dataActionsDelete},
+		privateData:  localStorage.Get(masterKeyKey) != "",
 		authForm: authForm{
 			email:   email,
 			pass:    pass,
@@ -196,6 +195,11 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.codeEmail = msg.emailCode
 		m.activePage = confirmPage
 		m.isLoad = false
+		m.authForm.email.Blur()
+		m.authForm.pass.Blur()
+		cmd := m.authForm.confirm.Focus()
+
+		return m, cmd
 
 	case loginResultMsg:
 		if msg.err != nil {
@@ -203,6 +207,10 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			if st.Code() == codes.PermissionDenied {
 				m.codeEmail = msg.emailCode
 				m.activePage = confirmPage
+				m.authForm.email.Blur()
+				m.authForm.pass.Blur()
+				cmd := m.authForm.confirm.Focus()
+				return m, cmd
 			}
 			return m, m.handleError(msg.err, "loginResultMsg")
 		}
@@ -234,7 +242,9 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 	case refreshTokenErrorMsg:
 		m.Reset()
-		return m.navigateTo(loginPage), m.handleError(msg.err, "refreshTokenErrorMsg")
+		cmd := m.authForm.email.Focus()
+		return m.navigateTo(loginPage), tea.Batch(
+			m.handleError(msg.err, "refreshTokenErrorMsg"), cmd)
 
 		// API result private
 	case profileResultMsg:
@@ -311,7 +321,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 		m.isLoad = false
 		m.selectedFile = ""
-		return m.navigateTo(homePage), getArbitraryDataCmd(m.client)
+		return m.navigateTo(homePage), getArbitraryDataCmd(m.client, m.localStorage.Get(masterKeyKey))
 
 	case deleteArbitraryDataResultMsg:
 		if msg.err != nil {
@@ -320,7 +330,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.isLoad = false
 		m.selectedRowID = -1
 		m.cursor = 0
-		return m.navigateTo(homePage), getArbitraryDataCmd(m.client)
+		return m.navigateTo(homePage), getArbitraryDataCmd(m.client, m.localStorage.Get(masterKeyKey))
 
 	case reloadArbitraryDataResultMsg:
 		if msg.err != nil {
@@ -329,7 +339,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.isLoad = false
 		m.selectedFile = ""
 		m.selectedRowID = -1
-		return m, getArbitraryDataCmd(m.client)
+		return m, getArbitraryDataCmd(m.client, m.localStorage.Get(masterKeyKey))
 
 	case downloadArbitraryDataResultMsg:
 		if msg.err != nil {

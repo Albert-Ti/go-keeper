@@ -97,3 +97,9 @@ type localUploadedData struct {
 	filename string
 	size     int64
 }
+
+type profileUser struct {
+	email     string
+	pass      string
+	createdAt string
+}

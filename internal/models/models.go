@@ -32,11 +32,11 @@ type Card struct {
 
 type ArbitraryData struct {
 	ID         int64
-	Name       string
+	Name       []byte
 	Type       string
 	Status     int64
 	ObjectKey  string
-	OSPath     string
+	OSPath     []byte
 	ClientSize int64
 	TotalSize  int64
 	CreatedAt  time.Time

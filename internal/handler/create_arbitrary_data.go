@@ -33,8 +33,8 @@ func (g *GrpcServer) CreateArbitraryData(stream pb.GoKeeperService_CreateArbitra
 		ctx,
 		uuid,
 		metadata.GetFilename(),
-		metadata.GetType(),
 		metadata.GetOsPath(),
+		metadata.GetType(),
 		metadata.GetSize(),
 		reader,
 	)

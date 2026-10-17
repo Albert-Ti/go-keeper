@@ -31,11 +31,11 @@ CREATE TABLE
   IF NOT EXISTS arbitrary_data (
     id BIGSERIAL PRIMARY KEY,
     user_uuid UUID NOT NULL,
-    name VARCHAR(255) NOT NULL,
+    name BYTEA NOT NULL,
     type VARCHAR(255) NOT NULL,
     status SMALLINT NOT NULL DEFAULT 0,
     object_key VARCHAR(255) NOT NULL,
-    os_path VARCHAR(255) NOT NULL,
+    os_path BYTEA NOT NULL,
     client_size BIGINT NOT NULL,
     total_size BIGINT DEFAULT 0,
     created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
