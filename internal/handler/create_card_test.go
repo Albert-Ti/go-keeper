@@ -102,7 +102,7 @@ func TestCreateCard(t *testing.T) {
 			}
 
 			_, err := client.CreateCard(tt.ctx, pb.CreateCardRequest_builder{
-				CardNumber: tt.cardNumber,
+				CardNumber: []byte(tt.cardNumber),
 				ExpiryDate: tt.expireDate,
 			}.Build())
 

@@ -9,24 +9,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-var configStr = `{
-  "server_address": "localhost:8080",
-  "database_db": "",
-}`
-
-func CreateConfigFileTmp() error {
-
-	err := os.WriteFile("testCfg.json", []byte(configStr), 0666)
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
-
 func TestBuild(t *testing.T) {
-	defer os.Remove("testCfg.json")
-
 	type want struct {
 		runAddr string
 		db      string
@@ -34,9 +17,8 @@ func TestBuild(t *testing.T) {
 
 	allEnvKeys := []string{
 		"SERVER_ADDRESS",
-		"BASE_URL",
-		"DATABASE_CONN_STRING",
-		"JWT_SECRET_KEY",
+		"DB_CONN_STRING",
+		"ENABLE_SMTP",
 	}
 
 	tests := []struct {
@@ -50,17 +32,31 @@ func TestBuild(t *testing.T) {
 			args: []string{"test"},
 			env: map[string]string{
 				"SERVER_ADDRESS": "localhost:8888",
-				"BASE_URL":       "http://localhost:8888",
+				"DB_CONN_STRING": "postgres://env",
 			},
 			want: want{
 				runAddr: "localhost:8888",
+				db:      "postgres://env",
 			},
 		},
 		{
 			name: "flag only",
-			args: []string{"test", "-a=localhost:9090", "-b=http://localhost:9090"},
+			args: []string{"test", "-a=localhost:9090", "-d=postgres://flag"},
 			want: want{
 				runAddr: "localhost:9090",
+				db:      "postgres://flag",
+			},
+		},
+		{
+			name: "flag has priority over env",
+			args: []string{"test", "-a=localhost:9090", "-d=postgres://flag"},
+			env: map[string]string{
+				"SERVER_ADDRESS": "localhost:8888",
+				"DB_CONN_STRING": "postgres://env",
+			},
+			want: want{
+				runAddr: "localhost:9090",
+				db:      "postgres://flag",
 			},
 		},
 		{
@@ -85,17 +81,10 @@ func TestBuild(t *testing.T) {
 			defer func() { os.Args = origArgs }()
 			os.Args = tt.args
 
-			if tt.name == "Test file config" {
-				err := CreateConfigFileTmp()
-				require.NoError(t, err)
-			}
-
 			cfg, err := config.Build()
 			require.NoError(t, err)
 
-			if tt.want.runAddr != "" {
-				assert.Equal(t, tt.want.runAddr, cfg.RunAddr)
-			}
+			assert.Equal(t, tt.want.runAddr, cfg.RunAddr)
 			assert.Equal(t, tt.want.db, cfg.DBConnStr)
 		})
 	}

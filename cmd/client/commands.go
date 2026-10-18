@@ -10,7 +10,6 @@ import (
 	"path/filepath"
 	"slices"
 	"strings"
-	"time"
 
 	tea "charm.land/bubbletea/v2"
 	pb "github.com/Albert-Ti/go-keeper/pkg/proto"
@@ -329,18 +328,6 @@ func createArbitraryDataCmd(
 		}
 		return createArbitraryDataResultMsg{}
 	}
-}
-
-type arbitraryData struct {
-	id         int64
-	filename   string
-	filetype   string
-	status     int64
-	objectKey  string
-	osPath     string
-	clientSize int64
-	totalSize  int64
-	createdAt  time.Time
 }
 
 func getArbitraryDataCmd(client pb.GoKeeperServiceClient, masterKey string) tea.Cmd {

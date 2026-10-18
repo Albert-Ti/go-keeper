@@ -404,8 +404,8 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case filePickerPage:
 			return m.filePickerPageUpdate(msg)
 		}
-
 	}
+
 	m, cmd := m.updateNonKeyComponents(msg)
 	return m, cmd
 }

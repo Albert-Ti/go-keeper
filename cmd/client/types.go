@@ -1,6 +1,10 @@
 package main
 
-import "charm.land/bubbles/v2/textinput"
+import (
+	"time"
+
+	"charm.land/bubbles/v2/textinput"
+)
 
 type tabType int
 
@@ -102,4 +106,16 @@ type profileUser struct {
 	email     string
 	pass      string
 	createdAt string
+}
+
+type arbitraryData struct {
+	id         int64
+	filename   string
+	filetype   string
+	status     int64
+	objectKey  string
+	osPath     string
+	clientSize int64
+	totalSize  int64
+	createdAt  time.Time
 }

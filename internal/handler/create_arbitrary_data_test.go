@@ -91,10 +91,10 @@ func TestCreateArbitraryData(t *testing.T) {
 
 			errSend := stream.Send(pb.CreateArbitraryDataRequest_builder{
 				Metadata: pb.FileMetadata_builder{
-					Filename: "voina-i-mir",
+					Filename: []byte("voina-i-mir"),
 					Type:     "pdf",
 					Size:     info.Size(),
-					OsPath:   "testdata/voina-i-mir.pdf",
+					OsPath:   []byte("testdata/voina-i-mir.pdf"),
 				}.Build(),
 			}.Build())
 			if errSend != io.EOF {
