@@ -10,6 +10,7 @@ import (
 	"github.com/Albert-Ti/go-keeper/internal/handler"
 	"github.com/Albert-Ti/go-keeper/internal/interceptor"
 	"github.com/Albert-Ti/go-keeper/internal/repository"
+	cached "github.com/Albert-Ti/go-keeper/internal/repository/cashed"
 	"github.com/Albert-Ti/go-keeper/internal/service"
 	"google.golang.org/grpc"
 
@@ -22,14 +23,16 @@ func main() {
 		panic(errCfg)
 	}
 
-	db, err := repository.NewDatabase(opts.DBConnStr)
+	db, err := repository.NewPostgres(opts.DBConnStr)
 	if err != nil {
 		panic(err)
 	}
 	cache := repository.NewCache(opts.CacheClientRunAddr, opts.CacheClientPass)
 	cache.Ping(context.Background())
 
-	cachedDB := repository.NewCachedDatabase(db, cache)
+	userRepo := cached.NewUserCachedRepo(db, cache)
+	cardRepo := cached.NewCardCachedRepo(db, cache)
+	dataRepo := cached.NewDataCachedRepo(db, cache)
 
 	var sender *email.Sender
 	if opts.EnableSMTP {
@@ -55,7 +58,9 @@ func main() {
 		panic(err)
 	}
 
-	svc := service.NewService(cachedDB, opts, sender, objStorage)
+	userSvc := service.NewUserService(userRepo, sender)
+	cardSvc := service.NewCardService(cardRepo)
+	dataSvc := service.NewDataService(dataRepo, objStorage)
 
 	lis, err := net.Listen("tcp", opts.RunAddr)
 
@@ -73,8 +78,10 @@ func main() {
 	)
 
 	pb.RegisterGoKeeperServiceServer(srv, &handler.GrpcServer{
-		Svc:  svc,
-		Opts: opts,
+		Opts:    opts,
+		UserSvc: userSvc,
+		CardSvc: cardSvc,
+		DataSvc: dataSvc,
 	})
 
 	slog.Info("running server", "host", opts.RunAddr)

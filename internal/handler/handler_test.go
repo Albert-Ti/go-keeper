@@ -18,7 +18,13 @@ import (
 
 const bufSize = 1024 * 1024
 
-func NewTestGRPCServer(t *testing.T, svc *service.Service, opts *config.Options) pb.GoKeeperServiceClient {
+func NewTestGRPCServer(
+	t *testing.T,
+	opts *config.Options,
+	userSvc *service.UserService,
+	cardSvc *service.CardService,
+	dataSvc *service.DataService,
+) pb.GoKeeperServiceClient {
 	t.Helper()
 
 	lis := bufconn.Listen(bufSize)
@@ -28,7 +34,13 @@ func NewTestGRPCServer(t *testing.T, svc *service.Service, opts *config.Options)
 		grpc.ChainStreamInterceptor(interceptor.AuthStream(opts.JWTSecret)),
 	)
 
-	gs := &handler.GrpcServer{Srv: srv, Svc: svc, Opts: opts}
+	gs := &handler.GrpcServer{
+		Srv:     srv,
+		Opts:    opts,
+		UserSvc: userSvc,
+		CardSvc: cardSvc,
+		DataSvc: dataSvc,
+	}
 	pb.RegisterGoKeeperServiceServer(srv, gs)
 
 	go func() {

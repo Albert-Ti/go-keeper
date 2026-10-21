@@ -8,19 +8,13 @@ import (
 	"sync"
 	"time"
 
+	"github.com/Albert-Ti/go-keeper/pkg/consts"
 	pb "github.com/Albert-Ti/go-keeper/pkg/proto"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/metadata"
 	"google.golang.org/grpc/status"
 )
-
-var publicMethods = map[string]bool{
-	"/gokeeper.GoKeeperService/Register":     true,
-	"/gokeeper.GoKeeperService/Login":        true,
-	"/gokeeper.GoKeeperService/ConfirmEmail": true,
-	"/gokeeper.GoKeeperService/RefreshToken": true,
-}
 
 const (
 	expiryLeeway   = 30 * time.Second // обновляем чуть раньше реального истечения
@@ -44,7 +38,7 @@ func (a *AuthInterceptor) UnaryInterceptor(
 	invoker grpc.UnaryInvoker,
 	opts ...grpc.CallOption,
 ) error {
-	if publicMethods[method] {
+	if consts.PublicMethods[method] {
 		return invoker(ctx, method, req, reply, cc, opts...)
 	}
 
@@ -77,7 +71,7 @@ func (a *AuthInterceptor) StreamInterceptor(
 	streamer grpc.Streamer,
 	opts ...grpc.CallOption,
 ) (grpc.ClientStream, error) {
-	if publicMethods[method] {
+	if consts.PublicMethods[method] {
 		return streamer(ctx, desc, cc, method, opts...)
 	}
 

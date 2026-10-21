@@ -19,11 +19,11 @@ func (g *GrpcServer) RefreshToken(ctx context.Context, in *pb.TokenRequest) (*pb
 		return nil, status.Error(codes.Unauthenticated, "refresh token is expired")
 	}
 
-	accessToken, err := mytoken.CreateAccessToken(claims.UserID, g.Opts.JWTSecret)
+	accessToken, err := mytoken.CreateAccessToken(claims.UserID, g.Opts.JWTSecret, g.Opts.ExpiresAToken)
 	if err != nil {
 		return nil, status.Error(codes.Internal, "failed to create access token")
 	}
-	refreshToken, err := mytoken.CreateRefreshToken(claims.UserID, g.Opts.JWTSecret)
+	refreshToken, err := mytoken.CreateRefreshToken(claims.UserID, g.Opts.JWTSecret, g.Opts.ExpiresRToken)
 	if err != nil {
 		return nil, status.Error(codes.Internal, "failed to create refresh token")
 	}

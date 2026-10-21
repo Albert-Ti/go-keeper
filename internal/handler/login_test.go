@@ -20,11 +20,11 @@ func TestLogin(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	mockRepo := mocks.NewMockDatabase(ctrl)
+	mockRepo := mocks.NewMockUserRepo(ctrl)
 	opts := config.NewOptions()
-	svc := service.NewService(mockRepo, opts, nil, nil)
+	userSvc := service.NewUserService(mockRepo, nil)
 
-	client := NewTestGRPCServer(t, svc, opts)
+	client := NewTestGRPCServer(t, opts, userSvc, nil, nil)
 
 	testEmail := "example@mail.com"
 	testPass := "12345"
@@ -32,12 +32,12 @@ func TestLogin(t *testing.T) {
 	tests := []struct {
 		name      string
 		wantCode  codes.Code
-		setupMock func(mock *mocks.MockDatabase)
+		setupMock func(mock *mocks.MockUserRepo)
 	}{
 		{
 			name:     "success",
 			wantCode: codes.OK,
-			setupMock: func(mock *mocks.MockDatabase) {
+			setupMock: func(mock *mocks.MockUserRepo) {
 				mock.EXPECT().GetUserByEmail(gomock.Any(), testEmail).
 					Return(models.User{
 						IsConfirmEmail: true,
@@ -50,7 +50,7 @@ func TestLogin(t *testing.T) {
 		{
 			name:     "not found",
 			wantCode: codes.NotFound,
-			setupMock: func(mock *mocks.MockDatabase) {
+			setupMock: func(mock *mocks.MockUserRepo) {
 				mock.EXPECT().GetUserByEmail(gomock.Any(), testEmail).
 					Return(models.User{}, service.ErrNoRows)
 
@@ -60,7 +60,7 @@ func TestLogin(t *testing.T) {
 		{
 			name:     "email invalid email or pass",
 			wantCode: codes.Unauthenticated,
-			setupMock: func(mock *mocks.MockDatabase) {
+			setupMock: func(mock *mocks.MockUserRepo) {
 				mock.EXPECT().GetUserByEmail(gomock.Any(), testEmail).
 					Return(models.User{}, service.ErrInvalidPassword)
 
@@ -70,7 +70,7 @@ func TestLogin(t *testing.T) {
 		{
 			name:     "email has not been confirmed",
 			wantCode: codes.PermissionDenied,
-			setupMock: func(mock *mocks.MockDatabase) {
+			setupMock: func(mock *mocks.MockUserRepo) {
 				mock.EXPECT().GetUserByEmail(gomock.Any(), testEmail).
 					Return(models.User{
 						IsConfirmEmail: false,

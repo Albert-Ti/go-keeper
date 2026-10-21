@@ -17,7 +17,7 @@ func (g *GrpcServer) DeleteCard(ctx context.Context, in *pb.DeleteCardRequest) (
 		return nil, status.Error(codes.Unauthenticated, "failed to get user")
 	}
 
-	err = g.Svc.DeleteCard(ctx, uuid, in.GetId())
+	err = g.CardSvc.DeleteCard(ctx, uuid, in.GetId())
 	if err != nil {
 		if errors.Is(err, service.ErrNotFound) {
 			return nil, status.Error(codes.NotFound, "card not found")

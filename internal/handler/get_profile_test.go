@@ -22,26 +22,26 @@ func TestGetProfile(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	mockRepo := mocks.NewMockDatabase(ctrl)
+	mockRepo := mocks.NewMockUserRepo(ctrl)
 	opts := config.NewOptions()
-	svc := service.NewService(mockRepo, opts, nil, nil)
+	userSvc := service.NewUserService(mockRepo, nil)
 
-	client := NewTestGRPCServer(t, svc, opts)
+	client := NewTestGRPCServer(t, opts, userSvc, nil, nil)
 
-	accessToken, err := token.CreateAccessToken("user-1", opts.JWTSecret)
+	accessToken, err := token.CreateAccessToken("user-1", opts.JWTSecret, opts.ExpiresAToken)
 	require.NoError(t, err)
 
 	tests := []struct {
 		name      string
 		wantCode  codes.Code
 		ctx       context.Context
-		setupMock func(mock *mocks.MockDatabase)
+		setupMock func(mock *mocks.MockUserRepo)
 	}{
 		{
 			name:     "success",
 			wantCode: codes.OK,
 			ctx:      metadata.AppendToOutgoingContext(context.Background(), "authorization", accessToken),
-			setupMock: func(mock *mocks.MockDatabase) {
+			setupMock: func(mock *mocks.MockUserRepo) {
 				mock.EXPECT().GetProfile(gomock.Any(), gomock.Any()).
 					Return(models.Profile{}, nil)
 			},

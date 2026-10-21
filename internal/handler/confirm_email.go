@@ -11,7 +11,7 @@ import (
 )
 
 func (g *GrpcServer) ConfirmEmail(ctx context.Context, in *pb.ConfirmEmailRequest) (*pb.ConfirmEmailResponse, error) {
-	err := g.Svc.ConfirmEmail(ctx, in.GetEmail(), in.GetEmailCode())
+	err := g.UserSvc.ConfirmEmail(ctx, in.GetEmail(), in.GetEmailCode())
 
 	if err != nil {
 		if errors.Is(err, service.ErrInvalidCodeEmail) {

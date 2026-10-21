@@ -21,26 +21,26 @@ func TestDeleteCard(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	mockRepo := mocks.NewMockDatabase(ctrl)
+	mockRepo := mocks.NewMockCardRepo(ctrl)
 	opts := config.NewOptions()
-	svc := service.NewService(mockRepo, opts, nil, nil)
+	cardSvc := service.NewCardService(mockRepo)
 
-	client := NewTestGRPCServer(t, svc, opts)
+	client := NewTestGRPCServer(t, opts, nil, cardSvc, nil)
 
-	accessToken, err := token.CreateAccessToken("user-1", opts.JWTSecret)
+	accessToken, err := token.CreateAccessToken("user-1", opts.JWTSecret, opts.ExpiresAToken)
 	require.NoError(t, err)
 
 	tests := []struct {
 		name      string
 		wantCode  codes.Code
 		ctx       context.Context
-		setupMock func(mock *mocks.MockDatabase)
+		setupMock func(mock *mocks.MockCardRepo)
 	}{
 		{
 			name:     "success",
 			wantCode: codes.OK,
 			ctx:      metadata.AppendToOutgoingContext(context.Background(), "authorization", accessToken),
-			setupMock: func(mock *mocks.MockDatabase) {
+			setupMock: func(mock *mocks.MockCardRepo) {
 				mock.EXPECT().DeleteCard(gomock.Any(), gomock.Any(), gomock.Any()).
 					Return(nil)
 			},
@@ -49,7 +49,7 @@ func TestDeleteCard(t *testing.T) {
 			name:     "not found",
 			wantCode: codes.NotFound,
 			ctx:      metadata.AppendToOutgoingContext(context.Background(), "authorization", accessToken),
-			setupMock: func(mock *mocks.MockDatabase) {
+			setupMock: func(mock *mocks.MockCardRepo) {
 				mock.EXPECT().DeleteCard(gomock.Any(), gomock.Any(), gomock.Any()).
 					Return(service.ErrNotFound)
 			},

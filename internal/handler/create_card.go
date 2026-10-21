@@ -17,7 +17,7 @@ func (g *GrpcServer) CreateCard(ctx context.Context, in *pb.CreateCardRequest) (
 		return nil, status.Error(codes.Unauthenticated, "failed to get user")
 	}
 
-	if !utils.AlgoLuna(string(in.GetCardNumber())) {
+	if !utils.IsLuhnValid(string(in.GetCardNumber())) {
 		return nil, status.Error(codes.InvalidArgument, "invalid card number")
 	}
 
@@ -40,7 +40,7 @@ func (g *GrpcServer) CreateCard(ctx context.Context, in *pb.CreateCardRequest) (
 		return nil, status.Error(codes.InvalidArgument, "card expiry date has already passed")
 	}
 
-	if err := g.Svc.CreateCard(ctx, uuid, in.GetCardNumber(), expiry); err != nil {
+	if err := g.CardSvc.CreateCard(ctx, uuid, in.GetCardNumber(), expiry); err != nil {
 		return nil, status.Error(codes.Internal, "failed to create card")
 	}
 

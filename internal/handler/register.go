@@ -16,7 +16,7 @@ func (g *GrpcServer) Register(ctx context.Context, in *pb.RegisterRequest) (*pb.
 		return nil, status.Errorf(codes.InvalidArgument, "pass: %v, is too short", in.GetPass())
 	}
 
-	err := g.Svc.Register(ctx, in.GetEmail(), in.GetPass())
+	err := g.UserSvc.Register(ctx, in.GetEmail(), in.GetPass())
 	if err != nil {
 		if errors.Is(err, service.ErrAlreadyExists) {
 			return nil, status.Errorf(codes.AlreadyExists, "user: %s, is already registered", in.GetEmail())

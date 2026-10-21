@@ -18,23 +18,23 @@ func TestRegister(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	mockRepo := mocks.NewMockDatabase(ctrl)
+	mockRepo := mocks.NewMockUserRepo(ctrl)
 	opts := config.NewOptions()
-	svc := service.NewService(mockRepo, opts, nil, nil)
+	userSvc := service.NewUserService(mockRepo, nil)
 
-	client := NewTestGRPCServer(t, svc, opts)
+	client := NewTestGRPCServer(t, opts, userSvc, nil, nil)
 
 	tests := []struct {
 		name      string
 		wantCode  codes.Code
 		pass      string
-		setupMock func(mock *mocks.MockDatabase)
+		setupMock func(mock *mocks.MockUserRepo)
 	}{
 		{
 			name:     "success",
 			wantCode: codes.OK,
 			pass:     "12345",
-			setupMock: func(mock *mocks.MockDatabase) {
+			setupMock: func(mock *mocks.MockUserRepo) {
 				mock.EXPECT().
 					AddUser(gomock.Any(), "example@mail.com", gomock.Any(), gomock.Any()).
 					Return(nil)
@@ -46,7 +46,7 @@ func TestRegister(t *testing.T) {
 			name:     "user already exist",
 			wantCode: codes.AlreadyExists,
 			pass:     "12345",
-			setupMock: func(mock *mocks.MockDatabase) {
+			setupMock: func(mock *mocks.MockUserRepo) {
 				mock.EXPECT().
 					AddUser(gomock.Any(), "example@mail.com", gomock.Any(), gomock.Any()).
 					Return(service.ErrAlreadyExists)

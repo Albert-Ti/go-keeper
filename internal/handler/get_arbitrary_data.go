@@ -15,7 +15,7 @@ func (g *GrpcServer) GetArbitraryData(ctx context.Context, in *pb.ListArbitraryD
 	if err != nil {
 		return nil, status.Error(codes.Unauthenticated, "failed to get user")
 	}
-	arbitraryData, err := g.Svc.GetArbitraryData(ctx, uuid)
+	arbitraryData, err := g.DataSvc.GetArbitraryData(ctx, uuid)
 	if err != nil {
 		return nil, status.Error(codes.Internal, "failed to get cards")
 	}

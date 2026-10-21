@@ -15,7 +15,7 @@ func (g *GrpcServer) GetCards(ctx context.Context, in *pb.CardsRequest) (*pb.Car
 	if err != nil {
 		return nil, status.Error(codes.Unauthenticated, "failed to get user")
 	}
-	cards, err := g.Svc.GetCards(ctx, uuid)
+	cards, err := g.CardSvc.GetCards(ctx, uuid)
 	if err != nil {
 		return nil, status.Error(codes.Internal, "failed to get cards")
 	}

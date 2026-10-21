@@ -29,7 +29,7 @@ func (g *GrpcServer) CreateArbitraryData(stream pb.GoKeeperService_CreateArbitra
 		Stream: stream,
 	}
 
-	id, err := g.Svc.SaveArbitraryData(
+	id, err := g.DataSvc.SaveArbitraryData(
 		ctx,
 		uuid,
 		metadata.GetFilename(),

@@ -14,13 +14,12 @@ type MyCustomClaims struct {
 	UserID string
 }
 
-func CreateAccessToken(userID string, secretKey string) (string, error) {
+func CreateAccessToken(userID string, secretKey string, expiresAt time.Duration) (string, error) {
 	t := jwt.New(jwt.SigningMethodHS256)
 
 	t.Claims = &MyCustomClaims{
 		jwt.RegisteredClaims{
-			// TODO 1 минуты для тестирования клиента
-			ExpiresAt: jwt.NewNumericDate(time.Now().Add(1 * time.Minute)),
+			ExpiresAt: jwt.NewNumericDate(time.Now().Add(expiresAt)),
 		},
 		userID,
 	}
@@ -28,13 +27,12 @@ func CreateAccessToken(userID string, secretKey string) (string, error) {
 	return t.SignedString([]byte(secretKey))
 }
 
-func CreateRefreshToken(userID string, secretKey string) (string, error) {
+func CreateRefreshToken(userID string, secretKey string, expiresAt time.Duration) (string, error) {
 	t := jwt.New(jwt.SigningMethodHS256)
 
 	t.Claims = &MyCustomClaims{
 		jwt.RegisteredClaims{
-			// TODO 5 минуты для тестирования клиента
-			ExpiresAt: jwt.NewNumericDate(time.Now().Add(5 * time.Minute)),
+			ExpiresAt: jwt.NewNumericDate(time.Now().Add(expiresAt)),
 		},
 		userID,
 	}

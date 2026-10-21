@@ -19,46 +19,32 @@ import (
 	gomock "go.uber.org/mock/gomock"
 )
 
-// MockDatabase is a mock of Database interface.
-type MockDatabase struct {
+// MockUserRepo is a mock of UserRepo interface.
+type MockUserRepo struct {
 	ctrl     *gomock.Controller
-	recorder *MockDatabaseMockRecorder
+	recorder *MockUserRepoMockRecorder
 	isgomock struct{}
 }
 
-// MockDatabaseMockRecorder is the mock recorder for MockDatabase.
-type MockDatabaseMockRecorder struct {
-	mock *MockDatabase
+// MockUserRepoMockRecorder is the mock recorder for MockUserRepo.
+type MockUserRepoMockRecorder struct {
+	mock *MockUserRepo
 }
 
-// NewMockDatabase creates a new mock instance.
-func NewMockDatabase(ctrl *gomock.Controller) *MockDatabase {
-	mock := &MockDatabase{ctrl: ctrl}
-	mock.recorder = &MockDatabaseMockRecorder{mock}
+// NewMockUserRepo creates a new mock instance.
+func NewMockUserRepo(ctrl *gomock.Controller) *MockUserRepo {
+	mock := &MockUserRepo{ctrl: ctrl}
+	mock.recorder = &MockUserRepoMockRecorder{mock}
 	return mock
 }
 
 // EXPECT returns an object that allows the caller to indicate expected use.
-func (m *MockDatabase) EXPECT() *MockDatabaseMockRecorder {
+func (m *MockUserRepo) EXPECT() *MockUserRepoMockRecorder {
 	return m.recorder
 }
 
-// ActivateCard mocks base method.
-func (m *MockDatabase) ActivateCard(ctx context.Context, uuid string, cardID int64) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ActivateCard", ctx, uuid, cardID)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// ActivateCard indicates an expected call of ActivateCard.
-func (mr *MockDatabaseMockRecorder) ActivateCard(ctx, uuid, cardID any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ActivateCard", reflect.TypeOf((*MockDatabase)(nil).ActivateCard), ctx, uuid, cardID)
-}
-
 // AddUser mocks base method.
-func (m *MockDatabase) AddUser(ctx context.Context, email, code, pass string) error {
+func (m *MockUserRepo) AddUser(ctx context.Context, email, code, pass string) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "AddUser", ctx, email, code, pass)
 	ret0, _ := ret[0].(error)
@@ -66,13 +52,13 @@ func (m *MockDatabase) AddUser(ctx context.Context, email, code, pass string) er
 }
 
 // AddUser indicates an expected call of AddUser.
-func (mr *MockDatabaseMockRecorder) AddUser(ctx, email, code, pass any) *gomock.Call {
+func (mr *MockUserRepoMockRecorder) AddUser(ctx, email, code, pass any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddUser", reflect.TypeOf((*MockDatabase)(nil).AddUser), ctx, email, code, pass)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddUser", reflect.TypeOf((*MockUserRepo)(nil).AddUser), ctx, email, code, pass)
 }
 
 // ChangePass mocks base method.
-func (m *MockDatabase) ChangePass(ctx context.Context, uuid, passCurr, passNew string) error {
+func (m *MockUserRepo) ChangePass(ctx context.Context, uuid, passCurr, passNew string) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ChangePass", ctx, uuid, passCurr, passNew)
 	ret0, _ := ret[0].(error)
@@ -80,115 +66,13 @@ func (m *MockDatabase) ChangePass(ctx context.Context, uuid, passCurr, passNew s
 }
 
 // ChangePass indicates an expected call of ChangePass.
-func (mr *MockDatabaseMockRecorder) ChangePass(ctx, uuid, passCurr, passNew any) *gomock.Call {
+func (mr *MockUserRepoMockRecorder) ChangePass(ctx, uuid, passCurr, passNew any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ChangePass", reflect.TypeOf((*MockDatabase)(nil).ChangePass), ctx, uuid, passCurr, passNew)
-}
-
-// CreateArbitraryData mocks base method.
-func (m *MockDatabase) CreateArbitraryData(ctx context.Context, uuid string, filename, osPath []byte, filetype, objectKey string, status uint, clientSize int64) (int64, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CreateArbitraryData", ctx, uuid, filename, osPath, filetype, objectKey, status, clientSize)
-	ret0, _ := ret[0].(int64)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// CreateArbitraryData indicates an expected call of CreateArbitraryData.
-func (mr *MockDatabaseMockRecorder) CreateArbitraryData(ctx, uuid, filename, osPath, filetype, objectKey, status, clientSize any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateArbitraryData", reflect.TypeOf((*MockDatabase)(nil).CreateArbitraryData), ctx, uuid, filename, osPath, filetype, objectKey, status, clientSize)
-}
-
-// CreateCard mocks base method.
-func (m *MockDatabase) CreateCard(ctx context.Context, uuid string, number []byte, expiry time.Time) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CreateCard", ctx, uuid, number, expiry)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// CreateCard indicates an expected call of CreateCard.
-func (mr *MockDatabaseMockRecorder) CreateCard(ctx, uuid, number, expiry any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateCard", reflect.TypeOf((*MockDatabase)(nil).CreateCard), ctx, uuid, number, expiry)
-}
-
-// DeleteArbitraryData mocks base method.
-func (m *MockDatabase) DeleteArbitraryData(ctx context.Context, uuid string, dataID int64) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "DeleteArbitraryData", ctx, uuid, dataID)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// DeleteArbitraryData indicates an expected call of DeleteArbitraryData.
-func (mr *MockDatabaseMockRecorder) DeleteArbitraryData(ctx, uuid, dataID any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteArbitraryData", reflect.TypeOf((*MockDatabase)(nil).DeleteArbitraryData), ctx, uuid, dataID)
-}
-
-// DeleteCard mocks base method.
-func (m *MockDatabase) DeleteCard(ctx context.Context, uuid string, cardID int64) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "DeleteCard", ctx, uuid, cardID)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// DeleteCard indicates an expected call of DeleteCard.
-func (mr *MockDatabaseMockRecorder) DeleteCard(ctx, uuid, cardID any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteCard", reflect.TypeOf((*MockDatabase)(nil).DeleteCard), ctx, uuid, cardID)
-}
-
-// GetArbitraryData mocks base method.
-func (m *MockDatabase) GetArbitraryData(ctx context.Context, uuid string) ([]models.ArbitraryData, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetArbitraryData", ctx, uuid)
-	ret0, _ := ret[0].([]models.ArbitraryData)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// GetArbitraryData indicates an expected call of GetArbitraryData.
-func (mr *MockDatabaseMockRecorder) GetArbitraryData(ctx, uuid any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetArbitraryData", reflect.TypeOf((*MockDatabase)(nil).GetArbitraryData), ctx, uuid)
-}
-
-// GetArbitraryDataByID mocks base method.
-func (m *MockDatabase) GetArbitraryDataByID(ctx context.Context, uuid string, dataID int64) (models.ArbitraryData, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetArbitraryDataByID", ctx, uuid, dataID)
-	ret0, _ := ret[0].(models.ArbitraryData)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// GetArbitraryDataByID indicates an expected call of GetArbitraryDataByID.
-func (mr *MockDatabaseMockRecorder) GetArbitraryDataByID(ctx, uuid, dataID any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetArbitraryDataByID", reflect.TypeOf((*MockDatabase)(nil).GetArbitraryDataByID), ctx, uuid, dataID)
-}
-
-// GetCards mocks base method.
-func (m *MockDatabase) GetCards(ctx context.Context, uuid string) ([]models.Card, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetCards", ctx, uuid)
-	ret0, _ := ret[0].([]models.Card)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// GetCards indicates an expected call of GetCards.
-func (mr *MockDatabaseMockRecorder) GetCards(ctx, uuid any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetCards", reflect.TypeOf((*MockDatabase)(nil).GetCards), ctx, uuid)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ChangePass", reflect.TypeOf((*MockUserRepo)(nil).ChangePass), ctx, uuid, passCurr, passNew)
 }
 
 // GetOldPassList mocks base method.
-func (m *MockDatabase) GetOldPassList(ctx context.Context, uuid string) ([]string, error) {
+func (m *MockUserRepo) GetOldPassList(ctx context.Context, uuid string) ([]string, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetOldPassList", ctx, uuid)
 	ret0, _ := ret[0].([]string)
@@ -197,13 +81,13 @@ func (m *MockDatabase) GetOldPassList(ctx context.Context, uuid string) ([]strin
 }
 
 // GetOldPassList indicates an expected call of GetOldPassList.
-func (mr *MockDatabaseMockRecorder) GetOldPassList(ctx, uuid any) *gomock.Call {
+func (mr *MockUserRepoMockRecorder) GetOldPassList(ctx, uuid any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetOldPassList", reflect.TypeOf((*MockDatabase)(nil).GetOldPassList), ctx, uuid)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetOldPassList", reflect.TypeOf((*MockUserRepo)(nil).GetOldPassList), ctx, uuid)
 }
 
 // GetProfile mocks base method.
-func (m *MockDatabase) GetProfile(ctx context.Context, uuid string) (models.Profile, error) {
+func (m *MockUserRepo) GetProfile(ctx context.Context, uuid string) (models.Profile, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetProfile", ctx, uuid)
 	ret0, _ := ret[0].(models.Profile)
@@ -212,13 +96,13 @@ func (m *MockDatabase) GetProfile(ctx context.Context, uuid string) (models.Prof
 }
 
 // GetProfile indicates an expected call of GetProfile.
-func (mr *MockDatabaseMockRecorder) GetProfile(ctx, uuid any) *gomock.Call {
+func (mr *MockUserRepoMockRecorder) GetProfile(ctx, uuid any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetProfile", reflect.TypeOf((*MockDatabase)(nil).GetProfile), ctx, uuid)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetProfile", reflect.TypeOf((*MockUserRepo)(nil).GetProfile), ctx, uuid)
 }
 
 // GetUserByEmail mocks base method.
-func (m *MockDatabase) GetUserByEmail(ctx context.Context, email string) (models.User, error) {
+func (m *MockUserRepo) GetUserByEmail(ctx context.Context, email string) (models.User, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetUserByEmail", ctx, email)
 	ret0, _ := ret[0].(models.User)
@@ -227,27 +111,13 @@ func (m *MockDatabase) GetUserByEmail(ctx context.Context, email string) (models
 }
 
 // GetUserByEmail indicates an expected call of GetUserByEmail.
-func (mr *MockDatabaseMockRecorder) GetUserByEmail(ctx, email any) *gomock.Call {
+func (mr *MockUserRepoMockRecorder) GetUserByEmail(ctx, email any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetUserByEmail", reflect.TypeOf((*MockDatabase)(nil).GetUserByEmail), ctx, email)
-}
-
-// UpdateArbitraryData mocks base method.
-func (m *MockDatabase) UpdateArbitraryData(ctx context.Context, uuid string, dataID int64, params models.UpdateArbitraryDataParams) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "UpdateArbitraryData", ctx, uuid, dataID, params)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// UpdateArbitraryData indicates an expected call of UpdateArbitraryData.
-func (mr *MockDatabaseMockRecorder) UpdateArbitraryData(ctx, uuid, dataID, params any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateArbitraryData", reflect.TypeOf((*MockDatabase)(nil).UpdateArbitraryData), ctx, uuid, dataID, params)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetUserByEmail", reflect.TypeOf((*MockUserRepo)(nil).GetUserByEmail), ctx, email)
 }
 
 // UpdateUser mocks base method.
-func (m *MockDatabase) UpdateUser(ctx context.Context, p models.UpdateUserParams) error {
+func (m *MockUserRepo) UpdateUser(ctx context.Context, p models.UpdateUserParams) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "UpdateUser", ctx, p)
 	ret0, _ := ret[0].(error)
@@ -255,9 +125,187 @@ func (m *MockDatabase) UpdateUser(ctx context.Context, p models.UpdateUserParams
 }
 
 // UpdateUser indicates an expected call of UpdateUser.
-func (mr *MockDatabaseMockRecorder) UpdateUser(ctx, p any) *gomock.Call {
+func (mr *MockUserRepoMockRecorder) UpdateUser(ctx, p any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateUser", reflect.TypeOf((*MockDatabase)(nil).UpdateUser), ctx, p)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateUser", reflect.TypeOf((*MockUserRepo)(nil).UpdateUser), ctx, p)
+}
+
+// MockCardRepo is a mock of CardRepo interface.
+type MockCardRepo struct {
+	ctrl     *gomock.Controller
+	recorder *MockCardRepoMockRecorder
+	isgomock struct{}
+}
+
+// MockCardRepoMockRecorder is the mock recorder for MockCardRepo.
+type MockCardRepoMockRecorder struct {
+	mock *MockCardRepo
+}
+
+// NewMockCardRepo creates a new mock instance.
+func NewMockCardRepo(ctrl *gomock.Controller) *MockCardRepo {
+	mock := &MockCardRepo{ctrl: ctrl}
+	mock.recorder = &MockCardRepoMockRecorder{mock}
+	return mock
+}
+
+// EXPECT returns an object that allows the caller to indicate expected use.
+func (m *MockCardRepo) EXPECT() *MockCardRepoMockRecorder {
+	return m.recorder
+}
+
+// ActivateCard mocks base method.
+func (m *MockCardRepo) ActivateCard(ctx context.Context, uuid string, cardID int64) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ActivateCard", ctx, uuid, cardID)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// ActivateCard indicates an expected call of ActivateCard.
+func (mr *MockCardRepoMockRecorder) ActivateCard(ctx, uuid, cardID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ActivateCard", reflect.TypeOf((*MockCardRepo)(nil).ActivateCard), ctx, uuid, cardID)
+}
+
+// CreateCard mocks base method.
+func (m *MockCardRepo) CreateCard(ctx context.Context, uuid string, number []byte, expiry time.Time) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CreateCard", ctx, uuid, number, expiry)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// CreateCard indicates an expected call of CreateCard.
+func (mr *MockCardRepoMockRecorder) CreateCard(ctx, uuid, number, expiry any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateCard", reflect.TypeOf((*MockCardRepo)(nil).CreateCard), ctx, uuid, number, expiry)
+}
+
+// DeleteCard mocks base method.
+func (m *MockCardRepo) DeleteCard(ctx context.Context, uuid string, cardID int64) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "DeleteCard", ctx, uuid, cardID)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// DeleteCard indicates an expected call of DeleteCard.
+func (mr *MockCardRepoMockRecorder) DeleteCard(ctx, uuid, cardID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteCard", reflect.TypeOf((*MockCardRepo)(nil).DeleteCard), ctx, uuid, cardID)
+}
+
+// GetCards mocks base method.
+func (m *MockCardRepo) GetCards(ctx context.Context, uuid string) ([]models.Card, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetCards", ctx, uuid)
+	ret0, _ := ret[0].([]models.Card)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetCards indicates an expected call of GetCards.
+func (mr *MockCardRepoMockRecorder) GetCards(ctx, uuid any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetCards", reflect.TypeOf((*MockCardRepo)(nil).GetCards), ctx, uuid)
+}
+
+// MockDataRepo is a mock of DataRepo interface.
+type MockDataRepo struct {
+	ctrl     *gomock.Controller
+	recorder *MockDataRepoMockRecorder
+	isgomock struct{}
+}
+
+// MockDataRepoMockRecorder is the mock recorder for MockDataRepo.
+type MockDataRepoMockRecorder struct {
+	mock *MockDataRepo
+}
+
+// NewMockDataRepo creates a new mock instance.
+func NewMockDataRepo(ctrl *gomock.Controller) *MockDataRepo {
+	mock := &MockDataRepo{ctrl: ctrl}
+	mock.recorder = &MockDataRepoMockRecorder{mock}
+	return mock
+}
+
+// EXPECT returns an object that allows the caller to indicate expected use.
+func (m *MockDataRepo) EXPECT() *MockDataRepoMockRecorder {
+	return m.recorder
+}
+
+// CreateArbitraryData mocks base method.
+func (m *MockDataRepo) CreateArbitraryData(ctx context.Context, uuid string, filename, osPath []byte, filetype, objectKey string, status uint, clientSize int64) (int64, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CreateArbitraryData", ctx, uuid, filename, osPath, filetype, objectKey, status, clientSize)
+	ret0, _ := ret[0].(int64)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CreateArbitraryData indicates an expected call of CreateArbitraryData.
+func (mr *MockDataRepoMockRecorder) CreateArbitraryData(ctx, uuid, filename, osPath, filetype, objectKey, status, clientSize any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateArbitraryData", reflect.TypeOf((*MockDataRepo)(nil).CreateArbitraryData), ctx, uuid, filename, osPath, filetype, objectKey, status, clientSize)
+}
+
+// DeleteArbitraryData mocks base method.
+func (m *MockDataRepo) DeleteArbitraryData(ctx context.Context, uuid string, dataID int64) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "DeleteArbitraryData", ctx, uuid, dataID)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// DeleteArbitraryData indicates an expected call of DeleteArbitraryData.
+func (mr *MockDataRepoMockRecorder) DeleteArbitraryData(ctx, uuid, dataID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteArbitraryData", reflect.TypeOf((*MockDataRepo)(nil).DeleteArbitraryData), ctx, uuid, dataID)
+}
+
+// GetArbitraryData mocks base method.
+func (m *MockDataRepo) GetArbitraryData(ctx context.Context, uuid string) ([]models.ArbitraryData, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetArbitraryData", ctx, uuid)
+	ret0, _ := ret[0].([]models.ArbitraryData)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetArbitraryData indicates an expected call of GetArbitraryData.
+func (mr *MockDataRepoMockRecorder) GetArbitraryData(ctx, uuid any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetArbitraryData", reflect.TypeOf((*MockDataRepo)(nil).GetArbitraryData), ctx, uuid)
+}
+
+// GetArbitraryDataByID mocks base method.
+func (m *MockDataRepo) GetArbitraryDataByID(ctx context.Context, uuid string, dataID int64) (models.ArbitraryData, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetArbitraryDataByID", ctx, uuid, dataID)
+	ret0, _ := ret[0].(models.ArbitraryData)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetArbitraryDataByID indicates an expected call of GetArbitraryDataByID.
+func (mr *MockDataRepoMockRecorder) GetArbitraryDataByID(ctx, uuid, dataID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetArbitraryDataByID", reflect.TypeOf((*MockDataRepo)(nil).GetArbitraryDataByID), ctx, uuid, dataID)
+}
+
+// UpdateArbitraryData mocks base method.
+func (m *MockDataRepo) UpdateArbitraryData(ctx context.Context, uuid string, dataID int64, params models.UpdateArbitraryDataParams) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "UpdateArbitraryData", ctx, uuid, dataID, params)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// UpdateArbitraryData indicates an expected call of UpdateArbitraryData.
+func (mr *MockDataRepoMockRecorder) UpdateArbitraryData(ctx, uuid, dataID, params any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateArbitraryData", reflect.TypeOf((*MockDataRepo)(nil).UpdateArbitraryData), ctx, uuid, dataID, params)
 }
 
 // MockCache is a mock of Cache interface.

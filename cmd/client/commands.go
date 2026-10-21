@@ -351,11 +351,13 @@ func getArbitraryDataCmd(client pb.GoKeeperServiceClient, masterKey string) tea.
 			)
 			if len(v.GetName()) > 0 || len(v.GetOsPath()) > 0 {
 				decFilename, err = decrypt(v.GetName(), []byte(masterKey))
+				if err != nil {
+					return cardsResultMsg{err: err}
+				}
 				decOsPath, err = decrypt(v.GetOsPath(), []byte(masterKey))
-			}
-
-			if err != nil {
-				return cardsResultMsg{err: err}
+				if err != nil {
+					return cardsResultMsg{err: err}
+				}
 			}
 
 			newStruct := arbitraryData{

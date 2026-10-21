@@ -6,7 +6,7 @@ import (
 	"strings"
 )
 
-func AlgoLuna(order string) bool {
+func IsLuhnValid(order string) bool {
 	order = strings.TrimSpace(order)
 
 	var sum int

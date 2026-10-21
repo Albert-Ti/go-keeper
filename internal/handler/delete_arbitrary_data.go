@@ -17,7 +17,7 @@ func (g *GrpcServer) DeleteArbitraryData(ctx context.Context, in *pb.DeleteArbit
 		return nil, status.Error(codes.Unauthenticated, "failed to get user")
 	}
 
-	err = g.Svc.DeleteArbitraryData(ctx, uuid, in.GetId())
+	err = g.DataSvc.DeleteArbitraryData(ctx, uuid, in.GetId())
 	if err != nil {
 		if errors.Is(err, service.ErrNotFound) {
 			return nil, status.Error(codes.NotFound, "arbitrary data not found")

@@ -16,7 +16,7 @@ func (g *GrpcServer) GetProfile(ctx context.Context, in *pb.ProfileRequest) (*pb
 		return nil, status.Error(codes.Unauthenticated, "failed to get user")
 
 	}
-	profile, err := g.Svc.GetProfile(ctx, uuid)
+	profile, err := g.UserSvc.GetProfile(ctx, uuid)
 	if err != nil {
 		return nil, status.Error(codes.Internal, "failed to get profile")
 	}

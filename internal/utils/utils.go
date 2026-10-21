@@ -5,14 +5,18 @@ import (
 	"math/big"
 )
 
-var GenerateCodeEmail = func() string {
+var GenerateCodeEmail = func() ([]byte, error) {
 	const letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
 	const length = 5
 
 	result := make([]byte, length)
 	for i := range result {
-		n, _ := rand.Int(rand.Reader, big.NewInt(int64(len(letters))))
+		n, err := rand.Int(rand.Reader, big.NewInt(int64(len(letters))))
 		result[i] = letters[n.Int64()]
+
+		if err != nil {
+			return nil, err
+		}
 	}
-	return string(result)
+	return result, nil
 }

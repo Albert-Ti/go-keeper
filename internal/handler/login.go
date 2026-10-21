@@ -12,7 +12,7 @@ import (
 )
 
 func (g *GrpcServer) Login(ctx context.Context, in *pb.LoginRequest) (*pb.LoginResponse, error) {
-	user, err := g.Svc.Login(ctx, in.GetEmail(), in.GetPass())
+	user, err := g.UserSvc.Login(ctx, in.GetEmail(), in.GetPass())
 	if err != nil {
 		if errors.Is(err, service.ErrNoRows) {
 			return nil, status.Errorf(codes.NotFound, "user: %v, not found", in.GetEmail())
@@ -26,8 +26,8 @@ func (g *GrpcServer) Login(ctx context.Context, in *pb.LoginRequest) (*pb.LoginR
 		return nil, status.Error(codes.Internal, "failed to login")
 	}
 
-	accessToken, err := mytoken.CreateAccessToken(user.UUID, g.Opts.JWTSecret)
-	refreshToken, err := mytoken.CreateRefreshToken(user.UUID, g.Opts.JWTSecret)
+	accessToken, err := mytoken.CreateAccessToken(user.UUID, g.Opts.JWTSecret, g.Opts.ExpiresAToken)
+	refreshToken, err := mytoken.CreateRefreshToken(user.UUID, g.Opts.JWTSecret, g.Opts.ExpiresRToken)
 	if err != nil {
 		return nil, status.Error(codes.Internal, "failed to create token")
 	}

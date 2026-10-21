@@ -23,27 +23,27 @@ func TestDownloadArbitraryData(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	mockRepo := mocks.NewMockDatabase(ctrl)
+	mockRepo := mocks.NewMockDataRepo(ctrl)
 	mockObj := mocks.NewMockObjStorage(ctrl)
 	opts := config.NewOptions()
-	svc := service.NewService(mockRepo, opts, nil, mockObj)
+	dataSvc := service.NewDataService(mockRepo, mockObj)
 
-	client := NewTestGRPCServer(t, svc, opts)
+	client := NewTestGRPCServer(t, opts, nil, nil, dataSvc)
 
-	accessToken, err := token.CreateAccessToken("user-1", opts.JWTSecret)
+	accessToken, err := token.CreateAccessToken("user-1", opts.JWTSecret, opts.ExpiresAToken)
 	require.NoError(t, err)
 
 	tests := []struct {
 		name      string
 		wantCode  codes.Code
 		ctx       context.Context
-		setupMock func(*mocks.MockDatabase, *mocks.MockObjStorage)
+		setupMock func(*mocks.MockDataRepo, *mocks.MockObjStorage)
 	}{
 		{
 			name:     "success",
 			wantCode: codes.OK,
 			ctx:      metadata.AppendToOutgoingContext(context.Background(), "authorization", accessToken),
-			setupMock: func(mDB *mocks.MockDatabase, mObj *mocks.MockObjStorage) {
+			setupMock: func(mDB *mocks.MockDataRepo, mObj *mocks.MockObjStorage) {
 				mDB.EXPECT().GetArbitraryDataByID(gomock.Any(), gomock.Any(), gomock.Any()).
 					Return(models.ArbitraryData{}, nil)
 

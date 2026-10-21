@@ -6,6 +6,7 @@ import (
 	"flag"
 	"log/slog"
 	"os"
+	"time"
 )
 
 type Mode string
@@ -36,6 +37,9 @@ type Options struct {
 	ObjStorageAccessKey string
 	ObjStorageSecretKey string
 	ObjStorageBucket    string
+
+	ExpiresRToken time.Duration
+	ExpiresAToken time.Duration
 }
 
 type smtpFileOptions struct {
@@ -57,6 +61,9 @@ func NewOptions(opts ...func(*Options)) *Options {
 		ObjStorageAccessKey: "s3-access",
 		ObjStorageSecretKey: "s3-secret",
 		ObjStorageBucket:    "test",
+
+		ExpiresRToken: time.Hour * 24 * 10,
+		ExpiresAToken: time.Hour * 24 * 1,
 	}
 
 	for _, opt := range opts {
@@ -116,7 +123,8 @@ func WithJWTSecret(v string) func(*Options) { return func(o *Options) { o.JWTSec
 // WithMode задаёт режим работы приложения (например, "dev" или "debug").
 func WithMode(v Mode) func(*Options) { return func(o *Options) { o.Mode = v } }
 
-// WithEnableSMTP.
+// WithEnableSMTP вкл/выкл интеграцию с SMTP-сервером для отправки email-сообщений.
+// При значении true приложение инициализирует SMTP-клиент при старте.
 func WithEnableSMTP(v bool) func(*Options) { return func(o *Options) { o.EnableSMTP = v } }
 
 func pickString(explicitFlag bool, envStr string, flagVal string) string {

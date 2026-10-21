@@ -20,25 +20,25 @@ func TestConfirmEmail(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	mockRepo := mocks.NewMockDatabase(ctrl)
+	mockRepo := mocks.NewMockUserRepo(ctrl)
 	opts := config.NewOptions()
-	svc := service.NewService(mockRepo, opts, nil, nil)
+	userSvc := service.NewUserService(mockRepo, nil)
 
-	client := NewTestGRPCServer(t, svc, opts)
+	client := NewTestGRPCServer(t, opts, userSvc, nil, nil)
 
 	tests := []struct {
 		name      string
 		wantCode  codes.Code
 		email     string
 		codeEmail string
-		setupMock func(mock *mocks.MockDatabase)
+		setupMock func(mock *mocks.MockUserRepo)
 	}{
 		{
 			name:      "success",
 			email:     "example@mail.com",
 			codeEmail: "code123",
 			wantCode:  codes.OK,
-			setupMock: func(mock *mocks.MockDatabase) {
+			setupMock: func(mock *mocks.MockUserRepo) {
 				mock.EXPECT().GetUserByEmail(gomock.Any(), gomock.Any()).
 					Return(models.User{
 						Email:     "example@mail.com",
@@ -55,7 +55,7 @@ func TestConfirmEmail(t *testing.T) {
 			email:     "example@mail.com",
 			codeEmail: "code123",
 			wantCode:  codes.PermissionDenied,
-			setupMock: func(mock *mocks.MockDatabase) {
+			setupMock: func(mock *mocks.MockUserRepo) {
 				mock.EXPECT().GetUserByEmail(gomock.Any(), gomock.Any()).
 					Return(models.User{}, service.ErrInvalidCodeEmail)
 			},

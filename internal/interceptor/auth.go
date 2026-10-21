@@ -5,6 +5,7 @@ import (
 	"errors"
 
 	mytoken "github.com/Albert-Ti/go-keeper/internal/token"
+	"github.com/Albert-Ti/go-keeper/pkg/consts"
 	"github.com/golang-jwt/jwt/v5"
 
 	"google.golang.org/grpc"
@@ -18,16 +19,9 @@ type UserIDType string
 // UserIDKey — ключ контекста.
 const UserIDKey UserIDType = "userID"
 
-var publicMethods = map[string]bool{
-	"/gokeeper.GoKeeperService/Register":     true,
-	"/gokeeper.GoKeeperService/Login":        true,
-	"/gokeeper.GoKeeperService/ConfirmEmail": true,
-	"/gokeeper.GoKeeperService/RefreshToken": true,
-}
-
 func AuthUnary(secretKey string) grpc.UnaryServerInterceptor {
 	return func(ctx context.Context, req any, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (any, error) {
-		if publicMethods[info.FullMethod] {
+		if consts.PublicMethods[info.FullMethod] {
 			return handler(ctx, req)
 		}
 
@@ -62,7 +56,7 @@ func AuthUnary(secretKey string) grpc.UnaryServerInterceptor {
 
 func AuthStream(secretKey string) grpc.StreamServerInterceptor {
 	return func(srv any, ss grpc.ServerStream, info *grpc.StreamServerInfo, handler grpc.StreamHandler) error {
-		if publicMethods[info.FullMethod] {
+		if consts.PublicMethods[info.FullMethod] {
 			return handler(srv, ss)
 		}
 

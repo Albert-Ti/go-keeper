@@ -22,7 +22,7 @@ func (g *GrpcServer) ReloadArbitraryData(stream pb.GoKeeperService_ReloadArbitra
 
 	reader := &utils.GoKeeperStream[*pb.ReloadArbitraryDataRequest]{Stream: stream}
 
-	if err := g.Svc.ReloadArbitraryData(ctx, uuid, req.GetId(), reader); err != nil {
+	if err := g.DataSvc.ReloadArbitraryData(ctx, uuid, req.GetId(), reader); err != nil {
 		return status.Error(codes.Internal, err.Error())
 	}
 

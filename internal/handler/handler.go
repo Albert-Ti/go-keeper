@@ -11,6 +11,9 @@ import (
 type GrpcServer struct {
 	pb.UnimplementedGoKeeperServiceServer
 	Srv  *grpc.Server
-	Svc  *service.Service
 	Opts *config.Options
+
+	UserSvc *service.UserService
+	CardSvc *service.CardService
+	DataSvc *service.DataService
 }

@@ -24,13 +24,13 @@ func TestChangePass(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	mockRepo := mocks.NewMockDatabase(ctrl)
+	mockRepo := mocks.NewMockUserRepo(ctrl)
 	opts := config.NewOptions()
-	svc := service.NewService(mockRepo, opts, nil, nil)
+	userSvc := service.NewUserService(mockRepo, nil)
 
-	client := NewTestGRPCServer(t, svc, opts)
+	client := NewTestGRPCServer(t, opts, userSvc, nil, nil)
 
-	accessToken, err := token.CreateAccessToken("user-1", opts.JWTSecret)
+	accessToken, err := token.CreateAccessToken("user-1", opts.JWTSecret, opts.ExpiresAToken)
 	require.NoError(t, err)
 
 	salt := "salt"
@@ -44,7 +44,7 @@ func TestChangePass(t *testing.T) {
 		passCurr  string
 		passNew   string
 		ctx       context.Context
-		setupMock func(mock *mocks.MockDatabase)
+		setupMock func(mock *mocks.MockUserRepo)
 	}{
 		{
 			name:     "success",
@@ -52,7 +52,7 @@ func TestChangePass(t *testing.T) {
 			passCurr: "12345",
 			passNew:  "54321",
 			wantCode: codes.OK,
-			setupMock: func(mock *mocks.MockDatabase) {
+			setupMock: func(mock *mocks.MockUserRepo) {
 				mock.EXPECT().GetProfile(gomock.Any(), gomock.Any()).
 					Return(models.Profile{Pass: hashPassCurr}, nil)
 
@@ -69,7 +69,7 @@ func TestChangePass(t *testing.T) {
 			passCurr: "1234",
 			passNew:  "54321",
 			wantCode: codes.FailedPrecondition,
-			setupMock: func(mock *mocks.MockDatabase) {
+			setupMock: func(mock *mocks.MockUserRepo) {
 				mock.EXPECT().GetProfile(gomock.Any(), gomock.Any()).
 					Return(models.Profile{Pass: hashPassCurr}, nil)
 			},
@@ -80,7 +80,7 @@ func TestChangePass(t *testing.T) {
 			passCurr: "12345",
 			passNew:  "qwerty",
 			wantCode: codes.FailedPrecondition,
-			setupMock: func(mock *mocks.MockDatabase) {
+			setupMock: func(mock *mocks.MockUserRepo) {
 				mock.EXPECT().GetProfile(gomock.Any(), gomock.Any()).
 					Return(models.Profile{Pass: hashPassCurr}, nil)
 

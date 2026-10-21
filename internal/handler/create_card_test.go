@@ -21,13 +21,13 @@ func TestCreateCard(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	mockRepo := mocks.NewMockDatabase(ctrl)
+	mockRepo := mocks.NewMockCardRepo(ctrl)
 	opts := config.NewOptions()
-	svc := service.NewService(mockRepo, opts, nil, nil)
+	cardSvc := service.NewCardService(mockRepo)
 
-	client := NewTestGRPCServer(t, svc, opts)
+	client := NewTestGRPCServer(t, opts, nil, cardSvc, nil)
 
-	accessToken, err := token.CreateAccessToken("user-1", opts.JWTSecret)
+	accessToken, err := token.CreateAccessToken("user-1", opts.JWTSecret, opts.ExpiresAToken)
 	require.NoError(t, err)
 
 	tests := []struct {
@@ -36,7 +36,7 @@ func TestCreateCard(t *testing.T) {
 		expireDate string
 		ctx        context.Context
 		wantCode   codes.Code
-		setupMock  func(mock *mocks.MockDatabase)
+		setupMock  func(mock *mocks.MockCardRepo)
 	}{
 		{
 			name:       "success",
@@ -44,7 +44,7 @@ func TestCreateCard(t *testing.T) {
 			expireDate: "01/27",
 			ctx:        metadata.AppendToOutgoingContext(context.Background(), "authorization", accessToken),
 			wantCode:   codes.OK,
-			setupMock: func(mock *mocks.MockDatabase) {
+			setupMock: func(mock *mocks.MockCardRepo) {
 				mock.EXPECT().CreateCard(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).
 					Return(nil)
 			},
@@ -55,13 +55,13 @@ func TestCreateCard(t *testing.T) {
 			expireDate: "01/27",
 			ctx:        metadata.AppendToOutgoingContext(context.Background(), "authorization", accessToken),
 			wantCode:   codes.OK,
-			setupMock: func(mock *mocks.MockDatabase) {
+			setupMock: func(mock *mocks.MockCardRepo) {
 				mock.EXPECT().CreateCard(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).
 					Return(nil)
 			},
 		},
 		{
-			name:       "invalid card number, algoLuna",
+			name:       "invalid card number, IsLuhnValid ",
 			cardNumber: "5555640328235481",
 			expireDate: "01/27",
 			ctx:        metadata.AppendToOutgoingContext(context.Background(), "authorization", accessToken),
