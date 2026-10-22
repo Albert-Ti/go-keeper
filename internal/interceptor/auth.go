@@ -5,7 +5,7 @@ import (
 	"errors"
 
 	mytoken "github.com/Albert-Ti/go-keeper/internal/token"
-	"github.com/Albert-Ti/go-keeper/pkg/consts"
+	"github.com/Albert-Ti/go-keeper/pkg/proto"
 	"github.com/golang-jwt/jwt/v5"
 
 	"google.golang.org/grpc"
@@ -21,7 +21,7 @@ const UserIDKey UserIDType = "userID"
 
 func AuthUnary(secretKey string) grpc.UnaryServerInterceptor {
 	return func(ctx context.Context, req any, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (any, error) {
-		if consts.PublicMethods[info.FullMethod] {
+		if proto.PublicMethods[info.FullMethod] {
 			return handler(ctx, req)
 		}
 
@@ -56,7 +56,7 @@ func AuthUnary(secretKey string) grpc.UnaryServerInterceptor {
 
 func AuthStream(secretKey string) grpc.StreamServerInterceptor {
 	return func(srv any, ss grpc.ServerStream, info *grpc.StreamServerInfo, handler grpc.StreamHandler) error {
-		if consts.PublicMethods[info.FullMethod] {
+		if proto.PublicMethods[info.FullMethod] {
 			return handler(srv, ss)
 		}
 

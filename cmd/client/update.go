@@ -272,14 +272,8 @@ func (m model) homePageUpdate(msg tea.KeyPressMsg) (model, tea.Cmd) {
 			if len(m.arbitraryData) > 0 {
 				m.selectedRowID = m.cursor
 			}
-
 		case "ctrl+a":
 			return m.navigateTo(filePickerPage), nil
-		}
-
-	case tabLocalData:
-		switch msg.String() {
-		case "enter":
 		}
 	}
 	return m, nil

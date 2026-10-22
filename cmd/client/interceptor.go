@@ -8,7 +8,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/Albert-Ti/go-keeper/pkg/consts"
+	"github.com/Albert-Ti/go-keeper/pkg/proto"
 	pb "github.com/Albert-Ti/go-keeper/pkg/proto"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
@@ -38,7 +38,7 @@ func (a *AuthInterceptor) UnaryInterceptor(
 	invoker grpc.UnaryInvoker,
 	opts ...grpc.CallOption,
 ) error {
-	if consts.PublicMethods[method] {
+	if proto.PublicMethods[method] {
 		return invoker(ctx, method, req, reply, cc, opts...)
 	}
 
@@ -71,7 +71,7 @@ func (a *AuthInterceptor) StreamInterceptor(
 	streamer grpc.Streamer,
 	opts ...grpc.CallOption,
 ) (grpc.ClientStream, error) {
-	if consts.PublicMethods[method] {
+	if proto.PublicMethods[method] {
 		return streamer(ctx, desc, cc, method, opts...)
 	}
 

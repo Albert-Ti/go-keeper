@@ -1,4 +1,4 @@
-package consts
+package proto
 
 var PublicMethods = map[string]bool{
 	"/gokeeper.GoKeeperService/Register":     true,
