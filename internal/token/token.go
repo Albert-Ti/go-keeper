@@ -14,13 +14,25 @@ type MyCustomClaims struct {
 	UserID string
 }
 
-// createToken подписывает новый JWT алгоритмом HS256 с claim UserID и сроком.
-func CreateToken(userID string, secretKey string) (string, error) {
+func CreateAccessToken(userID string, secretKey string, expiresAt time.Duration) (string, error) {
 	t := jwt.New(jwt.SigningMethodHS256)
 
 	t.Claims = &MyCustomClaims{
 		jwt.RegisteredClaims{
-			ExpiresAt: jwt.NewNumericDate(time.Now().Add(24 * time.Hour)),
+			ExpiresAt: jwt.NewNumericDate(time.Now().Add(expiresAt)),
+		},
+		userID,
+	}
+
+	return t.SignedString([]byte(secretKey))
+}
+
+func CreateRefreshToken(userID string, secretKey string, expiresAt time.Duration) (string, error) {
+	t := jwt.New(jwt.SigningMethodHS256)
+
+	t.Claims = &MyCustomClaims{
+		jwt.RegisteredClaims{
+			ExpiresAt: jwt.NewNumericDate(time.Now().Add(expiresAt)),
 		},
 		userID,
 	}
