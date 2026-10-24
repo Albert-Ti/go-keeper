@@ -1,375 +1,251 @@
 package main
 
 import (
-	"crypto/aes"
-	"errors"
-
 	tea "charm.land/bubbletea/v2"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 )
 
-func (m model) landingPageUpdate(msg tea.KeyPressMsg) (model, tea.Cmd) {
-	switch msg.String() {
-	case "up", "k":
-		if m.cursor > 0 {
-			m.cursor--
+func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+	switch msg := msg.(type) {
+	case tea.WindowSizeMsg:
+		m.progress.SetWidth(60)
+		if m.progress.Width() > maxWidth {
+			m.progress.SetWidth(maxWidth)
 		}
+		m.width = msg.Width
+		m.height = msg.Height
+		var cmd tea.Cmd
+		m.filepicker, cmd = m.filepicker.Update(msg)
+		return m, cmd
+
+		// очистка сообщения об ошибки
+	case clearErrorMsg:
+		m.textError = ""
+		m.textInfo = ""
 		return m, nil
-	case "down", "j":
-		if m.cursor < len(m.choices)-1 {
-			m.cursor++
-		}
-		return m, nil
-	case "enter":
-		cmd := m.authForm.email.Focus()
-		m.authForm.pass.Blur()
-		return m.navigateTo(m.choices[m.cursor]), cmd
-	}
-	return m, nil
-}
 
-func (m model) registerPageUpdate(msg tea.KeyPressMsg) (model, tea.Cmd) {
-	switch msg.String() {
-	case "tab":
-		if m.authForm.email.Focused() {
-			m.authForm.email.Blur()
-			return m, m.authForm.pass.Focus()
-		} else {
-			m.authForm.pass.Blur()
-			return m, m.authForm.email.Focus()
-		}
-	case "enter":
-		m.isLoad = true
-		return m, registerCmd(m.client, m.authForm.email.Value(), m.authForm.pass.Value())
-	}
-
-	var cmd tea.Cmd
-	if m.authForm.email.Focused() {
-		m.authForm.email, cmd = m.authForm.email.Update(msg)
-	} else if m.authForm.pass.Focused() {
-		m.authForm.pass, cmd = m.authForm.pass.Update(msg)
-	}
-	return m, cmd
-}
-
-func (m model) confirmPageUpdate(msg tea.KeyPressMsg) (model, tea.Cmd) {
-	switch msg.String() {
-	case "enter":
-		m.isLoad = true
-		return m, tea.Batch(
-			confirmEmailCmd(m.client, m.authForm.email.Value(), m.authForm.confirm.Value()),
-		)
-	}
-
-	var cmd tea.Cmd
-	m.authForm.confirm, cmd = m.authForm.confirm.Update(msg)
-	return m, cmd
-}
-
-func (m model) loginPageUpdate(msg tea.KeyPressMsg) (model, tea.Cmd) {
-	switch msg.String() {
-	case "tab":
-		if m.authForm.email.Focused() {
-			m.authForm.email.Blur()
-			return m, m.authForm.pass.Focus()
-		} else {
-			m.authForm.pass.Blur()
-			return m, m.authForm.email.Focus()
+		// API result public
+	case registerResultMsg:
+		if msg.err != nil {
+			return m, m.handleError(msg.err, "registerResultMsg")
 		}
 
-	case "enter":
-		m.isLoad = true
-		return m, loginCmd(m.client, m.authForm.email.Value(), m.authForm.pass.Value())
-	}
-
-	var cmd tea.Cmd
-	if m.authForm.email.Focused() {
-		m.authForm.email, cmd = m.authForm.email.Update(msg)
-	} else if m.authForm.pass.Focused() {
-		m.authForm.pass, cmd = m.authForm.pass.Update(msg)
-	}
-	return m, cmd
-}
-
-func (m model) loadActiveTab(activeTab tabType) tea.Cmd {
-	switch activeTab {
-	case tabProfile:
-		m.isLoad = true
-		return getProfileCmd(m.client)
-	case tabCards:
-		m.isLoad = true
-		return getCardsCmd(m.client)
-	case tabData:
-		m.isLoad = true
-		return getArbitraryDataCmd(m.client, m.localStorage.Get(masterKeyKey))
-	case tabLocalData:
-		m.isLoad = true
-		return getLocalArbitraryDataCmd()
-	}
-	return nil
-}
-
-func (m model) homePageUpdate(msg tea.KeyPressMsg) (model, tea.Cmd) {
-	if m.selectedRowID >= 0 {
-		switch m.activeTab {
-		case tabCards:
-			switch msg.String() {
-			case "left":
-				if m.activeBtn > 0 {
-					m.activeBtn--
-					return m, nil
-				}
-			case "right":
-				if m.activeBtn < len(m.cardsActions)-1 {
-					m.activeBtn++
-					return m, nil
-				}
-			case "enter":
-				if m.activeBtn == int(cardActionsUpdate) {
-					m.isLoad = true
-					if m.cards[m.selectedRowID].GetActive() {
-						return m, m.handleInfo("card is already active", "")
-					}
-					return m, activateCardCmd(m.client, m.cards[m.selectedRowID].GetId())
-				}
-
-				if m.activeBtn == int(cardActionsDelete) {
-					m.isLoad = true
-					return m, deleteCardCmd(m.client, m.cards[m.selectedRowID].GetId())
-				}
-			}
-		case tabData:
-			switch msg.String() {
-			case "left":
-				if m.activeBtn > 0 {
-					m.activeBtn--
-					return m, nil
-				}
-			case "right":
-				if m.activeBtn < len(m.dataActions)-1 {
-					m.activeBtn++
-					return m, nil
-				}
-			case "enter":
-				if m.activeBtn == int(dataActionsDownload) {
-					m.isLoad = true
-					userLocalPath := DOWNLOAD_PATHNAME + "/" + m.profile.email
-
-					return m, tea.Batch(
-						downloadArbitraryDataCmd(
-							m.client,
-							m.arbitraryData[m.selectedRowID].id,
-							m.arbitraryData[m.selectedRowID].filename,
-							m.arbitraryData[m.selectedRowID].filetype,
-							userLocalPath,
-							m.progressCh,
-						),
-						waitUploadProgress(m.progressCh),
-					)
-				}
-
-				if m.activeBtn == int(dataActionsReload) {
-					m.isLoad = true
-					if m.arbitraryData[m.selectedRowID].status == 1 {
-						return m, m.handleInfo("file has been successfully uploaded", "tabData")
-					}
-					id := m.arbitraryData[m.selectedRowID].id
-					filepath := m.arbitraryData[m.selectedRowID].osPath
-
-					return m, tea.Batch(
-						reloadArbitraryDataCmd(m.client, id, filepath, m.progressCh),
-						waitUploadProgress(m.progressCh),
-					)
-				}
-
-				if m.activeBtn == int(dataActionsDelete) {
-					m.isLoad = true
-					return m, deleteArbitraryDataCmd(m.client, m.arbitraryData[m.selectedRowID].id)
-				}
-			}
-		}
-	} else {
-		m.authForm.pass.Blur()
+		m.codeEmail = msg.emailCode
+		m.activePage = confirmPage
+		m.isLoad = false
 		m.authForm.email.Blur()
-		m.authForm.confirm.Blur()
-		switch msg.String() {
-		case "left":
-			if m.activeTab > 0 {
-				m.activeTab--
-				m.cursor = 0
-				m.activeBtn = 0
-				return m, m.loadActiveTab(m.activeTab)
+		m.authForm.pass.Blur()
+		cmd := m.authForm.confirm.Focus()
+
+		return m, cmd
+
+	case loginResultMsg:
+		if msg.err != nil {
+			st, _ := status.FromError(msg.err)
+			if st.Code() == codes.PermissionDenied {
+				m.codeEmail = msg.emailCode
+				m.activePage = confirmPage
+				m.authForm.email.Blur()
+				m.authForm.pass.Blur()
+				cmd := m.authForm.confirm.Focus()
+				return m, cmd
 			}
-		case "right":
-			if int(m.activeTab) < len(m.allTabs)-1 {
-				m.activeTab++
-				m.cursor = 0
-				m.activeBtn = 0
-				return m, m.loadActiveTab(m.activeTab)
-			}
+			return m, m.handleError(msg.err, "loginResultMsg")
 		}
-	}
+		m.accessToken = msg.accessToken
+		m.refreshToken = msg.refreshToken
+		m.authUser = m.authForm.email.Value()
+		if err := m.localStorage.Set(emailKey, m.authForm.email.Value()); err != nil {
+			return m, m.handleError(err, "loginResultMsg")
+		}
+		if err := m.localStorage.Set(accessTokenKey, msg.accessToken); err != nil {
+			return m, m.handleError(err, "loginResultMsg")
+		}
+		if err := m.localStorage.Set(refreshTokenKey, msg.refreshToken); err != nil {
+			return m, m.handleError(err, "loginResultMsg")
+		}
+		return m.navigateTo(homePage), getProfileCmd(m.client)
 
-	switch m.activeTab {
-	case tabProfile:
+	case confirmResultMsg:
+		if msg.err != nil {
+			return m, m.handleError(msg.err, "confirmResultMsg")
+		}
+
+		m.isLoad = false
+		m.authForm.email.Focus()
+		m.authForm.pass.Blur()
+		m.authForm.pass.SetValue("")
+
+		return m.navigateTo(loginPage), nil
+
+	case refreshTokenErrorMsg:
+		m.Reset()
+		cmd := m.authForm.email.Focus()
+		return m.navigateTo(loginPage), tea.Batch(
+			m.handleError(msg.err, "refreshTokenErrorMsg"), cmd)
+
+		// API result private
+	case profileResultMsg:
+		if msg.err != nil {
+			st, _ := status.FromError(msg.err)
+			if st.Code() == codes.Unavailable {
+				m.Reset()
+				return m, m.authForm.email.Focus()
+			}
+			return m, m.handleError(msg.err, "profileResultMsg")
+		}
+		m.profile = msg.profile
+		m.isLoad = false
+
+	case cardsResultMsg:
+		if msg.err != nil {
+			return m, m.handleError(msg.err, "cardsResultMsg")
+		}
+		m.cards = msg.cards
+		m.isLoad = false
+
+	case createCardResultMsg:
+		if msg.err != nil {
+			return m, m.handleError(msg.err, "createCardResultMsg")
+		}
+
+		m.cardForm.number.SetValue("")
+		m.cardForm.date.SetValue("")
+		m.cardForm.number.Blur()
+		m.cardForm.date.Blur()
+		// вызов getCardsCmd для получения нового списка после добавления
+		return m.navigateTo(homePage), getCardsCmd(m.client)
+
+	case changePassResultMsg:
+		if msg.err != nil {
+			return m, m.handleError(msg.err, "changePassResultMsg")
+		}
+		m.isLoad = false
+		return m.navigateTo(homePage), getProfileCmd(m.client)
+
+	case deleteCardResultMsg:
+		if msg.err != nil {
+			return m, m.handleError(msg.err, "deleteCardResultMsg")
+		}
+		m.isLoad = false
+		m.selectedRowID = -1
+		return m.navigateTo(homePage), getCardsCmd(m.client)
+
+	case activateCardResultMsg:
+		if msg.err != nil {
+			return m, m.handleError(msg.err, "activateCardResultMsg")
+		}
+		m.isLoad = false
+		m.selectedRowID = -1
+		return m.navigateTo(homePage), getCardsCmd(m.client)
+
+	case arbitraryDataResultMsg:
+		if msg.err != nil {
+			return m, m.handleError(msg.err, "arbitraryDataResultMsg")
+		}
+		m.arbitraryData = msg.arbitraryData
+		m.isLoad = false
+
+	case localArbitraryDataResultMsg:
+		if msg.err != nil {
+			return m, m.handleError(msg.err, "arbitraryDataResultMsg")
+		}
+		m.localArbitraryData = msg.localArbitraryData
+		m.isLoad = false
+
+	case createArbitraryDataResultMsg:
+		if msg.err != nil {
+			return m, m.handleError(msg.err, "createArbitraryDataResultMsg")
+		}
+		m.isLoad = false
+		m.selectedFile = ""
+		return m.navigateTo(homePage), getArbitraryDataCmd(m.client, m.localStorage.Get(masterKeyKey))
+
+	case deleteArbitraryDataResultMsg:
+		if msg.err != nil {
+			return m, m.handleError(msg.err, "deleteArbitraryDataResultMsg")
+		}
+		m.isLoad = false
+		m.selectedRowID = -1
+		m.cursor = 0
+		return m.navigateTo(homePage), getArbitraryDataCmd(m.client, m.localStorage.Get(masterKeyKey))
+
+	case reloadArbitraryDataResultMsg:
+		if msg.err != nil {
+			return m, m.handleError(msg.err, "reloadArbitraryDataResultMsg")
+		}
+		m.isLoad = false
+		m.selectedFile = ""
+		m.selectedRowID = -1
+		return m, getArbitraryDataCmd(m.client, m.localStorage.Get(masterKeyKey))
+
+	case downloadArbitraryDataResultMsg:
+		if msg.err != nil {
+			return m, m.handleError(msg.err, "downloadArbitraryDataResultMsg")
+		}
+		m.isLoad = false
+		m.selectedRowID = -1
+		return m, nil
+
+	case uploadProgressMsg:
+		m.uploadedBytes = msg.sent
+		m.totalBytes = msg.total
+
+		return m, waitUploadProgress(m.progressCh)
+		// Обработка нажатия клавиш
+	case tea.KeyPressMsg:
 		switch msg.String() {
-		case "enter":
-			cmd := m.profileForm.passCurr.Focus()
-			m.profileForm.passNew.Blur()
-			m.profileForm.passCurr.SetValue("")
-			m.profileForm.passNew.SetValue("")
-			return m.navigateTo(profileFormPage), cmd
-
-		case "ctrl+a":
-			if m.localStorage.Get(masterKeyKey) == "" {
-				masterKeyValue, err := generateRandom(aes.BlockSize)
-
-				if err != nil {
-					return m, m.handleError(err, "generateRandom")
-				}
-
-				if err := m.localStorage.Set(masterKeyKey, string(masterKeyValue)); err != nil {
-					return m, m.handleError(err, "localStorageSet")
-				}
+		case "ctrl+c":
+			return m, tea.Quit
+		case "ctrl+q":
+			m.Reset()
+			cmd := m.authForm.email.Focus()
+			return m, cmd
+		case "esc":
+			if m.selectedFile != "" {
+				m.selectedFile = ""
 				return m, nil
 			}
-			return m, m.handleInfo("you already have a master pass", "")
-		}
-
-	case tabCards:
-		switch msg.String() {
-		case "up":
-			if m.cursor > 0 {
-				m.cursor--
+			if m.selectedRowID >= 0 {
 				m.selectedRowID = -1
+				return m, nil
 			}
-		case "down":
-			if m.cursor < len(m.cards)-1 {
-				m.cursor++
-				m.selectedRowID = -1
+			if m.activePage == cardFormPage {
+				m.cardForm.number.Blur()
+				m.cardForm.date.Blur()
 			}
-		case "enter":
-			if len(m.cards) > 0 {
-				m.selectedRowID = m.cursor
+			if len(m.history) <= 1 {
+				return m, m.handleInfo("to log out, press ctrl+q", "")
 			}
-		case "ctrl+a":
-			cmd := m.cardForm.number.Focus()
-			return m.navigateTo(cardFormPage), cmd
+			if len(m.history) > 1 {
+				m.history = m.history[:len(m.history)-1]
+				m.activePage = m.history[len(m.history)-1]
+			}
+			return m, nil
 		}
 
-	case tabData:
-		switch msg.String() {
-		case "up":
-			if m.cursor > 0 {
-				m.cursor--
-				m.selectedRowID = -1
-			}
-		case "down":
-			if m.cursor < len(m.arbitraryData)-1 {
-				m.cursor++
-				m.selectedRowID = -1
-			}
-		case "enter":
-			if len(m.arbitraryData) > 0 {
-				m.selectedRowID = m.cursor
-			}
-		case "ctrl+a":
-			return m.navigateTo(filePickerPage), nil
+		switch m.activePage {
+		case landingPage:
+			return m.landingPageUpdate(msg)
+		case registerPage:
+			return m.registerPageUpdate(msg)
+		case loginPage:
+			return m.loginPageUpdate(msg)
+		case confirmPage:
+			return m.confirmPageUpdate(msg)
+		case homePage:
+			return m.homePageUpdate(msg)
+		case cardFormPage:
+			return m.cardFormPageUpdate(msg)
+		case profileFormPage:
+			return m.profileFormPageUpdate(msg)
+		case filePickerPage:
+			return m.filePickerPageUpdate(msg)
 		}
 	}
-	return m, nil
-}
 
-func (m model) profileFormPageUpdate(msg tea.KeyPressMsg) (model, tea.Cmd) {
-	switch msg.String() {
-	case "tab":
-		var cmd tea.Cmd
-		if m.profileForm.passCurr.Focused() {
-			m.profileForm.passCurr.Blur()
-			cmd = m.profileForm.passNew.Focus()
-		} else {
-			m.profileForm.passNew.Blur()
-			cmd = m.profileForm.passCurr.Focus()
-		}
-		return m, cmd
-	case "enter":
-		m.isLoad = true
-		return m, changePassCmd(m.client, m.profileForm.passCurr.Value(), m.profileForm.passNew.Value())
-
-	}
-
-	var cmd tea.Cmd
-	switch {
-	case m.profileForm.passCurr.Focused():
-		m.profileForm.passCurr, cmd = m.profileForm.passCurr.Update(msg)
-	case m.profileForm.passNew.Focused():
-		m.profileForm.passNew, cmd = m.profileForm.passNew.Update(msg)
-	}
-	return m, cmd
-}
-
-func (m model) cardFormPageUpdate(msg tea.KeyPressMsg) (model, tea.Cmd) {
-	switch msg.String() {
-	case "tab":
-		var cmd tea.Cmd
-		if m.cardForm.number.Focused() {
-			m.cardForm.number.Blur()
-			cmd = m.cardForm.date.Focus()
-		} else {
-			m.cardForm.date.Blur()
-			cmd = m.cardForm.number.Focus()
-		}
-		return m, cmd
-	case "enter":
-		m.isLoad = true
-		return m, createCardCmd(m.client, m.cardForm.number.Value(), m.cardForm.date.Value())
-	}
-
-	var cmd tea.Cmd
-	switch {
-	case m.cardForm.number.Focused():
-		m.cardForm.number, cmd = m.cardForm.number.Update(msg)
-	case m.cardForm.date.Focused():
-		m.cardForm.date, cmd = m.cardForm.date.Update(msg)
-	}
-	return m, cmd
-}
-
-func (m model) filePickerPageUpdate(msg tea.KeyPressMsg) (model, tea.Cmd) {
-	var cmd tea.Cmd
-	m.filepicker, cmd = m.filepicker.Update(msg)
-
-	// Did the user select a file?
-	if didSelect, path := m.filepicker.DidSelectFile(msg); didSelect {
-		m.selectedFile = path
-	}
-
-	// Did the user select a disabled file?
-	if didSelect, _ := m.filepicker.DidSelectDisabledFile(msg); didSelect {
-		m.selectedFile = ""
-		return m, m.handleError(errors.New("is not valid"), "filePickerPageUpdate")
-	}
-
-	switch msg.String() {
-	case "ctrl+s":
-		if m.selectedFile == "" {
-			return m, m.handleError(errors.New("file is not selected"), "filePickerPageUpdate")
-		}
-
-		if !m.privateData {
-			return m, m.handleInfo("you need used master key", "filePickerPageUpdate")
-		}
-		m.isLoad = true
-		return m, tea.Batch(
-			createArbitraryDataCmd(
-				m.client,
-				m.filepicker.Path,
-				m.localStorage.Get(masterKeyKey),
-				m.progressCh,
-			),
-			waitUploadProgress(m.progressCh),
-		)
-	}
-
+	m, cmd := m.updateNonKeyComponents(msg)
 	return m, cmd
 }
 
