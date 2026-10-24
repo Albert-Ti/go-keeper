@@ -24,33 +24,48 @@ func (m model) loadActiveTab(activeTab tabType) tea.Cmd {
 	return nil
 }
 
-func (m model) homePageUpdate(msg tea.KeyPressMsg) (model, tea.Cmd) {
-	switch msg.String() {
+func (m model) homePageUpdate(msg tea.Msg) (model, tea.Cmd) {
+	switch msg := msg.(type) {
+	case tea.KeyPressMsg:
+		switch msg.String() {
+		case "esc":
+			if m.selectedRowID >= 0 {
+				m.selectedRowID = -1
+				return m, nil
+			}
+			if len(m.history) <= 1 {
+				return m, m.handleInfo("to log out, press ctrl+q", "")
+			}
+			m.historyBack()
 
-	case "left", "right":
-		if m.selectedRowID < 0 {
-			return m.updateTabNavigation(msg)
+		case "left", "right":
+			if m.selectedRowID < 0 {
+				return m.updateTabNavigation(msg)
+			}
+			return m.updateActionNavigation(msg)
+
+		case "up", "down":
+			if m.selectedRowID >= 0 {
+				return m, nil
+			}
+			return m.updateRowNavigation(msg)
+
+		case "enter":
+			if m.selectedRowID >= 0 {
+				return m.executeSelectedAction()
+			}
+			return m.selectCurrentRow()
+
+		case "ctrl+a":
+			return m.handleCtrlA()
 		}
-		return m.updateActionNavigation(msg)
 
-	case "up", "down":
-		if m.selectedRowID >= 0 {
-			return m, nil
-		}
-		return m.updateRowNavigation(msg)
-
-	case "enter":
-		if m.selectedRowID >= 0 {
-			return m.executeSelectedAction()
-		}
-		return m.selectCurrentRow()
-
-	case "ctrl+a":
-		return m.handleCtrlA()
-
-	default:
-		return m, nil
 	}
+
+	var cmd tea.Cmd
+	m.filepicker, cmd = m.filepicker.Update(msg)
+
+	return m, cmd
 }
 
 func (m model) updateTabNavigation(msg tea.KeyPressMsg) (model, tea.Cmd) {

@@ -207,6 +207,13 @@ func (m *model) Reset() {
 	m.profileForm.passNew.SetValue("")
 }
 
+func (m *model) historyBack() {
+	if len(m.history) > 1 {
+		m.history = m.history[:len(m.history)-1]
+		m.activePage = m.history[len(m.history)-1]
+	}
+}
+
 type clearErrorMsg struct {
 }
 

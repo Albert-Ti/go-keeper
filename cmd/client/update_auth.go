@@ -2,19 +2,22 @@ package main
 
 import tea "charm.land/bubbletea/v2"
 
-func (m model) registerPageUpdate(msg tea.KeyPressMsg) (model, tea.Cmd) {
-	switch msg.String() {
-	case "tab":
-		if m.authForm.email.Focused() {
-			m.authForm.email.Blur()
-			return m, m.authForm.pass.Focus()
-		} else {
-			m.authForm.pass.Blur()
-			return m, m.authForm.email.Focus()
+func (m model) registerPageUpdate(msg tea.Msg) (model, tea.Cmd) {
+	switch msg := msg.(type) {
+	case tea.KeyPressMsg:
+		switch msg.String() {
+		case "tab":
+			if m.authForm.email.Focused() {
+				m.authForm.email.Blur()
+				return m, m.authForm.pass.Focus()
+			} else {
+				m.authForm.pass.Blur()
+				return m, m.authForm.email.Focus()
+			}
+		case "enter":
+			m.isLoad = true
+			return m, registerCmd(m.client, m.authForm.email.Value(), m.authForm.pass.Value())
 		}
-	case "enter":
-		m.isLoad = true
-		return m, registerCmd(m.client, m.authForm.email.Value(), m.authForm.pass.Value())
 	}
 
 	var cmd tea.Cmd
@@ -26,13 +29,16 @@ func (m model) registerPageUpdate(msg tea.KeyPressMsg) (model, tea.Cmd) {
 	return m, cmd
 }
 
-func (m model) confirmPageUpdate(msg tea.KeyPressMsg) (model, tea.Cmd) {
-	switch msg.String() {
-	case "enter":
-		m.isLoad = true
-		return m, tea.Batch(
-			confirmEmailCmd(m.client, m.authForm.email.Value(), m.authForm.confirm.Value()),
-		)
+func (m model) confirmPageUpdate(msg tea.Msg) (model, tea.Cmd) {
+	switch msg := msg.(type) {
+	case tea.KeyPressMsg:
+		switch msg.String() {
+		case "enter":
+			m.isLoad = true
+			return m, tea.Batch(
+				confirmEmailCmd(m.client, m.authForm.email.Value(), m.authForm.confirm.Value()),
+			)
+		}
 	}
 
 	var cmd tea.Cmd
@@ -40,20 +46,23 @@ func (m model) confirmPageUpdate(msg tea.KeyPressMsg) (model, tea.Cmd) {
 	return m, cmd
 }
 
-func (m model) loginPageUpdate(msg tea.KeyPressMsg) (model, tea.Cmd) {
-	switch msg.String() {
-	case "tab":
-		if m.authForm.email.Focused() {
-			m.authForm.email.Blur()
-			return m, m.authForm.pass.Focus()
-		} else {
-			m.authForm.pass.Blur()
-			return m, m.authForm.email.Focus()
-		}
+func (m model) loginPageUpdate(msg tea.Msg) (model, tea.Cmd) {
+	switch msg := msg.(type) {
+	case tea.KeyPressMsg:
+		switch msg.String() {
+		case "tab":
+			if m.authForm.email.Focused() {
+				m.authForm.email.Blur()
+				return m, m.authForm.pass.Focus()
+			} else {
+				m.authForm.pass.Blur()
+				return m, m.authForm.email.Focus()
+			}
 
-	case "enter":
-		m.isLoad = true
-		return m, loginCmd(m.client, m.authForm.email.Value(), m.authForm.pass.Value())
+		case "enter":
+			m.isLoad = true
+			return m, loginCmd(m.client, m.authForm.email.Value(), m.authForm.pass.Value())
+		}
 	}
 
 	var cmd tea.Cmd

@@ -8,6 +8,16 @@ import (
 
 func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
+	case tea.KeyPressMsg:
+		switch msg.String() {
+		case "ctrl+c":
+			return m, tea.Quit
+		case "ctrl+q":
+			m.Reset()
+			cmd := m.authForm.email.Focus()
+			return m, cmd
+		}
+
 	case tea.WindowSizeMsg:
 		m.progress.SetWidth(60)
 		if m.progress.Width() > maxWidth {
@@ -15,15 +25,11 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 		m.width = msg.Width
 		m.height = msg.Height
-		var cmd tea.Cmd
-		m.filepicker, cmd = m.filepicker.Update(msg)
-		return m, cmd
 
 		// очистка сообщения об ошибки
 	case clearErrorMsg:
 		m.textError = ""
 		m.textInfo = ""
-		return m, nil
 
 		// API result public
 	case registerResultMsg:
@@ -191,103 +197,27 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case uploadProgressMsg:
 		m.uploadedBytes = msg.sent
 		m.totalBytes = msg.total
-
 		return m, waitUploadProgress(m.progressCh)
-		// Обработка нажатия клавиш
-	case tea.KeyPressMsg:
-		switch msg.String() {
-		case "ctrl+c":
-			return m, tea.Quit
-		case "ctrl+q":
-			m.Reset()
-			cmd := m.authForm.email.Focus()
-			return m, cmd
-		case "esc":
-			if m.selectedFile != "" {
-				m.selectedFile = ""
-				return m, nil
-			}
-			if m.selectedRowID >= 0 {
-				m.selectedRowID = -1
-				return m, nil
-			}
-			if m.activePage == cardFormPage {
-				m.cardForm.number.Blur()
-				m.cardForm.date.Blur()
-			}
-			if len(m.history) <= 1 {
-				return m, m.handleInfo("to log out, press ctrl+q", "")
-			}
-			if len(m.history) > 1 {
-				m.history = m.history[:len(m.history)-1]
-				m.activePage = m.history[len(m.history)-1]
-			}
-			return m, nil
-		}
-
-		switch m.activePage {
-		case landingPage:
-			return m.landingPageUpdate(msg)
-		case registerPage:
-			return m.registerPageUpdate(msg)
-		case loginPage:
-			return m.loginPageUpdate(msg)
-		case confirmPage:
-			return m.confirmPageUpdate(msg)
-		case homePage:
-			return m.homePageUpdate(msg)
-		case cardFormPage:
-			return m.cardFormPageUpdate(msg)
-		case profileFormPage:
-			return m.profileFormPageUpdate(msg)
-		case filePickerPage:
-			return m.filePickerPageUpdate(msg)
-		}
 	}
 
-	m, cmd := m.updateNonKeyComponents(msg)
-	return m, cmd
-}
-
-func (m model) updateNonKeyComponents(msg tea.Msg) (model, tea.Cmd) {
-	var cmds []tea.Cmd
-	var cmd tea.Cmd
-
-	m.spinner, cmd = m.spinner.Update(msg)
-	cmds = append(cmds, cmd)
-
-	m.filepicker, cmd = m.filepicker.Update(msg)
-	cmds = append(cmds, cmd)
-
-	switch {
-	case m.authForm.email.Focused():
-		m.authForm.email, cmd = m.authForm.email.Update(msg)
-		cmds = append(cmds, cmd)
-
-	case m.authForm.pass.Focused():
-		m.authForm.pass, cmd = m.authForm.pass.Update(msg)
-		cmds = append(cmds, cmd)
-
-	case m.authForm.confirm.Focused():
-		m.authForm.confirm, cmd = m.authForm.confirm.Update(msg)
-		cmds = append(cmds, cmd)
-
-	case m.cardForm.number.Focused():
-		m.cardForm.number, cmd = m.cardForm.number.Update(msg)
-		cmds = append(cmds, cmd)
-
-	case m.cardForm.date.Focused():
-		m.cardForm.date, cmd = m.cardForm.date.Update(msg)
-		cmds = append(cmds, cmd)
-
-	case m.profileForm.passCurr.Focused():
-		m.profileForm.passCurr, cmd = m.profileForm.passCurr.Update(msg)
-		cmds = append(cmds, cmd)
-
-	case m.profileForm.passNew.Focused():
-		m.profileForm.passNew, cmd = m.profileForm.passNew.Update(msg)
-		cmds = append(cmds, cmd)
+	switch m.activePage {
+	case landingPage:
+		return m.landingPageUpdate(msg)
+	case registerPage:
+		return m.registerPageUpdate(msg)
+	case loginPage:
+		return m.loginPageUpdate(msg)
+	case confirmPage:
+		return m.confirmPageUpdate(msg)
+	case homePage:
+		return m.homePageUpdate(msg)
+	case cardFormPage:
+		return m.cardFormPageUpdate(msg)
+	case profileFormPage:
+		return m.profileFormPageUpdate(msg)
+	case filePickerPage:
+		return m.filePickerPageUpdate(msg)
 	}
 
-	return m, tea.Batch(cmds...)
+	return m, nil
 }
