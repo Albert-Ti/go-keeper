@@ -16,11 +16,6 @@ import (
 	"google.golang.org/grpc/status"
 )
 
-const (
-	expiryLeeway   = 30 * time.Second // обновляем чуть раньше реального истечения
-	refreshTimeout = 5 * time.Second
-)
-
 type AuthInterceptor struct {
 	mu           sync.Mutex // сериализует refresh между горутинами
 	localStorage *FileStorage

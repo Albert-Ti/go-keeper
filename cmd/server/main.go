@@ -10,7 +10,7 @@ import (
 	"github.com/Albert-Ti/go-keeper/internal/handler"
 	"github.com/Albert-Ti/go-keeper/internal/interceptor"
 	"github.com/Albert-Ti/go-keeper/internal/repository"
-	cached "github.com/Albert-Ti/go-keeper/internal/repository/cashed"
+	"github.com/Albert-Ti/go-keeper/internal/repository/cached"
 	"github.com/Albert-Ti/go-keeper/internal/service"
 	"google.golang.org/grpc"
 
